@@ -1,53 +1,34 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 /**
- * Splash "Praia Alerta" — cena em camadas CSS/GPU (sem canvas).
+ * Entrada do Praia Alerta — uma única timeline CSS (transform/opacity).
+ * Sem setState no meio da cena, para não travar o frame.
  *
- * Só anima transform/opacity via @property → lisinha em qualquer aparelho.
- *
- *  0.0s  oceano profundo, logo submerso, raios e bolhas
- *  0.5s  logo sobe; superfície sobe e o céu golden hour nasce
- *  1.7s  logo emerge com anéis e brilho
- *  2.6s  varredura de luz + legenda Guarapari
- *  3.3s  aquecimento da home / Guará
- *  3.55s onda de espuma revela a home
- *  4.25s fim
+ * 0s oceano · logo sobe com a linha d'água · golden hour · anéis e brilho
+ * 4.3s a cena inteira sobe numa espuma e revela a home
  */
 
-const T_WARM = 3300;
-const T_EXIT = 3550;
-const T_END = 4250;
-
-type Phase = "boot" | "rise" | "emerge" | "shine" | "exit" | "done";
+const FILM_MS = 5600;
+const WARM_MS = 4200;
 
 export function SplashScreen({ onWarm, onDone }: { onWarm?: () => void; onDone: () => void }) {
-  const [phase, setPhase] = useState<Phase>("boot");
-  const [ready, setReady] = useState(false);
   const doneRef = useRef(false);
   const warmRef = useRef(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const freeze = params.get("splash");
-    if (freeze !== null && freeze !== "" && !Number.isNaN(Number(freeze))) {
-      const t = Number(freeze);
-      if (t >= 3.55) setPhase("exit");
-      else if (t >= 2.6) setPhase("shine");
-      else if (t >= 1.7) setPhase("emerge");
-      else if (t >= 0.5) setPhase("rise");
-      setReady(true);
+    const root = document.querySelector<HTMLElement>(".pa-splash");
+    if (freeze !== null && freeze !== "" && !Number.isNaN(Number(freeze)) && root) {
+      root.style.setProperty("--freeze", `-${Number(freeze)}s`);
+      root.classList.add("is-freeze");
       return undefined;
     }
 
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let cancelled = false;
-    let started = false;
     const timers: number[] = [];
-    const after = (ms: number, fn: () => void) => {
-      timers.push(window.setTimeout(fn, reduce ? Math.min(ms, 280) : ms));
-    };
 
     const warm = () => {
       if (warmRef.current) return;
@@ -64,111 +45,88 @@ export function SplashScreen({ onWarm, onDone }: { onWarm?: () => void; onDone: 
     const finish = () => {
       if (doneRef.current) return;
       doneRef.current = true;
-      setPhase("done");
       onDone();
     };
 
-    const start = () => {
-      if (cancelled || started) return;
-      started = true;
-      setReady(true);
+    if (reduce) {
+      timers.push(window.setTimeout(warm, 40));
+      timers.push(window.setTimeout(finish, 520));
+    } else {
+      timers.push(window.setTimeout(warm, WARM_MS));
+      timers.push(window.setTimeout(finish, FILM_MS));
+    }
 
-      if (reduce) {
-        setPhase("shine");
-        after(120, warm);
-        after(420, () => setPhase("exit"));
-        after(780, finish);
-        return;
-      }
-
-      setPhase("boot");
-      after(90, () => setPhase("rise"));
-      after(1700, () => setPhase("emerge"));
-      after(2600, () => setPhase("shine"));
-      after(T_WARM, warm);
-      after(T_EXIT, () => setPhase("exit"));
-      after(T_END, finish);
-    };
-
-    const logo = new Image();
-    logo.decoding = "async";
-    logo.src = "/logo.png";
-
-    const failSafe = window.setTimeout(start, 700);
-    const kick = () => {
-      window.clearTimeout(failSafe);
-      requestAnimationFrame(() => {
-        if (!cancelled) start();
-      });
-    };
-    logo.onload = kick;
-    logo.onerror = kick;
-    if (logo.complete) kick();
-
-    return () => {
-      cancelled = true;
-      window.clearTimeout(failSafe);
-      timers.forEach((id) => window.clearTimeout(id));
-    };
+    return () => timers.forEach((id) => window.clearTimeout(id));
   }, [onDone, onWarm]);
 
-  const live = phase !== "done";
-
   return (
-    <div
-      className={`pa-splash ${ready ? `is-${phase}` : "is-boot"} ${live ? "" : "is-gone"}`}
-      role="presentation"
-      aria-label="Abrindo Praia Alerta"
-    >
-      <div className="pa-splash-sky" aria-hidden>
-        <span className="pa-splash-sun" />
-        <span className="pa-splash-glow" />
-        <span className="pa-splash-ridge pa-splash-ridge-a" />
-        <span className="pa-splash-ridge pa-splash-ridge-b" />
-        <span className="pa-splash-birds" />
-      </div>
-
-      <div className="pa-splash-water" aria-hidden>
-        <span className="pa-splash-ray r1" />
-        <span className="pa-splash-ray r2" />
-        <span className="pa-splash-ray r3" />
-        <span className="pa-splash-ray r4" />
-        <span className="pa-splash-caustic" />
-        <span className="pa-splash-bubble b1" />
-        <span className="pa-splash-bubble b2" />
-        <span className="pa-splash-bubble b3" />
-        <span className="pa-splash-bubble b4" />
-        <span className="pa-splash-bubble b5" />
-        <span className="pa-splash-bubble b6" />
-        <span className="pa-splash-sheen" />
-      </div>
-
-      <svg className="pa-splash-surface" viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden>
-        <path
-          className="pa-splash-foam"
-          d="M0 54C120 78 220 28 360 52C500 76 600 30 740 56C880 82 980 34 1120 58C1240 76 1340 48 1440 62L1440 120L0 120Z"
-        />
-        <path
-          className="pa-splash-wave"
-          d="M0 62C140 88 240 36 380 60C520 84 620 40 760 66C900 92 1000 44 1140 68C1260 86 1360 52 1440 70L1440 120L0 120Z"
-        />
-      </svg>
-
-      <div className="pa-splash-logo-wrap">
-        <span className="pa-splash-logo-halo" aria-hidden />
-        <span className="pa-splash-logo-ring" aria-hidden />
-        <span className="pa-splash-logo-ring delay" aria-hidden />
-        <img className="pa-splash-logo" src="/logo.png" alt="" draggable={false} decoding="async" fetchPriority="high" />
-        <span className="pa-splash-logo-sweep" aria-hidden />
-      </div>
-
-      <p className="pa-splash-caption">GUARAPARI · ES</p>
-
-      <div className="pa-splash-exit" aria-hidden>
-        <svg className="pa-splash-exit-wave" viewBox="0 0 1440 160" preserveAspectRatio="none">
-          <path d="M0 70C160 30 280 110 440 70C600 30 720 110 880 70C1040 30 1200 110 1440 60L1440 160L0 160Z" fill="rgba(255,255,255,0.92)" />
-          <path d="M0 86C180 50 300 120 460 86C620 52 760 120 920 86C1080 52 1260 120 1440 78L1440 160L0 160Z" fill="#02121b" />
+    <div className="pa-splash is-on" role="presentation" aria-label="Abrindo Praia Alerta">
+      <div className="pa-lift pa-anim">
+      <div className="pa-scene">
+        <div className="pa-sky pa-anim" />
+        <div className="pa-sun-glow pa-anim" />
+        <div className="pa-sun pa-anim" />
+        <svg className="pa-ridges pa-anim" viewBox="0 0 1440 280" preserveAspectRatio="none" aria-hidden>
+          <path
+            fill="#6a4586"
+            d="M0 280V168C160 150 250 46 430 92c150 38 230-62 400-8 150 48 250-28 420 36 70 26 140 18 190 28v132Z"
+          />
+          <path
+            fill="#24183a"
+            d="M0 280V198c210-10 300-78 470-28 160 48 250-36 430 18 170 52 280-8 400 28 50 14 100 10 140 16v48Z"
+          />
         </svg>
+        <svg className="pa-birds pa-anim" viewBox="0 0 140 40" aria-hidden>
+          <g fill="none" stroke="#9a2240" strokeWidth="1.7" strokeLinecap="round">
+            <path d="M4 22c5-8 10-8 15 0" />
+            <path d="M30 26c4-6 8-6 12 0" />
+            <path d="M54 16c5-8 10-8 15 0" />
+            <path d="M82 24c4-6 8-6 12 0" />
+            <path d="M108 14c4.5-7 9-7 13.5 0" />
+          </g>
+        </svg>
+
+        <div className="pa-water pa-anim">
+          <div className="pa-rays" aria-hidden>
+            <span />
+            <span />
+            <span />
+          </div>
+          <div className="pa-bubbles" aria-hidden>
+            <i />
+            <i />
+            <i />
+            <i />
+            <i />
+            <i />
+          </div>
+          <svg className="pa-shore" viewBox="0 0 2880 90" preserveAspectRatio="none" aria-hidden>
+            <path
+              fill="rgba(255,248,230,0.92)"
+              d="M0 46c80 18 140-22 220-4s150 26 230 4 140-24 220-2 150 24 230 2 140-22 220-2 150 26 230 4 140-24 220-2 150 22 230 2 140-20 220 0 150 24 230 4 140-22 220-2 150 20 210 2V90H0Z"
+            />
+            <path
+              fill="#0c6e8c"
+              d="M0 58c80 16 140-16 220 0s150 20 230 2 140-18 220 0 150 18 230 0 140-16 220 2 150 18 230 2 140-16 220 0 150 16 230 0 140-14 220 2 150 16 210 2V90H0Z"
+            />
+          </svg>
+        </div>
+
+        <div className="pa-logo-wrap pa-anim">
+          <span className="pa-halo" aria-hidden />
+          <span className="pa-ring pa-anim" aria-hidden />
+          <span className="pa-ring b pa-anim" aria-hidden />
+          <img src="/logo-splash.png" alt="" draggable={false} decoding="async" fetchPriority="high" />
+          <span className="pa-sweep" aria-hidden />
+        </div>
+
+        <p className="pa-caption pa-anim">GUARAPARI · ES</p>
+
+      </div>
+      <svg className="pa-foam" viewBox="0 0 1440 96" preserveAspectRatio="none" aria-hidden>
+        <path fill="rgba(255,255,255,0.95)" d="M0 40c120-24 200 28 320 8 130-22 210 30 340 8 120-20 220 28 340 6 130-24 230 26 340 8 60-8 90-4 100 0v26H0Z" />
+        <path fill="#02121b" d="M0 62c120-16 210 22 330 6 130-18 220 22 340 4 130-18 230 20 350 4 120-16 230 18 320 6 40-4 70 0 100 2v20H0Z" />
+      </svg>
       </div>
     </div>
   );
