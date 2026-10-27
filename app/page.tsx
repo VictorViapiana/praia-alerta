@@ -49,7 +49,7 @@ import { CALL_OUT, followRoute, formatDistance, formatWalk, metersBetween, modeL
 
 const BeachMap = dynamic(() => import("./beach-map").then((mod) => mod.BeachMap), {
   ssr: false,
-  loading: () => <div className="h-full w-full bg-[#1b2420]" />,
+  loading: () => <div className="h-full w-full bg-[#2c3832]" />,
 });
 
 type FeatureId = "mare" | "clima" | "crianca" | "alertas";
@@ -1121,9 +1121,9 @@ function MapScreen({
       layoutId="mapa"
       transition={cardSpring}
       style={{ borderRadius: 36 }}
-      className="absolute inset-0 z-40 overflow-hidden bg-[#1b2420]"
+      className="absolute inset-0 z-40 overflow-hidden bg-[#2c3832]"
     >
-      <div className="absolute inset-0 z-0 bg-[#1b2420]">
+      <div className="absolute inset-0 z-0 bg-[#2c3832]">
         {mapReady ? (
           <BeachMap
             filter={filter}
@@ -1176,7 +1176,7 @@ function MapScreen({
             remainingLine={progress?.remainingLine ?? null}
           />
         ) : (
-          <div className="h-full w-full bg-[#1b2420]" aria-hidden />
+          <div className="h-full w-full bg-[#2c3832]" aria-hidden />
         )}
       </div>
 

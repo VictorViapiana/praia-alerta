@@ -60,7 +60,7 @@ body {
 
 .orla-map.leaflet-container {
   z-index: 0;
-  background: #1b2420;
+  background: #2c3832;
   font-family: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
 }
 
@@ -85,7 +85,7 @@ body {
 
 .leaflet-layer.orla-satellite {
   /* sem blur: filter blur em tiles trava pan/zoom no celular */
-  filter: contrast(86%) brightness(82%);
+  filter: contrast(90%) brightness(90%);
   will-change: auto;
 }
 
@@ -301,9 +301,10 @@ body {
 }
 
 
-/* Splash: placa pintada + horizonte que se abre. Só transform/opacity. */
+/* Splash: foto real da orla + horizonte que se abre. Só transform/opacity. */
 .sx-splash {
   --freeze: 0s;
+  --horizon: 45.68vh;
   position: fixed;
   inset: 0;
   z-index: 200;
@@ -314,7 +315,7 @@ body {
 }
 
 .sx-splash.is-on .sx-anim {
-  animation-duration: 6.4s;
+  animation-duration: 6.8s;
   animation-fill-mode: both;
   animation-timing-function: linear;
   animation-delay: var(--freeze);
@@ -329,21 +330,26 @@ body {
   animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.sx-splash.is-freeze .sx-anim {
+.sx-splash.is-freeze .sx-anim,
+.sx-splash.is-freeze .sx-plate {
   animation-play-state: paused;
 }
 
 .sx-night {
   position: absolute;
   inset: 0;
-  background: #07060f;
+  background: #05070c;
   animation-name: sx-night;
 }
 
 @keyframes sx-night {
   0%,
-  74% {
+  8% {
     opacity: 1;
+  }
+  22%,
+  74% {
+    opacity: 0;
   }
   88%,
   100% {
@@ -355,21 +361,20 @@ body {
   position: absolute;
   left: 0;
   width: 100%;
-  height: 50%;
   overflow: hidden;
   z-index: 1;
 }
 
 .sx-sky {
   top: 0;
+  height: var(--horizon);
   animation-name: sx-split-up;
-  animation-timing-function: cubic-bezier(0.7, 0, 0.2, 1);
 }
 
 .sx-sea {
-  top: calc(50% - 1px);
+  top: calc(var(--horizon) - 1px);
+  height: calc(100vh - var(--horizon) + 1px);
   animation-name: sx-split-down;
-  animation-timing-function: cubic-bezier(0.7, 0, 0.2, 1);
 }
 
 @keyframes sx-split-up {
@@ -396,10 +401,33 @@ body {
   position: absolute;
   left: 0;
   width: 100%;
-  height: 200%;
+  height: 100vh;
   object-fit: cover;
   object-position: center center;
   pointer-events: none;
+  /* leve aproximação cinematográfica, mesma origem nos dois painéis */
+  transform-origin: center var(--horizon);
+  will-change: transform;
+}
+
+.sx-splash.is-on .sx-plate {
+  animation-name: sx-plate-push;
+  animation-duration: 6.8s;
+  animation-fill-mode: both;
+  animation-timing-function: linear;
+  animation-delay: var(--freeze);
+}
+
+@keyframes sx-plate-push {
+  0% {
+    transform: scale(1.08);
+  }
+  72% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .sx-plate-sky {
@@ -407,19 +435,19 @@ body {
 }
 
 .sx-plate-sea {
-  top: -100%;
+  top: calc(-1 * var(--horizon));
 }
 
 .sx-logo {
   position: absolute;
   z-index: 4;
-  top: 50%;
+  top: var(--horizon);
   left: 50%;
-  width: min(50vw, 210px);
+  width: min(48vw, 200px);
   height: auto;
   animation-name: sx-logo;
-  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   pointer-events: none;
+  filter: drop-shadow(0 10px 28px rgba(0, 12, 28, 0.45));
 }
 
 @keyframes sx-logo {
@@ -452,7 +480,7 @@ body {
   z-index: 2;
   top: 0;
   left: 50%;
-  width: min(50vw, 210px);
+  width: min(48vw, 200px);
   height: auto;
   transform: translate3d(-50%, 0, 0) scaleY(-1);
   animation-name: sx-reflect;
@@ -479,10 +507,10 @@ body {
 .sx-ring {
   position: absolute;
   z-index: 3;
-  top: calc(50% - min(25vw, 105px));
+  top: calc(var(--horizon) - min(24vw, 100px));
   left: 50%;
-  width: min(50vw, 210px);
-  height: min(50vw, 210px);
+  width: min(48vw, 200px);
+  height: min(48vw, 200px);
   border-radius: 999px;
   border: 1.5px solid rgba(255, 250, 236, 0.9);
   animation-name: sx-ring;
@@ -528,40 +556,10 @@ body {
   }
 }
 
-.sx-flock {
-  position: absolute;
-  z-index: 2;
-  top: 22%;
-  left: 0;
-  width: 148px;
-  height: 42px;
-  animation-name: sx-flock;
-  pointer-events: none;
-}
-
-@keyframes sx-flock {
-  0% {
-    opacity: 0;
-    transform: translate3d(78vw, 6px, 0);
-  }
-  12% {
-    opacity: 0.95;
-  }
-  62% {
-    opacity: 0.95;
-    transform: translate3d(8vw, -4px, 0);
-  }
-  74%,
-  100% {
-    opacity: 0;
-    transform: translate3d(-12vw, -10px, 0);
-  }
-}
-
 .sx-caption {
   position: absolute;
   z-index: 4;
-  top: 74%;
+  top: calc(var(--horizon) + 18vh);
   right: 0;
   left: 0;
   margin: 0;
@@ -570,8 +568,8 @@ body {
   font-weight: 650;
   letter-spacing: 0.42em;
   text-indent: 0.42em;
-  color: rgba(255, 246, 226, 0.92);
-  text-shadow: 0 1px 10px rgba(0, 8, 20, 0.45);
+  color: rgba(255, 246, 226, 0.95);
+  text-shadow: 0 1px 12px rgba(0, 8, 20, 0.55);
   animation-name: sx-caption;
   pointer-events: none;
 }
@@ -603,12 +601,17 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sx-splash .sx-anim {
+  .sx-splash .sx-anim,
+  .sx-splash .sx-plate {
     animation: none !important;
   }
 
   .sx-night {
-    opacity: 1;
+    opacity: 0;
+  }
+
+  .sx-plate {
+    transform: none;
   }
 
   .sx-logo {

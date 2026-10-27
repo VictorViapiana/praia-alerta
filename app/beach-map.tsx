@@ -950,7 +950,7 @@ export function BeachMap({
       inertiaDeceleration={2800}
       wheelPxPerZoomLevel={100}
       className="orla-map absolute inset-0 z-0 h-full w-full"
-      style={{ background: driving ? "#eceff1" : clean ? "#f3f6f4" : "#1b2420", zIndex: 0 }}
+      style={{ background: driving ? "#eceff1" : clean ? "#f3f6f4" : "#2c3832", zIndex: 0 }}
     >
       {driving ? (
         <>
@@ -962,8 +962,8 @@ export function BeachMap({
             maxZoom={19}
             maxNativeZoom={16}
             updateWhenZooming={false}
-            updateWhenIdle
-            keepBuffer={2}
+            updateWhenIdle={false}
+            keepBuffer={4}
           />
           <TileLayer
             key="nav-labels"
@@ -972,8 +972,8 @@ export function BeachMap({
             maxZoom={19}
             maxNativeZoom={16}
             updateWhenZooming={false}
-            updateWhenIdle
-            keepBuffer={1}
+            updateWhenIdle={false}
+            keepBuffer={3}
           />
         </>
       ) : clean ? (
@@ -984,21 +984,36 @@ export function BeachMap({
           maxZoom={19}
           maxNativeZoom={18}
           updateWhenZooming={false}
-          updateWhenIdle
-          keepBuffer={2}
+          updateWhenIdle={false}
+          keepBuffer={6}
         />
       ) : (
-        <TileLayer
-          key="satellite"
-          className="orla-satellite"
-          attribution='&copy; <a href="https://www.esri.com/">Esri</a>'
-          url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-          maxZoom={19}
-          maxNativeZoom={18}
-          updateWhenZooming={false}
-          updateWhenIdle
-          keepBuffer={2}
-        />
+        <>
+          {/* Base baixa: se a tile fina atrasa, a orla ainda aparece em vez de faixa preta. */}
+          <TileLayer
+            key="satellite-under"
+            className="orla-satellite"
+            attribution='&copy; <a href="https://www.esri.com/">Esri</a>'
+            url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+            maxZoom={19}
+            maxNativeZoom={15}
+            updateWhenZooming={false}
+            updateWhenIdle={false}
+            keepBuffer={8}
+            zIndex={1}
+          />
+          <TileLayer
+            key="satellite"
+            className="orla-satellite"
+            url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+            maxZoom={19}
+            maxNativeZoom={18}
+            updateWhenZooming={false}
+            updateWhenIdle={false}
+            keepBuffer={6}
+            zIndex={2}
+          />
+        </>
       )}
       {!driving && !clean && (
         <TileLayer
@@ -1008,8 +1023,9 @@ export function BeachMap({
           maxNativeZoom={17}
           opacity={0.85}
           updateWhenZooming={false}
-          updateWhenIdle
-          keepBuffer={1}
+          updateWhenIdle={false}
+          keepBuffer={4}
+          zIndex={3}
         />
       )}
       <MapReady onClear={onClear} onHold={onHold} />

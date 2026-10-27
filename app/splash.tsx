@@ -3,13 +3,14 @@
 import { useEffect, useRef } from "react";
 
 /**
- * Abertura: o pôr do sol está pintado numa placa só.
- * O emblema sobe pelo reflexo, senta no sol, e o horizonte se abre.
- * Nada de setState no meio — só transform/opacity no compositor.
+ * Abertura fotoreal: placa real da orla + horizonte que se abre.
+ * Só transform/opacity no compositor — sem setState no meio da cena.
  */
 
-const FILM_MS = 6400;
-const WARM_MS = 4100;
+const FILM_MS = 6800;
+const WARM_MS = 4300;
+/** Altura do horizonte na splash-plate.webp (em vh, bate com a foto). */
+const HORIZON = "45.68vh";
 
 export function SplashScreen({ onWarm, onDone }: { onWarm?: () => void; onDone: () => void }) {
   const doneRef = useRef(false);
@@ -58,7 +59,12 @@ export function SplashScreen({ onWarm, onDone }: { onWarm?: () => void; onDone: 
   }, [onDone, onWarm]);
 
   return (
-    <div className="sx-splash is-on" role="img" aria-label="Abrindo Praia Alerta">
+    <div
+      className="sx-splash is-on"
+      role="img"
+      aria-label="Abrindo Praia Alerta"
+      style={{ ["--horizon" as string]: HORIZON }}
+    >
       <div className="sx-night sx-anim" />
 
       <div className="sx-half sx-sky sx-anim">
@@ -70,15 +76,6 @@ export function SplashScreen({ onWarm, onDone }: { onWarm?: () => void; onDone: 
           decoding="sync"
           fetchPriority="high"
         />
-        <svg className="sx-flock sx-anim" viewBox="0 0 168 46" aria-hidden>
-          <g fill="none" stroke="#c01840" strokeWidth="1.8" strokeLinecap="round">
-            <path d="M8 28c6-9 12-9 18 0" />
-            <path d="M36 32c5-7 10-7 15 0" />
-            <path d="M64 20c6-9 12-9 18 0" />
-            <path d="M96 30c5-7 10-7 15 0" />
-            <path d="M126 18c5-8 10-8 15 0" />
-          </g>
-        </svg>
       </div>
 
       <div className="sx-half sx-sea sx-anim">
