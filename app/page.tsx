@@ -351,7 +351,7 @@ function Equalizer() {
   );
 }
 
-function GuaraIsland({ onReplay }: { onReplay: () => void }) {
+function GuaraIsland({ onReplay, onMission }: { onReplay: () => void; onMission: () => void }) {
   const { data: weather } = useWeather();
   const { data: tide } = useTide();
   const [open, setOpen] = useState(false);
@@ -395,55 +395,66 @@ function GuaraIsland({ onReplay }: { onReplay: () => void }) {
   };
 
   return (
-    <div className="relative z-20 mt-12 px-3">
-      <div className="flex items-start">
-        <button
-          type="button"
-          onClick={toggle}
-          aria-expanded={open}
-          aria-label="Falar com o Guará"
-          className="relative z-10 mr-1 mt-1.5 shrink-0"
-        >
-          <span className="pointer-events-none absolute left-1/2 top-1/2 h-12 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#ff6b57]/30 blur-xl" />
-          <img
-            src="/guara.png?v=3"
-            alt=""
-            draggable={false}
-            decoding="async"
-            className="guara-float relative h-10 w-auto select-none drop-shadow-[0_6px_10px_rgba(0,0,0,0.35)]"
-          />
-        </button>
-
-        <div className="min-w-0 flex-1 pb-1">
+    <div className="relative z-20 px-3 pt-1">
       <motion.div
         layout
         transition={{ layout: islandSpring }}
-        style={{ borderRadius: open ? 26 : 22 }}
-        className="sheen relative overflow-hidden border border-white/25 bg-white/14 shadow-[0_8px_18px_-16px_rgba(0,0,0,0.8)] backdrop-blur-md"
+        className="sheen relative overflow-hidden rounded-[1.65rem] border border-white/25 bg-white/[0.13] shadow-[0_18px_40px_-28px_rgba(0,0,0,0.95)] backdrop-blur-md"
       >
-        <button
-          type="button"
-          onClick={toggle}
-          className="flex w-full items-start gap-2 px-3 py-2.5 text-left"
-          aria-expanded={open}
-        >
-          <p className="min-w-0 flex-1 text-[12.5px] leading-snug text-white/95">
-            {typed}
-            {typed.length < line.length && <Caret />}
-          </p>
+        <div
+          className="pointer-events-none absolute -left-8 -top-10 h-28 w-28 rounded-full bg-[#ff6b57]/25 blur-2xl"
+          aria-hidden
+        />
+        <div
+          className="pointer-events-none absolute -right-6 top-0 h-24 w-24 rounded-full bg-cyan-300/15 blur-2xl"
+          aria-hidden
+        />
 
-          {narrating ? (
-            <span className="mt-0.5 shrink-0">
-              <Equalizer />
+        <div className="relative flex items-stretch gap-2.5 p-2.5 pb-2">
+          <button
+            type="button"
+            onClick={toggle}
+            aria-expanded={open}
+            aria-label="Falar com o Guará"
+            className="relative grid h-[3.35rem] w-[3.35rem] shrink-0 place-items-center self-center rounded-2xl border border-white/20 bg-gradient-to-b from-white/20 to-black/25 shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]"
+          >
+            <span className="pointer-events-none absolute inset-0 rounded-2xl bg-[#ff6b57]/15 blur-[1px]" />
+            <img
+              src="/guara.png?v=3"
+              alt=""
+              draggable={false}
+              decoding="async"
+              className="guara-float relative h-10 w-auto select-none drop-shadow-[0_6px_10px_rgba(0,0,0,0.35)]"
+            />
+            <span className="absolute -bottom-0.5 -right-0.5 grid h-3.5 w-3.5 place-items-center rounded-full border border-[#071820] bg-black">
+              <span className="h-2 w-2 rounded-full bg-emerald-300 shadow-[0_0_8px_rgba(110,231,183,0.95)]" />
             </span>
-          ) : (
-            !open && (
-              <span className="mt-1 grid h-3 w-3 shrink-0 place-items-center rounded-full bg-black shadow-[inset_0_0_0_1px_rgba(255,255,255,0.16)]">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-300 shadow-[0_0_8px_rgba(110,231,183,0.9)]" />
-              </span>
-            )
-          )}
-        </button>
+          </button>
+
+          <button
+            type="button"
+            onClick={toggle}
+            className="min-w-0 flex-1 rounded-2xl px-1 py-0.5 text-left"
+            aria-expanded={open}
+          >
+            <div className="flex items-center gap-2">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">
+                Guará · guia da orla
+              </p>
+              {narrating ? (
+                <Equalizer />
+              ) : (
+                <span className="rounded-full border border-white/15 bg-white/10 px-1.5 py-0.5 text-[9px] font-medium text-white/60">
+                  {open ? "Toque p/ fechar" : "Toque p/ falar"}
+                </span>
+              )}
+            </div>
+            <p className="mt-1 text-[13px] font-medium leading-snug text-white">
+              {typed}
+              {typed.length < line.length && <Caret />}
+            </p>
+          </button>
+        </div>
 
         <AnimatePresence initial={false}>
           {open && (
@@ -455,8 +466,8 @@ function GuaraIsland({ onReplay }: { onReplay: () => void }) {
               transition={islandSpring}
               className="overflow-hidden"
             >
-              <div className="max-h-[min(22rem,48dvh)] space-y-2.5 overflow-y-auto px-2.5 pb-3">
-                <div className="flex items-center justify-between px-1 text-[11px] text-white/55">
+              <div className="max-h-[min(20rem,42dvh)] space-y-2 overflow-y-auto border-t border-white/10 px-2.5 pb-2.5 pt-2">
+                <div className="flex items-center justify-between px-0.5 text-[11px] text-white/55">
                   <span>Pergunte ao Guará</span>
                   <button
                     type="button"
@@ -471,7 +482,9 @@ function GuaraIsland({ onReplay }: { onReplay: () => void }) {
                     }}
                     className={cx(
                       "inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[11px]",
-                      narrating ? "border-[#ff6b57]/40 bg-[#ff6b57]/20 text-white" : "border-white/15 bg-white/10 text-white/80",
+                      narrating
+                        ? "border-[#ff6b57]/40 bg-[#ff6b57]/20 text-white"
+                        : "border-white/15 bg-white/10 text-white/80",
                     )}
                   >
                     <Volume2 className="h-3 w-3" />
@@ -502,10 +515,14 @@ function GuaraIsland({ onReplay }: { onReplay: () => void }) {
                       }}
                       className={cx(
                         "flex items-center gap-2 rounded-2xl border px-2.5 py-2 text-left text-[12px] text-white/90",
-                        picked === prompt.label ? "border-[#ff6b57]/50 bg-[#ff6b57]/20" : "border-white/15 bg-black/20",
+                        picked === prompt.label
+                          ? "border-[#ff6b57]/50 bg-[#ff6b57]/20"
+                          : "border-white/15 bg-black/20",
                       )}
                     >
-                      <span aria-hidden className="text-base leading-none">{prompt.emoji}</span>
+                      <span aria-hidden className="text-base leading-none">
+                        {prompt.emoji}
+                      </span>
                       <span className="min-w-0 flex-1 leading-tight">{prompt.label}</span>
                     </motion.button>
                   ))}
@@ -514,18 +531,25 @@ function GuaraIsland({ onReplay }: { onReplay: () => void }) {
             </motion.div>
           )}
         </AnimatePresence>
-      </motion.div>
+
+        <div className="relative grid grid-cols-2 gap-1.5 border-t border-white/10 bg-black/25 p-2">
+          <MissionTrigger variant="rail" onOpen={onMission} />
           <button
             type="button"
             onClick={onReplay}
             aria-label="Refazer tutorial"
-            className="ml-1 mt-1 flex items-center gap-1 py-1 text-[10px] font-medium tracking-wide text-white/50"
+            className="flex min-h-[2.6rem] items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/8 px-3 py-2 text-left transition hover:border-white/30 hover:bg-white/12"
           >
-            <RotateCcw className="h-2.5 w-2.5" />
-            Refazer passeio
+            <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-white/20 bg-white/10 text-white/85">
+              <RotateCcw className="h-3.5 w-3.5" />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-[12px] font-semibold leading-none text-white">Passeio</span>
+              <span className="mt-0.5 block text-[9px] leading-none text-white/55">Refazer tutorial</span>
+            </span>
           </button>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
@@ -1863,12 +1887,9 @@ function Phone({
         <OceanWash urgent={sos} paused={splashActive} />
         <LayoutGroup id="alegretto-phone">
           <div className="relative z-10 flex h-full flex-col">
-            <div className="relative z-20 flex items-center justify-between gap-2 px-3 pt-1.5 text-white sm:px-5">
-              <span className="w-11 shrink-0 text-[13px] font-semibold tabular-nums">{time}</span>
-              {!mapOpen && !sheet && !childOpen && !story && !sos && (
-                <MissionTrigger onOpen={() => setMissionOpen(true)} />
-              )}
-              <span className="flex shrink-0 items-center justify-end gap-1.5 text-white/90">
+            <div className="relative z-20 flex items-center justify-between px-5 pt-1.5 text-white">
+              <span className="text-[13px] font-semibold tabular-nums">{time}</span>
+              <span className="flex items-center gap-1.5 text-white/90">
                 <Signal className="h-3.5 w-3.5" />
                 <Wifi className="h-3.5 w-3.5" />
                 <BatteryFull className="h-4 w-4" />
@@ -1876,6 +1897,7 @@ function Phone({
             </div>
 
             <GuaraIsland
+              onMission={() => setMissionOpen(true)}
               onReplay={() => {
                 try {
                   localStorage.removeItem(HOME_TOUR_KEY);
@@ -1890,7 +1912,7 @@ function Phone({
               }}
             />
 
-            <div className={`no-scrollbar min-h-0 flex-1 overflow-y-auto px-4 pb-28 pt-3 ${splashActive ? "content-visibility-auto" : ""}`}>
+            <div className={`no-scrollbar min-h-0 flex-1 overflow-y-auto px-4 pb-28 pt-2.5 ${splashActive ? "content-visibility-auto" : ""}`}>
               <BeachHome
                 mapOpen={mapOpen}
                 activeId={activeId}

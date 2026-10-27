@@ -5,7 +5,37 @@ import { HeartHandshake, X } from "lucide-react";
 
 const spring = { type: "spring" as const, stiffness: 380, damping: 34, mass: 0.86 };
 
-export function MissionTrigger({ onOpen }: { onOpen: () => void }) {
+export function MissionTrigger({
+  onOpen,
+  variant = "badge",
+}: {
+  onOpen: () => void;
+  variant?: "badge" | "rail";
+}) {
+  if (variant === "rail") {
+    return (
+      <button
+        type="button"
+        onClick={onOpen}
+        aria-haspopup="dialog"
+        aria-label="Abrir Nossa Missão"
+        className="group relative flex min-h-[2.6rem] items-center justify-center gap-2 overflow-hidden rounded-2xl border border-cyan-200/35 bg-gradient-to-r from-cyan-400/20 via-white/5 to-amber-200/15 px-3 py-2 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.16)] transition hover:border-cyan-100/55 hover:from-cyan-300/28"
+      >
+        <span className="relative grid h-7 w-7 shrink-0 place-items-center rounded-full border border-cyan-100/35 bg-cyan-300/20 text-cyan-50">
+          <HeartHandshake className="h-3.5 w-3.5" strokeWidth={2.1} />
+          <span className="absolute -right-0.5 -top-0.5 flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-200/80 opacity-70" />
+            <span className="relative h-2 w-2 rounded-full bg-cyan-100" />
+          </span>
+        </span>
+        <span className="min-w-0">
+          <span className="block text-[12px] font-semibold leading-none text-white">Nossa Missão</span>
+          <span className="mt-0.5 block text-[9px] leading-none text-cyan-50/65">Por que existimos</span>
+        </span>
+      </button>
+    );
+  }
+
   return (
     <button
       type="button"
