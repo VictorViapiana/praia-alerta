@@ -63,6 +63,8 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <head>
+        <link rel="preload" href="/logo.png" as="image" type="image/png" />
+        <link rel="preload" href="/guara-inteiro.png?v=1" as="image" type="image/png" />
         <link rel="stylesheet" href="/vendor/leaflet/leaflet.css" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />

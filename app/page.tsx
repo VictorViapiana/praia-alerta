@@ -218,20 +218,22 @@ function useTypewriter(text: string, speed = 32) {
   return typed;
 }
 
-function OceanWash({ urgent = false }: { urgent?: boolean }) {
+function OceanWash({ urgent = false, paused = false }: { urgent?: boolean; paused?: boolean }) {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(125%_85%_at_50%_115%,#0f5968_0%,#0a3142_38%,#07131d_100%)]" />
       <motion.div
         className="absolute -right-10 -top-8 h-64 w-64 rounded-full blur-3xl"
-        animate={{
-          backgroundColor: urgent
-            ? "rgba(239,68,68,0.38)"
-            : "rgba(251,191,36,0.28)",
-          x: [0, -18, 8, 0],
-          y: [0, 16, -6, 0],
-          scale: [1, 1.08, 0.96, 1],
-        }}
+        animate={
+          paused
+            ? { backgroundColor: urgent ? "rgba(239,68,68,0.38)" : "rgba(251,191,36,0.28)" }
+            : {
+                backgroundColor: urgent ? "rgba(239,68,68,0.38)" : "rgba(251,191,36,0.28)",
+                x: [0, -18, 8, 0],
+                y: [0, 16, -6, 0],
+                scale: [1, 1.08, 0.96, 1],
+              }
+        }
         transition={{
           backgroundColor: { duration: 0.45 },
           x: { duration: 16, repeat: Infinity, ease: "easeInOut" },
@@ -241,12 +243,12 @@ function OceanWash({ urgent = false }: { urgent?: boolean }) {
       />
       <motion.div
         className="absolute -left-16 top-1/3 h-72 w-72 rounded-full bg-cyan-400/20 blur-3xl"
-        animate={{ x: [0, 26, -8, 0], y: [0, -20, 10, 0] }}
+        animate={paused ? undefined : { x: [0, 26, -8, 0], y: [0, -20, 10, 0] }}
         transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
       />
       <motion.div
         className="absolute bottom-[-12%] left-1/4 h-56 w-56 rounded-full bg-blue-500/25 blur-3xl"
-        animate={{ y: [0, -18, 0], opacity: urgent ? 0.25 : 0.8 }}
+        animate={paused ? { opacity: urgent ? 0.25 : 0.8 } : { y: [0, -18, 0], opacity: urgent ? 0.25 : 0.8 }}
         transition={{
           y: { duration: 9, repeat: Infinity, ease: "easeInOut" },
           opacity: { duration: 0.4 },
@@ -256,7 +258,7 @@ function OceanWash({ urgent = false }: { urgent?: boolean }) {
         aria-hidden
         viewBox="0 0 1440 140"
         className="absolute -bottom-2 left-0 h-28 w-[210%] opacity-40"
-        animate={{ x: [0, -160, 0] }}
+        animate={paused ? undefined : { x: [0, -160, 0] }}
         transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
       >
         <path
@@ -274,16 +276,20 @@ function OceanWash({ urgent = false }: { urgent?: boolean }) {
   );
 }
 
-function Stage({ urgent }: { urgent: boolean }) {
+function Stage({ urgent, paused = false }: { urgent: boolean; paused?: boolean }) {
   return (
     <div className="pointer-events-none fixed inset-0">
       <div className="absolute inset-0 bg-[radial-gradient(90%_70%_at_50%_20%,#16384a_0%,#07141e_46%,#03080d_100%)]" />
       <motion.div
         className="absolute right-[8%] top-[14%] h-48 w-48 rounded-full blur-2xl"
-        animate={{
-          backgroundColor: urgent ? "rgba(248,113,113,0.55)" : "rgba(253,224,171,0.78)",
-          scale: [1, 1.06, 1],
-        }}
+        animate={
+          paused
+            ? { backgroundColor: urgent ? "rgba(248,113,113,0.55)" : "rgba(253,224,171,0.78)" }
+            : {
+                backgroundColor: urgent ? "rgba(248,113,113,0.55)" : "rgba(253,224,171,0.78)",
+                scale: [1, 1.06, 1],
+              }
+        }
         transition={{
           backgroundColor: { duration: 0.5 },
           scale: { duration: 8, repeat: Infinity, ease: "easeInOut" },
@@ -292,15 +298,15 @@ function Stage({ urgent }: { urgent: boolean }) {
       />
       <motion.div
         className="absolute -left-24 bottom-[8%] h-[28rem] w-[28rem] rounded-full bg-cyan-500/15 blur-3xl"
-        animate={{ x: [0, 40, 0], y: [0, -24, 0] }}
+        animate={paused ? undefined : { x: [0, 40, 0], y: [0, -24, 0] }}
         transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
       />
       <motion.div
         className="absolute right-[-6rem] top-1/2 h-[22rem] w-[22rem] rounded-full bg-amber-400/10 blur-3xl"
-        animate={{ y: [0, 30, 0] }}
+        animate={paused ? undefined : { y: [0, 30, 0] }}
         transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
       />
-      <div className="grain absolute inset-0 opacity-[0.18] mix-blend-overlay" />
+      {!paused && <div className="grain absolute inset-0 opacity-[0.18] mix-blend-overlay" />}
     </div>
   );
 }
@@ -390,13 +396,12 @@ function GuaraIsland({ onReplay }: { onReplay: () => void }) {
           className="relative z-10 mr-1 mt-1.5 shrink-0"
         >
           <span className="pointer-events-none absolute left-1/2 top-1/2 h-12 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#ff6b57]/30 blur-xl" />
-          <motion.img
+          <img
             src="/guara.png?v=3"
             alt=""
             draggable={false}
-            className="relative h-10 w-auto select-none drop-shadow-[0_6px_10px_rgba(0,0,0,0.35)]"
-            animate={{ y: [0, -3, 0] }}
-            transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
+            decoding="async"
+            className="guara-float relative h-10 w-auto select-none drop-shadow-[0_6px_10px_rgba(0,0,0,0.35)]"
           />
         </button>
 
@@ -405,7 +410,7 @@ function GuaraIsland({ onReplay }: { onReplay: () => void }) {
         layout
         transition={{ layout: islandSpring }}
         style={{ borderRadius: open ? 26 : 22 }}
-        className="sheen relative overflow-hidden border border-white/25 bg-white/12 shadow-[0_8px_18px_-16px_rgba(0,0,0,0.8)] backdrop-blur-xl"
+        className="sheen relative overflow-hidden border border-white/25 bg-white/14 shadow-[0_8px_18px_-16px_rgba(0,0,0,0.8)] backdrop-blur-md"
       >
         <button
           type="button"
@@ -1265,13 +1270,12 @@ function MapScreen({
                 Entendi
               </button>
             </div>
-            <motion.img
+            <img
               src="/guara-inteiro.png?v=1"
               alt="Guará"
               draggable={false}
-              className="h-auto max-h-[min(18rem,42cqh)] w-auto max-w-full object-contain object-bottom drop-shadow-[0_16px_28px_rgba(0,0,0,0.45)]"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
+              decoding="async"
+              className="guara-float-lg h-auto max-h-[min(18rem,42cqh)] w-auto max-w-full object-contain object-bottom drop-shadow-[0_16px_28px_rgba(0,0,0,0.45)]"
             />
           </div>
         </motion.div>
@@ -1301,13 +1305,12 @@ function MapScreen({
                 {rampAlert ? "Entendi, vou sair" : "Entendi"}
               </button>
             </div>
-            <motion.img
+            <img
               src="/guara-inteiro.png?v=1"
               alt="Guará"
               draggable={false}
-              className="h-auto max-h-[min(20rem,46cqh)] w-auto max-w-full object-contain object-bottom drop-shadow-[0_16px_28px_rgba(0,0,0,0.45)]"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
+              decoding="async"
+              className="guara-float-lg h-auto max-h-[min(20rem,46cqh)] w-auto max-w-full object-contain object-bottom drop-shadow-[0_16px_28px_rgba(0,0,0,0.45)]"
             />
           </div>
         </motion.div>
@@ -1779,11 +1782,13 @@ function Phone({
   onSos,
   onCloseSos,
   splashDone = true,
+  splashActive = false,
 }: {
   sos: boolean;
   onSos: () => void;
   onCloseSos: () => void;
   splashDone?: boolean;
+  splashActive?: boolean;
 }) {
   const time = useClock();
   const shellRef = useRef<HTMLDivElement>(null);
@@ -1841,7 +1846,7 @@ function Phone({
       <span className="absolute -right-[3px] top-44 hidden h-20 w-[3px] rounded-r-sm bg-gray-800 sm:block" />
 
       <div ref={shellRef} className="relative h-full w-full overflow-hidden bg-gray-900 sm:rounded-[3rem] sm:border-8 sm:border-gray-900 sm:shadow-2xl">
-        <OceanWash urgent={sos} />
+        <OceanWash urgent={sos} paused={splashActive} />
         <LayoutGroup id="alegretto-phone">
           <div className="relative z-10 flex h-full flex-col">
             <div className="flex items-center justify-between px-7 pt-1.5 text-white">
@@ -1868,7 +1873,7 @@ function Phone({
               }}
             />
 
-            <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-4 pb-28 pt-3">
+            <div className={`no-scrollbar min-h-0 flex-1 overflow-y-auto px-4 pb-28 pt-3 ${splashActive ? "content-visibility-auto" : ""}`}>
               <BeachHome
                 mapOpen={mapOpen}
                 activeId={activeId}
@@ -1930,7 +1935,13 @@ function Phone({
           {sos ? "Alerta crítico acionado na Praia do Morro." : ""}
         </p>
         {!mapOpen && splashDone && (
-          <GuaraOnboarding rootRef={shellRef} steps={HOME_STEPS} storageKey={HOME_TOUR_KEY} replay={tourReplay} />
+          <GuaraOnboarding
+            rootRef={shellRef}
+            steps={HOME_STEPS}
+            storageKey={HOME_TOUR_KEY}
+            replay={tourReplay}
+            reveal={!splashActive}
+          />
         )}
       </div>
     </div>
@@ -1940,14 +1951,23 @@ function Phone({
 export default function HomePage() {
   const [sos, setSos] = useState(false);
   const [splash, setSplash] = useState(true);
+  // aquecimento: monta o Guará ainda sob a splash para não tiltar na revelação
+  const [warm, setWarm] = useState(false);
+  const warmHome = useCallback(() => setWarm(true), []);
   const dismissSplash = useCallback(() => setSplash(false), []);
 
   return (
     <main className="relative flex min-h-dvh flex-col items-center justify-start overflow-x-hidden sm:justify-center sm:px-3 sm:py-8">
-      {splash && <SplashScreen onDone={dismissSplash} />}
-      <Stage urgent={sos} />
+      {splash && <SplashScreen onWarm={warmHome} onDone={dismissSplash} />}
+      <Stage urgent={sos} paused={splash} />
       <div className="relative z-10">
-        <Phone sos={sos} onSos={() => setSos(true)} onCloseSos={() => setSos(false)} splashDone={!splash} />
+        <Phone
+          sos={sos}
+          onSos={() => setSos(true)}
+          onCloseSos={() => setSos(false)}
+          splashDone={warm}
+          splashActive={splash}
+        />
       </div>
       <footer className="relative z-10 mt-6 hidden text-center sm:block">
         <p className="font-serif text-lg italic text-white/80">Praia Alerta</p>
