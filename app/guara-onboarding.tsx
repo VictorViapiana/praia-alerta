@@ -4,8 +4,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useLayoutEffect, useState, type RefObject } from "react";
 import { speakGuara, stopSpeaking } from "./voice";
 
-export const HOME_TOUR_KEY = "hasSeenGuaraTutorial";
-export const MAP_TOUR_KEY = "hasSeenGuaraMapTutorial";
+// v2: o startOnMap antigo gravava essas chaves sem o usuário ver o tour
+export const HOME_TOUR_KEY = "hasSeenGuaraTutorial_v2";
+export const MAP_TOUR_KEY = "hasSeenGuaraMapTutorial_v2";
 
 export type TourStep = {
   text: string;

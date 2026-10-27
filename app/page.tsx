@@ -49,7 +49,7 @@ import { CALL_OUT, followRoute, formatDistance, formatWalk, metersBetween, modeL
 
 const BeachMap = dynamic(() => import("./beach-map").then((mod) => mod.BeachMap), {
   ssr: false,
-  loading: () => <div className="h-full w-full bg-[#e7eef2]" />,
+  loading: () => <div className="h-full w-full bg-[#1b2420]" />,
 });
 
 type FeatureId = "mare" | "clima" | "crianca" | "alertas";
@@ -751,6 +751,7 @@ function MapScreen({
   onDismissRamp: () => void;
 }) {
   const mapRef = useRef<HTMLDivElement>(null);
+  const [mapReady, setMapReady] = useState(false);
   const [filter, setFilter] = useState<MapFilter>("neutro");
   const [query, setQuery] = useState("");
   const [coach, setCoach] = useState(true);
@@ -811,6 +812,19 @@ function MapScreen({
   const accuracy = useRef(99);
   const routeActive = Boolean(destination && mode);
   const driving = routeActive && !cameraOpen && !searchOpen;
+
+  useEffect(() => {
+    // deixa a animação do card terminar antes de montar o Leaflet
+    let idle = 0;
+    const fallback = window.setTimeout(() => setMapReady(true), 280);
+    if ("requestIdleCallback" in window) {
+      idle = window.requestIdleCallback(() => setMapReady(true), { timeout: 420 });
+    }
+    return () => {
+      if (idle && "cancelIdleCallback" in window) window.cancelIdleCallback(idle);
+      window.clearTimeout(fallback);
+    };
+  }, []);
 
   useEffect(() => {
     if (!driving) return;
@@ -1094,59 +1108,63 @@ function MapScreen({
       layoutId="mapa"
       transition={cardSpring}
       style={{ borderRadius: 36 }}
-      className="absolute inset-0 z-40 overflow-hidden bg-[#e7eef2]"
+      className="absolute inset-0 z-40 overflow-hidden bg-[#1b2420]"
     >
-      <div className="absolute inset-0 z-0">
-        <BeachMap
-          filter={filter}
-          query={foldedQuery}
-          openId={openId}
-          onSelect={(id) => {
-            setCoach(false);
-            if (id === MARLIN.id) {
-              setOpenId(MARLIN.id);
-              setRampTalk(false);
-              setMarlinTalk(true);
-              return;
-            }
-            setMarlinTalk(false);
-            setOpenId((current) => (current === id ? null : id));
-          }}
-          onOpen={(id) => setSheetId(id)}
-          onOpenEscunas={() => {
-            setCoach(false);
-            setSheetId("escunas");
-          }}
-          onOpenVendor={(id) => {
-            setCoach(false);
-            setOpenId(id);
-            setSheetId(id);
-          }}
-          onRampTap={() => {
-            setCoach(false);
-            setMarlinTalk(false);
-            setRampTalk(true);
-          }}
-          onClear={() => {
-            setOpenId(null);
-            setMarlinTalk(false);
-          }}
-          onHold={holdPoint}
-          flyTo={flyTo}
-          user={userPoint}
-          heading={heading ?? 0}
-          basemap={basemap}
-          routeLine={route?.line ?? null}
-          routeColor={mode ? ROUTE_COLOR[mode] : "#e11d48"}
-          destination={destination}
-          stops={stops}
-          originMark={originMark}
-          driving={driving}
-          follow={following}
-          followTick={Math.round((progress?.traveledMeters ?? 0) / 40)}
-          traveledLine={progress?.traveledLine ?? null}
-          remainingLine={progress?.remainingLine ?? null}
-        />
+      <div className="absolute inset-0 z-0 bg-[#1b2420]">
+        {mapReady ? (
+          <BeachMap
+            filter={filter}
+            query={foldedQuery}
+            openId={openId}
+            onSelect={(id) => {
+              setCoach(false);
+              if (id === MARLIN.id) {
+                setOpenId(MARLIN.id);
+                setRampTalk(false);
+                setMarlinTalk(true);
+                return;
+              }
+              setMarlinTalk(false);
+              setOpenId((current) => (current === id ? null : id));
+            }}
+            onOpen={(id) => setSheetId(id)}
+            onOpenEscunas={() => {
+              setCoach(false);
+              setSheetId("escunas");
+            }}
+            onOpenVendor={(id) => {
+              setCoach(false);
+              setOpenId(id);
+              setSheetId(id);
+            }}
+            onRampTap={() => {
+              setCoach(false);
+              setMarlinTalk(false);
+              setRampTalk(true);
+            }}
+            onClear={() => {
+              setOpenId(null);
+              setMarlinTalk(false);
+            }}
+            onHold={holdPoint}
+            flyTo={flyTo}
+            user={userPoint}
+            heading={heading ?? 0}
+            basemap={basemap}
+            routeLine={route?.line ?? null}
+            routeColor={mode ? ROUTE_COLOR[mode] : "#e11d48"}
+            destination={destination}
+            stops={stops}
+            originMark={originMark}
+            driving={driving}
+            follow={following}
+            followTick={Math.round((progress?.traveledMeters ?? 0) / 40)}
+            traveledLine={progress?.traveledLine ?? null}
+            remainingLine={progress?.remainingLine ?? null}
+          />
+        ) : (
+          <div className="h-full w-full bg-[#1b2420]" aria-hidden />
+        )}
       </div>
 
       <AnimatePresence>
@@ -1760,28 +1778,18 @@ function Phone({
   sos,
   onSos,
   onCloseSos,
-  startOnMap = false,
+  splashDone = true,
 }: {
   sos: boolean;
   onSos: () => void;
   onCloseSos: () => void;
-  startOnMap?: boolean;
+  splashDone?: boolean;
 }) {
   const time = useClock();
   const shellRef = useRef<HTMLDivElement>(null);
   const [tourReplay, setTourReplay] = useState(0);
   const [activeId, setActiveId] = useState<FeatureId | null>(null);
-  const [mapOpen, setMapOpen] = useState(() => {
-    if (startOnMap && typeof window !== "undefined") {
-      try {
-        localStorage.setItem(HOME_TOUR_KEY, "1");
-        localStorage.setItem(MAP_TOUR_KEY, "1");
-      } catch {
-        /* private mode */
-      }
-    }
-    return startOnMap;
-  });
+  const [mapOpen, setMapOpen] = useState(false);
   const [childOpen, setChildOpen] = useState(false);
   const [story, setStory] = useState<StoryId | null>(null);
   const [sosKey, setSosKey] = useState(0);
@@ -1921,7 +1929,9 @@ function Phone({
         <p className="sr-only" aria-live="assertive">
           {sos ? "Alerta crítico acionado na Praia do Morro." : ""}
         </p>
-        {!mapOpen && <GuaraOnboarding rootRef={shellRef} steps={HOME_STEPS} storageKey={HOME_TOUR_KEY} replay={tourReplay} />}
+        {!mapOpen && splashDone && (
+          <GuaraOnboarding rootRef={shellRef} steps={HOME_STEPS} storageKey={HOME_TOUR_KEY} replay={tourReplay} />
+        )}
       </div>
     </div>
   );
@@ -1934,9 +1944,10 @@ export default function HomePage() {
 
   return (
     <main className="relative flex min-h-dvh flex-col items-center justify-start overflow-x-hidden sm:justify-center sm:px-3 sm:py-8">
+      {splash && <SplashScreen onDone={dismissSplash} />}
       <Stage urgent={sos} />
       <div className="relative z-10">
-        <Phone sos={sos} onSos={() => setSos(true)} onCloseSos={() => setSos(false)} startOnMap />
+        <Phone sos={sos} onSos={() => setSos(true)} onCloseSos={() => setSos(false)} splashDone={!splash} />
       </div>
       <footer className="relative z-10 mt-6 hidden text-center sm:block">
         <p className="font-serif text-lg italic text-white/80">Praia Alerta</p>
@@ -1944,7 +1955,6 @@ export default function HomePage() {
           Guarapari · Espírito Santo
         </p>
       </footer>
-      {splash && <SplashScreen onDone={dismissSplash} />}
     </main>
   );
 }

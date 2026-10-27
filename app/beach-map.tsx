@@ -6,7 +6,6 @@ import { createPortal } from "react-dom";
 import { MapContainer, Marker, Polygon, Polyline, TileLayer, useMap, useMapEvents } from "react-leaflet";
 import type { DivIcon, LatLngExpression } from "leaflet";
 import L from "leaflet";
-import { motion } from "framer-motion";
 import { Hotel, IceCreamCone, Martini, Pill, ShoppingBag, ShowerHead, Star, Utensils, type LucideIcon } from "lucide-react";
 import { fold } from "./coast";
 import { MarkerPopup } from "./marker-popup";
@@ -175,14 +174,22 @@ function MapReady({ onClear, onHold }: { onClear: () => void; onHold: (lat: numb
   });
   useEffect(() => {
     const node = map.getContainer();
-    const paint = () => map.invalidateSize();
+    let scheduled = 0;
+    const paint = () => {
+      if (scheduled) return;
+      scheduled = window.requestAnimationFrame(() => {
+        scheduled = 0;
+        map.invalidateSize({ animate: false });
+      });
+    };
     const observer = new ResizeObserver(paint);
     observer.observe(node);
-    const timerId = window.setTimeout(paint, 480);
+    const timerId = window.setTimeout(paint, 120);
     return () => {
       observer.disconnect();
       window.clearTimeout(timerId);
       window.clearTimeout(timer.current);
+      if (scheduled) cancelAnimationFrame(scheduled);
     };
   }, [map]);
   return null;
@@ -470,11 +477,9 @@ function CommercePin({
         className={`relative grid ${box} place-items-center`}
       >
         {!kiosk && (highlighted || (premium && !faded)) && (
-          <motion.span
-            className={`absolute rounded-full ${premium ? "h-8 w-8" : "h-6 w-6"}`}
-            style={{ background: premium ? "#f59e0b" : color.solid }}
-            animate={{ scale: [1, 1.7], opacity: [0.38, 0] }}
-            transition={{ duration: premium ? 1.8 : 1.45, repeat: Infinity, ease: "easeOut" }}
+          <span
+            className={`pin-pulse absolute rounded-full ${premium ? "h-8 w-8" : "h-6 w-6"}`}
+            style={{ background: premium ? "#f59e0b" : color.solid, animationDuration: premium ? "1.8s" : "1.45s" }}
           />
         )}
         {kiosk ? (
@@ -701,15 +706,12 @@ function OrlaMarkers({
   const map = useMap();
   const [zoom, setZoom] = useState(() => map.getZoom());
   useMapEvents({
-    zoom() {
+    zoomend() {
       const next = map.getZoom();
       setZoom((current) => {
         if ((current >= PLACE_ZOOM) === (next >= PLACE_ZOOM) && Math.floor(current) === Math.floor(next)) return current;
         return next;
       });
-    },
-    zoomend() {
-      setZoom(map.getZoom());
     },
   });
   const showPlaces = zoom >= PLACE_ZOOM;
@@ -929,17 +931,24 @@ export function BeachMap({
   const arrows = useMemo(() => (track && guideLine ? curveChevrons(guideLine, camera) : []), [track, guideLine, camera]);
   return (
     <MapContainer
+      key={driving ? "drive" : "browse"}
       center={ORLA_CENTER}
       zoom={ORLA_ZOOM}
-      zoomSnap={0.25}
+      zoomSnap={0.5}
+      zoomDelta={0.5}
       maxZoom={19}
       zoomControl={false}
-      rotate
+      rotate={driving}
       bearing={0}
       rotateControl={false}
       touchRotate={false}
       shiftKeyRotate={false}
       compassBearing={false}
+      preferCanvas
+      fadeAnimation={false}
+      markerZoomAnimation={false}
+      inertiaDeceleration={2800}
+      wheelPxPerZoomLevel={100}
       className="orla-map absolute inset-0 z-0 h-full w-full"
       style={{ background: driving ? "#eceff1" : clean ? "#f3f6f4" : "#1b2420", zIndex: 0 }}
     >
@@ -952,6 +961,9 @@ export function BeachMap({
             url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}"
             maxZoom={19}
             maxNativeZoom={16}
+            updateWhenZooming={false}
+            updateWhenIdle
+            keepBuffer={2}
           />
           <TileLayer
             key="nav-labels"
@@ -959,6 +971,9 @@ export function BeachMap({
             url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}"
             maxZoom={19}
             maxNativeZoom={16}
+            updateWhenZooming={false}
+            updateWhenIdle
+            keepBuffer={1}
           />
         </>
       ) : clean ? (
@@ -967,7 +982,10 @@ export function BeachMap({
           attribution='&copy; <a href="https://www.esri.com/">Esri</a>'
           url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}"
           maxZoom={19}
-          maxNativeZoom={19}
+          maxNativeZoom={18}
+          updateWhenZooming={false}
+          updateWhenIdle
+          keepBuffer={2}
         />
       ) : (
         <TileLayer
@@ -977,6 +995,9 @@ export function BeachMap({
           url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
           maxZoom={19}
           maxNativeZoom={18}
+          updateWhenZooming={false}
+          updateWhenIdle
+          keepBuffer={2}
         />
       )}
       {!driving && !clean && (
@@ -984,7 +1005,11 @@ export function BeachMap({
           key="satellite-roads"
           url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}"
           maxZoom={19}
-          maxNativeZoom={18}
+          maxNativeZoom={17}
+          opacity={0.85}
+          updateWhenZooming={false}
+          updateWhenIdle
+          keepBuffer={1}
         />
       )}
       <MapReady onClear={onClear} onHold={onHold} />
