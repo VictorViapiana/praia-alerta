@@ -9,7 +9,9 @@ import { useEffect, useRef } from "react";
  *  0.5s  o logo sobe; a câmera emerge e revela o céu de golden hour, sol, serras e guarás
  *  1.9s  o logo rompe a superfície: respingos, ondas concêntricas, reflexo na água
  *  2.8s  brilho, varredura de luz e cintilações no logo
- *  3.65s onda de espuma varre a tela de baixo para cima revelando o mapa
+ *  3.65s onda de espuma varre a tela de baixo para cima revelando a home
+ *
+ * Qualidade adapta ao frame time para não travar em celular.
  */
 
 const T_END = 4.55;
@@ -81,7 +83,7 @@ const rgb = (c: RGB, a = 1) => `rgba(${Math.round(c[0])},${Math.round(c[1])},${M
 // ---------- elementos determinísticos (a cena é função pura do tempo) ----------
 const rnd = mulberry32(20261027);
 
-const BUBBLES = Array.from({ length: 52 }, () => ({
+const BUBBLES = Array.from({ length: 28 }, () => ({
   x: rnd(),
   y0: rnd(),
   speed: 26 + rnd() * 90,
@@ -89,7 +91,7 @@ const BUBBLES = Array.from({ length: 52 }, () => ({
   wob: rnd() * TAU,
 }));
 
-const SPRAY = Array.from({ length: 130 }, () => ({
+const SPRAY = Array.from({ length: 54 }, () => ({
   spawn: 1.85 + rnd() * 0.85,
   ox: rnd() - 0.5,
   vx: (rnd() - 0.5) * 220,
@@ -99,7 +101,7 @@ const SPRAY = Array.from({ length: 130 }, () => ({
   life: 0.9 + rnd() * 0.9,
 }));
 
-const GLITTER = Array.from({ length: 140 }, () => ({
+const GLITTER = Array.from({ length: 48 }, () => ({
   f: Math.pow(rnd(), 1.6),
   dx: rnd() - 0.5,
   w: 4 + rnd() * 20,
@@ -169,6 +171,10 @@ export function SplashScreen({ onDone }: { onDone: () => void }) {
     let causImg: ImageData | null = null;
     let CW = 0;
     let CH = 0;
+    let quality = 1;
+    let lastNow = 0;
+    let causFrame = 0;
+    let causDirty = true;
 
     const buildLogo = () => {
       const lctx = logoC.getContext("2d");
@@ -190,13 +196,15 @@ export function SplashScreen({ onDone }: { onDone: () => void }) {
       softC.width = D;
       softC.height = D;
       sctx.imageSmoothingEnabled = true;
-      sctx.imageSmoothingQuality = "high";
+      sctx.imageSmoothingQuality = "medium";
       sctx.clearRect(0, 0, D, D);
       sctx.drawImage(tmp, 0, 0, D, D);
     };
 
     const resize = () => {
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const rawDpr = window.devicePixelRatio || 1;
+      const narrow = Math.min(window.innerWidth, window.innerHeight) < 520;
+      dpr = Math.min(rawDpr, narrow ? 1.25 : 1.5);
       W = canvas.clientWidth || window.innerWidth;
       H = canvas.clientHeight || window.innerHeight;
       canvas.width = Math.round(W * dpr);
@@ -209,11 +217,13 @@ export function SplashScreen({ onDone }: { onDone: () => void }) {
       reflC.height = D;
       fxC.width = D;
       fxC.height = D;
-      CW = Math.ceil(W / 7);
-      CH = Math.ceil(H / 7);
+      const cell = quality > 0.55 ? 10 : 14;
+      CW = Math.ceil(W / cell);
+      CH = Math.ceil(H / cell);
       causC.width = CW;
       causC.height = CH;
       causImg = causCtx ? causCtx.createImageData(CW, CH) : null;
+      causDirty = true;
       buildLogo();
     };
 
@@ -248,10 +258,11 @@ export function SplashScreen({ onDone }: { onDone: () => void }) {
       freq: number,
       phase: number,
     ) => {
-      const sh = src.height / n;
-      const dh = size / n;
-      for (let i = 0; i < n; i += 1) {
-        const off = amp ? amp * Math.sin((i / n) * freq + phase) : 0;
+      const strips = Math.max(8, Math.round(n * (0.45 + 0.55 * quality)));
+      const sh = src.height / strips;
+      const dh = size / strips;
+      for (let i = 0; i < strips; i += 1) {
+        const off = amp ? amp * Math.sin((i / strips) * freq + phase) : 0;
         target.drawImage(src, 0, i * sh, src.width, sh + 0.6, x + off, y + i * dh, size, dh + 0.8);
       }
     };
@@ -441,8 +452,10 @@ export function SplashScreen({ onDone }: { onDone: () => void }) {
         ctx.fill();
         ctx.restore();
 
-        // glitter do sol
-        for (const g of GLITTER) {
+        // glitter do sol (amostra conforme qualidade)
+        const glitterN = Math.round(GLITTER.length * (0.45 + 0.55 * quality));
+        for (let gi = 0; gi < glitterN; gi += 1) {
+          const g = GLITTER[gi];
           const yy = sy + 4 + g.f * (H - sy) * 0.95;
           const spread = 14 + g.f * (H - sy) * 0.3;
           const flick = 0.35 + 0.65 * Math.max(0, Math.sin(t * g.sp + g.ph));
@@ -456,9 +469,10 @@ export function SplashScreen({ onDone }: { onDone: () => void }) {
 
       // raios de luz vindos da superfície
       const rayA = 0.2 * (1 - 0.6 * clarity);
-      if (rayA > 0.01) {
+      if (rayA > 0.01 && quality > 0.25) {
         ctx.globalCompositeOperation = "lighter";
-        for (let i = 0; i < 8; i += 1) {
+        const rayN = quality > 0.7 ? 8 : 5;
+        for (let i = 0; i < rayN; i += 1) {
           const baseX = (i / 7) * W * 1.25 - W * 0.12 + Math.sin(t * 0.6 + i * 1.7) * 18;
           const w0 = 12 + (i % 3) * 8;
           const slope = 0.32 + Math.sin(t * 0.4 + i) * 0.04;
@@ -480,35 +494,41 @@ export function SplashScreen({ onDone }: { onDone: () => void }) {
         ctx.globalCompositeOperation = "source-over";
       }
 
-      // cáusticas (campo de baixa resolução, ampliado)
-      if (causCtx && causImg) {
-        const data = causImg.data;
-        let p = 0;
-        const tt = t;
-        for (let cy = 0; cy < CH; cy += 1) {
-          const v = cy * 0.21;
-          for (let cx = 0; cx < CW; cx += 1) {
-            const u = cx * 0.21;
-            const a = Math.sin(u * 1.3 + Math.sin(v * 0.9 + tt * 1.1) * 1.7 + tt * 0.6);
-            const b = Math.sin(v * 1.1 + Math.sin(u * 0.8 - tt * 0.9) * 1.9 - tt * 0.5);
-            const c = Math.sin((u + v) * 0.9 + tt * 0.8);
-            let r = 1 - Math.abs((a + b + c) / 3 * 1.6);
-            if (r < 0) r = 0;
-            r = r * r * r * r;
-            const depth = clamp01(((cy * 7) - sy) / (H - sy + 1));
-            const alpha = clamp01(r * 1.25) * (1 - depth * 0.55) * 255;
-            data[p] = 190;
-            data[p + 1] = 245;
-            data[p + 2] = 255;
-            data[p + 3] = alpha;
-            p += 4;
+      // cáusticas (baixa resolução; regenera a cada 2–3 frames)
+      if (causCtx && causImg && quality > 0.2) {
+        causFrame += 1;
+        const every = quality > 0.7 ? 2 : 3;
+        if (causDirty || causFrame % every === 0) {
+          causDirty = false;
+          const data = causImg.data;
+          let p = 0;
+          const tt = t;
+          const cell = W / CW;
+          for (let cy = 0; cy < CH; cy += 1) {
+            const v = cy * 0.21;
+            for (let cx = 0; cx < CW; cx += 1) {
+              const u = cx * 0.21;
+              const a = Math.sin(u * 1.3 + Math.sin(v * 0.9 + tt * 1.1) * 1.7 + tt * 0.6);
+              const b = Math.sin(v * 1.1 + Math.sin(u * 0.8 - tt * 0.9) * 1.9 - tt * 0.5);
+              const c = Math.sin((u + v) * 0.9 + tt * 0.8);
+              let r = 1 - Math.abs(((a + b + c) / 3) * 1.6);
+              if (r < 0) r = 0;
+              r = r * r * r * r;
+              const depth = clamp01((cy * cell - sy) / (H - sy + 1));
+              const alpha = clamp01(r * 1.25) * (1 - depth * 0.55) * 255;
+              data[p] = 190;
+              data[p + 1] = 245;
+              data[p + 2] = 255;
+              data[p + 3] = alpha;
+              p += 4;
+            }
           }
+          causCtx.putImageData(causImg, 0, 0);
         }
-        causCtx.putImageData(causImg, 0, 0);
         ctx.globalCompositeOperation = "lighter";
         ctx.globalAlpha = 0.16 + 0.14 * (1 - clarity);
         ctx.imageSmoothingEnabled = true;
-        ctx.drawImage(causC, 0, 0, CW * 7, CH * 7);
+        ctx.drawImage(causC, 0, 0, W, H);
         ctx.globalAlpha = 1;
         ctx.globalCompositeOperation = "source-over";
       }
@@ -526,7 +546,9 @@ export function SplashScreen({ onDone }: { onDone: () => void }) {
 
       // bolhas
       const bubbleA = 0.6 * (1 - 0.55 * clarity) * (1 - smooth(0.2, 0.7, exitP));
-      for (const b of BUBBLES) {
+      const bubbleN = Math.round(BUBBLES.length * (0.55 + 0.45 * quality));
+      for (let bi = 0; bi < bubbleN; bi += 1) {
+        const b = BUBBLES[bi];
         const span = H + 40;
         const y = H + 20 - ((b.y0 * span + b.speed * t) % span);
         if (y < sy + 4) continue;
@@ -554,11 +576,11 @@ export function SplashScreen({ onDone }: { onDone: () => void }) {
       }
 
       // reflexo do logo (apenas parte acima da linha d'água)
-      if (hasLogo && reflCtx) {
+      if (hasLogo && reflCtx && quality > 0.35) {
         const reflA = smooth(0.1, 0.9, (sy - lcy) / (dd * 0.5)) * logoAlpha * 0.6;
         if (reflA > 0.01) {
           reflCtx.clearRect(0, 0, D, D);
-          drawStrips(reflCtx, logoC, 0, 0, D, 64, 7 * dpr, 34, t * 3.2);
+          drawStrips(reflCtx, logoC, 0, 0, D, 36, 7 * dpr, 34, t * 3.2);
           reflCtx.globalCompositeOperation = "destination-in";
           const fg = reflCtx.createLinearGradient(0, D, 0, D * 0.12);
           fg.addColorStop(0, "rgba(0,0,0,0.9)");
@@ -586,10 +608,15 @@ export function SplashScreen({ onDone }: { onDone: () => void }) {
         const amp = 9 * (1 - 0.55 * clarity) * dpr;
         underCtx.clearRect(0, 0, D, D);
         underCtx.globalCompositeOperation = "source-over";
-        underCtx.globalAlpha = 1 - blurK;
-        drawStrips(underCtx, logoC, 0, 0, D, 56, amp, 22, t * 4);
-        underCtx.globalAlpha = blurK;
-        drawStrips(underCtx, softC, 0, 0, D, 28, amp * 0.6, 22, t * 4);
+        if (quality > 0.45) {
+          underCtx.globalAlpha = 1 - blurK;
+          drawStrips(underCtx, logoC, 0, 0, D, 28, amp, 22, t * 4);
+          underCtx.globalAlpha = blurK;
+          drawStrips(underCtx, softC, 0, 0, D, 16, amp * 0.6, 22, t * 4);
+        } else {
+          underCtx.globalAlpha = 1;
+          underCtx.drawImage(blurK > 0.5 ? softC : logoC, 0, 0, D, D);
+        }
         underCtx.globalAlpha = 1;
         underCtx.globalCompositeOperation = "source-atop";
         underCtx.fillStyle = rgb(mix([4, 60, 92], [10, 130, 160], clarity), 0.5 - 0.25 * clarity);
@@ -726,24 +753,26 @@ export function SplashScreen({ onDone }: { onDone: () => void }) {
           }
         }
         const G = 980;
-        for (const p of SPRAY) {
+        const sprayN = Math.round(SPRAY.length * (0.5 + 0.5 * quality));
+        const surfNow = surfaceAt(t);
+        for (let si = 0; si < sprayN; si += 1) {
+          const p = SPRAY[si];
           const tau = t - p.spawn;
           if (tau < 0 || tau > p.life) continue;
           const y0 = surfaceAt(p.spawn);
-          const pos = (q: number) => ({
-            x: W / 2 + p.ox * d * 0.95 + p.vx * q,
-            y: y0 - p.vy * q + 0.5 * G * q * q,
-          });
-          const now = pos(tau);
-          if (now.y > surfaceAt(t) + 3) continue;
-          const prev = pos(Math.max(0, tau - 0.022));
+          const qx = W / 2 + p.ox * d * 0.95 + p.vx * tau;
+          const qy = y0 - p.vy * tau + 0.5 * G * tau * tau;
+          if (qy > surfNow + 3) continue;
+          const prevT = Math.max(0, tau - 0.022);
+          const px = W / 2 + p.ox * d * 0.95 + p.vx * prevT;
+          const py = y0 - p.vy * prevT + 0.5 * G * prevT * prevT;
           const a = (1 - tau / p.life) * 0.85;
           ctx.strokeStyle = p.gold ? `rgba(255,214,150,${a})` : `rgba(235,250,255,${a})`;
           ctx.lineWidth = p.size * 0.75;
           ctx.lineCap = "round";
           ctx.beginPath();
-          ctx.moveTo(prev.x, prev.y);
-          ctx.lineTo(now.x, now.y);
+          ctx.moveTo(px, py);
+          ctx.lineTo(qx, qy);
           ctx.stroke();
         }
         ctx.restore();
@@ -804,14 +833,15 @@ export function SplashScreen({ onDone }: { onDone: () => void }) {
         ctx.stroke();
         // bolhas de espuma na frente da onda
         ctx.fillStyle = "rgba(255,255,255,0.8)";
-        for (let i = 0; i < 46; i += 1) {
+        const foamN = quality > 0.5 ? 28 : 14;
+        for (let i = 0; i < foamN; i += 1) {
           const x = ((i * 97.3) % (W + 20)) - 10;
           const off = Math.sin(i * 12.9898 + t * 2) * 14 - 10;
           ctx.beginPath();
           ctx.arc(x, fy(x) + off, 1 + ((i * 7) % 3), 0, TAU);
           ctx.fill();
         }
-        // apaga tudo abaixo da onda (revela o mapa)
+        // apaga tudo abaixo da onda (revela a home)
         ctx.globalCompositeOperation = "destination-out";
         ctx.beginPath();
         ctx.moveTo(-2, fy(-2) + 4);
@@ -834,6 +864,12 @@ export function SplashScreen({ onDone }: { onDone: () => void }) {
     const loop = (now: number) => {
       if (disposed) return;
       if (!startedAt) startedAt = now;
+      if (lastNow) {
+        const dt = now - lastNow;
+        if (dt > 28) quality = Math.max(0.2, quality - 0.2);
+        else if (dt < 18) quality = Math.min(1, quality + 0.04);
+      }
+      lastNow = now;
       const t = (now - startedAt) / 1000;
       render(Math.min(t, T_END));
       if (t >= T_END) {
@@ -860,14 +896,20 @@ export function SplashScreen({ onDone }: { onDone: () => void }) {
     ctx.fillStyle = "#02121b";
     ctx.fillRect(0, 0, W, H);
 
-    logoImg.onload = start;
-    logoImg.onerror = start;
+    // começa a cena imediatamente; o logo entra quando carregar
+    start();
+    logoImg.onload = () => {
+      if (disposed) return;
+      buildLogo();
+    };
+    logoImg.onerror = () => undefined;
+    logoImg.decoding = "async";
     logoImg.src = "/logo.png";
-    if (logoImg.complete) start();
+    if (logoImg.complete) buildLogo();
 
     const failSafe = window.setTimeout(() => {
       if (!ready) start();
-    }, 2500);
+    }, 1800);
 
     const onResize = () => {
       resize();
@@ -884,8 +926,12 @@ export function SplashScreen({ onDone }: { onDone: () => void }) {
   }, [onDone]);
 
   return (
-    <div className="fixed inset-0 z-[200] touch-none select-none" role="presentation" aria-label="Abrindo Praia Alerta">
-      <canvas ref={canvasRef} className="block h-full w-full" />
+    <div
+      className="fixed inset-0 z-[200] touch-none select-none bg-[#02121b]"
+      role="presentation"
+      aria-label="Abrindo Praia Alerta"
+    >
+      <canvas ref={canvasRef} className="block h-full w-full" style={{ background: "#02121b" }} />
     </div>
   );
 }

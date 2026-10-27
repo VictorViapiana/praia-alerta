@@ -22,7 +22,7 @@ function notifyRamp() {
   }
 }
 
-export function useRampWatch(mapOpen: boolean) {
+export function useRampWatch(mapOpen: boolean, enabled = true) {
   const [alert, setAlert] = useState(false);
   const dismissed = useRef(false);
   const notified = useRef(false);
@@ -30,7 +30,8 @@ export function useRampWatch(mapOpen: boolean) {
   const insideSince = useRef<number | null>(null);
 
   useEffect(() => {
-    if (typeof navigator === "undefined" || !navigator.geolocation) return;
+    // não disputa GPS/CPU com a splash de entrada
+    if (!enabled || typeof navigator === "undefined" || !navigator.geolocation) return;
     const watch = navigator.geolocation.watchPosition(
       (position) => {
         if (position.coords.accuracy > 40) return;
@@ -50,10 +51,10 @@ export function useRampWatch(mapOpen: boolean) {
         if (!dismissed.current) setAlert(true);
       },
       () => {},
-      { enableHighAccuracy: true, maximumAge: 4000, timeout: 15000 },
+      { enableHighAccuracy: mapOpen, maximumAge: 8000, timeout: 20000 },
     );
     return () => navigator.geolocation.clearWatch(watch);
-  }, []);
+  }, [enabled, mapOpen]);
 
   useEffect(() => {
     if (mapOpen || !lingering.current || notified.current || dismissed.current) return;

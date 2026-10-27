@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { useEffect, useId, useRef, useState } from "react";
 
 type OrientationReading = DeviceOrientationEvent & { webkitCompassHeading?: number };
@@ -73,12 +72,14 @@ export function HeadingBeam({ heading }: { heading: number }) {
   const raw = useId().replace(/:/g, "");
   const wash = `beam-wash-${raw}`;
   const core = `beam-core-${raw}`;
-  const soften = `beam-soft-${raw}`;
   const smooth = useShortestHeading(heading);
 
   return (
     <div className="pointer-events-none absolute left-1/2 top-1/2 z-0 h-[240px] w-[240px]" style={{ marginLeft: -120, marginTop: -120 }}>
-      <motion.div className="h-full w-full" initial={false} animate={{ rotate: smooth }} transition={{ type: "spring", stiffness: 170, damping: 24 }}>
+      <div
+        className="h-full w-full will-change-transform"
+        style={{ transform: `rotate(${smooth}deg)`, transition: "transform 180ms linear" }}
+      >
         <svg viewBox="0 0 220 220" className="heading-beam h-full w-full overflow-visible" aria-hidden>
           <defs>
             <linearGradient id={wash} x1="110" y1="110" x2="110" y2="12" gradientUnits="userSpaceOnUse">
@@ -94,15 +95,12 @@ export function HeadingBeam({ heading }: { heading: number }) {
               <stop offset="70%" stopColor="#7af6ff" stopOpacity="0.16" />
               <stop offset="100%" stopColor="#7af6ff" stopOpacity="0" />
             </linearGradient>
-            <filter id={soften} x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="5" />
-            </filter>
           </defs>
-          <path d="M110 110 51 30Q110 8 169 30Z" fill={`url(#${wash})`} filter={`url(#${soften})`} />
+          <path d="M110 110 51 30Q110 8 169 30Z" fill={`url(#${wash})`} opacity="0.85" />
           <path d="M110 110 78 20Q110 10 142 20Z" fill={`url(#${core})`} />
           <path d="M110 110 104 22h12Z" fill="#ffffff" opacity="0.55" />
         </svg>
-      </motion.div>
+      </div>
     </div>
   );
 }
