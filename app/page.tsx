@@ -1793,7 +1793,7 @@ function Phone({
   const [childOpen, setChildOpen] = useState(false);
   const [story, setStory] = useState<StoryId | null>(null);
   const [sosKey, setSosKey] = useState(0);
-  const ramp = useRampWatch(mapOpen);
+  const ramp = useRampWatch(mapOpen, splashDone);
   const active = FEATURES.find((feature) => feature.id === activeId) ?? null;
   const sheet = active && active.id !== "crianca" ? active : null;
 
