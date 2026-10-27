@@ -322,11 +322,11 @@ body {
 
 .sx-splash.is-on .sx-sky,
 .sx-splash.is-on .sx-sea {
-  animation-timing-function: cubic-bezier(0.7, 0, 0.2, 1);
+  animation-timing-function: cubic-bezier(0.45, 0, 0.15, 1);
 }
 
 .sx-splash.is-on .sx-logo {
-  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sx-splash.is-freeze .sx-anim {
@@ -342,10 +342,10 @@ body {
 
 @keyframes sx-night {
   0%,
-  72% {
+  74% {
     opacity: 1;
   }
-  86%,
+  88%,
   100% {
     opacity: 0;
   }
@@ -374,7 +374,7 @@ body {
 
 @keyframes sx-split-up {
   0%,
-  74% {
+  76% {
     transform: translate3d(0, 0, 0);
   }
   100% {
@@ -384,7 +384,7 @@ body {
 
 @keyframes sx-split-down {
   0%,
-  74% {
+  76% {
     transform: translate3d(0, 0, 0);
   }
   100% {
@@ -415,7 +415,7 @@ body {
   z-index: 4;
   top: 50%;
   left: 50%;
-  width: min(58vw, 240px);
+  width: min(50vw, 210px);
   height: auto;
   animation-name: sx-logo;
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
@@ -425,20 +425,25 @@ body {
 @keyframes sx-logo {
   0% {
     opacity: 0;
-    transform: translate3d(-50%, 28vh, 0) scale(0.32);
+    transform: translate3d(-50%, 36vh, 0) scale(0.28);
   }
-  7% {
+  8% {
     opacity: 1;
-    transform: translate3d(-50%, 18vh, 0) scale(0.42);
+    transform: translate3d(-50%, 28vh, 0) scale(0.36);
   }
-  32%,
-  74% {
+  24% {
+    opacity: 1;
+    transform: translate3d(-50%, 6vh, 0) scale(0.62);
+  }
+  42%,
+  68% {
     opacity: 1;
     transform: translate3d(-50%, -100%, 0) scale(1);
   }
+  86%,
   100% {
     opacity: 0;
-    transform: translate3d(-50%, -130%, 0) scale(1.38);
+    transform: translate3d(-50%, -112%, 0) scale(1.06);
   }
 }
 
@@ -447,7 +452,7 @@ body {
   z-index: 2;
   top: 0;
   left: 50%;
-  width: min(58vw, 240px);
+  width: min(50vw, 210px);
   height: auto;
   transform: translate3d(-50%, 0, 0) scaleY(-1);
   animation-name: sx-reflect;
@@ -458,12 +463,12 @@ body {
 
 @keyframes sx-reflect {
   0%,
-  28% {
+  34% {
     opacity: 0;
   }
-  40%,
+  46%,
   72% {
-    opacity: 0.42;
+    opacity: 0.4;
   }
   88%,
   100% {
@@ -471,49 +476,13 @@ body {
   }
 }
 
-.sx-flare {
-  position: absolute;
-  z-index: 3;
-  top: calc(50% - 48px);
-  left: -4%;
-  width: 108%;
-  height: 96px;
-  background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    rgba(255, 214, 150, 0.18) 38%,
-    rgba(255, 252, 240, 0.96) 50%,
-    rgba(255, 214, 150, 0.18) 62%,
-    transparent 100%
-  );
-  animation-name: sx-flare;
-  pointer-events: none;
-}
-
-@keyframes sx-flare {
-  0%,
-  68% {
-    opacity: 0;
-    transform: scale3d(0.35, 0.25, 1);
-  }
-  76% {
-    opacity: 1;
-    transform: scale3d(1, 1, 1);
-  }
-  90%,
-  100% {
-    opacity: 0;
-    transform: scale3d(1.04, 2.2, 1);
-  }
-}
-
 .sx-ring {
   position: absolute;
   z-index: 3;
-  top: calc(50% - min(29vw, 120px));
+  top: calc(50% - min(25vw, 105px));
   left: 50%;
-  width: min(58vw, 240px);
-  height: min(58vw, 240px);
+  width: min(50vw, 210px);
+  height: min(50vw, 210px);
   border-radius: 999px;
   border: 1.5px solid rgba(255, 250, 236, 0.9);
   animation-name: sx-ring;
@@ -527,15 +496,15 @@ body {
 
 @keyframes sx-ring {
   0%,
-  33% {
+  42% {
     opacity: 0;
     transform: translate3d(-50%, -50%, 0) scale(0.72);
   }
-  39% {
+  48% {
     opacity: 0.9;
     transform: translate3d(-50%, -50%, 0) scale(0.88);
   }
-  58%,
+  64%,
   100% {
     opacity: 0;
     transform: translate3d(-50%, -50%, 0) scale(1.9);
@@ -544,15 +513,15 @@ body {
 
 @keyframes sx-ring-b {
   0%,
-  41% {
+  50% {
     opacity: 0;
     transform: translate3d(-50%, -50%, 0) scale(0.7);
   }
-  47% {
+  56% {
     opacity: 0.6;
     transform: translate3d(-50%, -50%, 0) scale(0.92);
   }
-  68%,
+  74%,
   100% {
     opacity: 0;
     transform: translate3d(-50%, -50%, 0) scale(2.15);
@@ -609,11 +578,11 @@ body {
 
 @keyframes sx-caption {
   0%,
-  42% {
+  48% {
     opacity: 0;
     transform: translate3d(0, 12px, 0);
   }
-  54%,
+  58%,
   72% {
     opacity: 1;
     transform: translate3d(0, 0, 0);

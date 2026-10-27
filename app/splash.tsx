@@ -93,7 +93,6 @@ export function SplashScreen({ onWarm, onDone }: { onWarm?: () => void; onDone: 
         <img className="sx-reflect sx-anim" src="/logo-splash.png" alt="" draggable={false} decoding="async" />
       </div>
 
-      <div className="sx-flare sx-anim" />
       <span className="sx-ring sx-anim" aria-hidden />
       <span className="sx-ring sx-ring-b sx-anim" aria-hidden />
 
