@@ -44,6 +44,7 @@ import { useRampWatch } from "./rampa-sentinel";
 import { RAMPA_RULE, RAMPA_WARN } from "./rampas";
 import { speakGuara, stopSpeaking } from "./voice";
 import { NavDrive } from "./nav-drive";
+import { MissionModal, MissionTrigger } from "./mission-modal";
 import { SplashScreen } from "./splash";
 import { CALL_OUT, followRoute, formatDistance, formatWalk, metersBetween, modeLabel, nextManeuvers, OFF_ROUTE, planRoute, routeIntro, routeSurface, type TravelMode, type WalkPoint, type WalkRoute } from "./walk-route";
 
@@ -1806,6 +1807,7 @@ function Phone({
   const [childOpen, setChildOpen] = useState(false);
   const [story, setStory] = useState<StoryId | null>(null);
   const [sosKey, setSosKey] = useState(0);
+  const [missionOpen, setMissionOpen] = useState(false);
   const ramp = useRampWatch(mapOpen, !splashActive);
   const active = FEATURES.find((feature) => feature.id === activeId) ?? null;
   const sheet = active && active.id !== "crianca" ? active : null;
@@ -1833,6 +1835,10 @@ function Phone({
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
+      if (missionOpen) {
+        setMissionOpen(false);
+        return;
+      }
       setActiveId(null);
       setMapOpen(false);
       setChildOpen(false);
@@ -1844,7 +1850,7 @@ function Phone({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onCloseSos, sos]);
+  }, [missionOpen, onCloseSos, sos]);
 
   return (
     <div className="relative h-dvh w-full max-w-[480px] sm:h-[850px] sm:w-[400px] sm:max-w-none">
@@ -1857,9 +1863,12 @@ function Phone({
         <OceanWash urgent={sos} paused={splashActive} />
         <LayoutGroup id="alegretto-phone">
           <div className="relative z-10 flex h-full flex-col">
-            <div className="flex items-center justify-between px-7 pt-1.5 text-white">
-              <span className="w-12 text-[13px] font-semibold tabular-nums">{time}</span>
-              <span className="flex items-center gap-1.5 text-white/90">
+            <div className="relative z-20 flex items-center justify-between gap-2 px-3 pt-1.5 text-white sm:px-5">
+              <span className="w-11 shrink-0 text-[13px] font-semibold tabular-nums">{time}</span>
+              {!mapOpen && !sheet && !childOpen && !story && !sos && (
+                <MissionTrigger onOpen={() => setMissionOpen(true)} />
+              )}
+              <span className="flex shrink-0 items-center justify-end gap-1.5 text-white/90">
                 <Signal className="h-3.5 w-3.5" />
                 <Wifi className="h-3.5 w-3.5" />
                 <BatteryFull className="h-4 w-4" />
@@ -1920,7 +1929,7 @@ function Phone({
 
         <SosSlider key={sosKey} onTrigger={onSos} />
 
-        {!sheet && !mapOpen && !childOpen && !story && !sos && (
+        {!sheet && !mapOpen && !childOpen && !story && !sos && !missionOpen && (
           <div className="pointer-events-none absolute bottom-1.5 left-1/2 z-30 h-1 w-28 -translate-x-1/2 rounded-full bg-white/45" />
         )}
 
@@ -1938,6 +1947,8 @@ function Phone({
             />
           )}
         </AnimatePresence>
+
+        <MissionModal open={missionOpen} onClose={() => setMissionOpen(false)} />
 
         <p className="sr-only" aria-live="assertive">
           {sos ? "Alerta crítico acionado na Praia do Morro." : ""}
