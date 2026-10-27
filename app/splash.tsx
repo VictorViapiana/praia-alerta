@@ -134,13 +134,13 @@ const WATER_MID_CLEAR: RGB = [8, 96, 138];
 const WATER_BOTTOM_DEEP: RGB = [1, 10, 20];
 const WATER_BOTTOM_CLEAR: RGB = [3, 28, 52];
 
-export function SplashScreen({ onDone }: { onDone: () => void }) {
+export function SplashScreen({ onWarm, onDone }: { onWarm?: () => void; onDone: () => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return undefined;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { alpha: false, desynchronized: true }) ?? canvas.getContext("2d");
     if (!ctx) return undefined;
 
     const freezeParam = new URLSearchParams(window.location.search).get("splash");
@@ -175,6 +175,10 @@ export function SplashScreen({ onDone }: { onDone: () => void }) {
     let lastNow = 0;
     let causFrame = 0;
     let causDirty = true;
+    let warmed = false;
+    const narrow = Math.min(window.innerWidth, window.innerHeight) < 520;
+    // no celular prioriza fluidez; cáusticas pixel-a-pixel são o maior tilt
+    let allowCaustics = !narrow;
 
     const buildLogo = () => {
       const lctx = logoC.getContext("2d");
@@ -182,7 +186,7 @@ export function SplashScreen({ onDone }: { onDone: () => void }) {
       if (!lctx || !sctx || !logoImg.complete || !logoImg.naturalWidth) return;
       logoC.width = D;
       logoC.height = D;
-      lctx.imageSmoothingQuality = "high";
+      lctx.imageSmoothingQuality = narrow ? "medium" : "high";
       lctx.clearRect(0, 0, D, D);
       lctx.drawImage(logoImg, 0, 0, D, D);
 
@@ -196,15 +200,14 @@ export function SplashScreen({ onDone }: { onDone: () => void }) {
       softC.width = D;
       softC.height = D;
       sctx.imageSmoothingEnabled = true;
-      sctx.imageSmoothingQuality = "medium";
+      sctx.imageSmoothingQuality = "low";
       sctx.clearRect(0, 0, D, D);
       sctx.drawImage(tmp, 0, 0, D, D);
     };
 
     const resize = () => {
       const rawDpr = window.devicePixelRatio || 1;
-      const narrow = Math.min(window.innerWidth, window.innerHeight) < 520;
-      dpr = Math.min(rawDpr, narrow ? 1.25 : 1.5);
+      dpr = Math.min(rawDpr, narrow ? 1 : 1.35);
       W = canvas.clientWidth || window.innerWidth;
       H = canvas.clientHeight || window.innerHeight;
       canvas.width = Math.round(W * dpr);
@@ -217,7 +220,7 @@ export function SplashScreen({ onDone }: { onDone: () => void }) {
       reflC.height = D;
       fxC.width = D;
       fxC.height = D;
-      const cell = quality > 0.55 ? 10 : 14;
+      const cell = quality > 0.55 ? 12 : 16;
       CW = Math.ceil(W / cell);
       CH = Math.ceil(H / cell);
       causC.width = CW;
@@ -231,10 +234,13 @@ export function SplashScreen({ onDone }: { onDone: () => void }) {
     const waveY = (x: number, t: number, sy: number, k: number) =>
       sy + k * (5.5 * Math.sin(x * 0.021 + t * 2.3) + 3.2 * Math.sin(x * 0.0085 - t * 1.4) + 1.6 * Math.sin(x * 0.05 + t * 3.7));
 
+    const waveStep = () => (quality > 0.6 ? (narrow ? 10 : 8) : 14);
+
     const tracePath = (mode: "water" | "sky", t: number, sy: number, k: number) => {
+      const step = waveStep();
       ctx.beginPath();
       ctx.moveTo(-2, waveY(-2, t, sy, k));
-      for (let x = 0; x <= W + 8; x += 8) ctx.lineTo(x, waveY(x, t, sy, k));
+      for (let x = 0; x <= W + 8; x += step) ctx.lineTo(x, waveY(x, t, sy, k));
       if (mode === "water") {
         ctx.lineTo(W + 2, H + 2);
         ctx.lineTo(-2, H + 2);
@@ -494,10 +500,10 @@ export function SplashScreen({ onDone }: { onDone: () => void }) {
         ctx.globalCompositeOperation = "source-over";
       }
 
-      // cáusticas (baixa resolução; regenera a cada 2–3 frames)
-      if (causCtx && causImg && quality > 0.2) {
+      // cáusticas (desliga no celular / qualidade baixa)
+      if (allowCaustics && causCtx && causImg && quality > 0.45) {
         causFrame += 1;
-        const every = quality > 0.7 ? 2 : 3;
+        const every = quality > 0.75 ? 3 : 4;
         if (causDirty || causFrame % every === 0) {
           causDirty = false;
           const data = causImg.data;
@@ -861,16 +867,32 @@ export function SplashScreen({ onDone }: { onDone: () => void }) {
       onDone();
     };
 
+    const warmUp = () => {
+      if (warmed) return;
+      warmed = true;
+      // pré-decodifica o Guará enquanto a splash ainda cobre a tela
+      for (const src of ["/guara-inteiro.png?v=1", "/guara.png?v=3"]) {
+        const img = new Image();
+        img.decoding = "async";
+        img.src = src;
+        void img.decode?.().catch(() => undefined);
+      }
+      onWarm?.();
+    };
+
     const loop = (now: number) => {
       if (disposed) return;
       if (!startedAt) startedAt = now;
       if (lastNow) {
         const dt = now - lastNow;
-        if (dt > 28) quality = Math.max(0.2, quality - 0.2);
-        else if (dt < 18) quality = Math.min(1, quality + 0.04);
+        if (dt > 26) {
+          quality = Math.max(0.15, quality - 0.25);
+          if (narrow) allowCaustics = false;
+        } else if (dt < 17) quality = Math.min(1, quality + 0.03);
       }
       lastNow = now;
       const t = (now - startedAt) / 1000;
+      if (t >= 3.35) warmUp();
       render(Math.min(t, T_END));
       if (t >= T_END) {
         finish();
@@ -900,7 +922,10 @@ export function SplashScreen({ onDone }: { onDone: () => void }) {
     start();
     logoImg.onload = () => {
       if (disposed) return;
-      buildLogo();
+      // evita hitch no meio do frame da splash
+      requestAnimationFrame(() => {
+        if (!disposed) buildLogo();
+      });
     };
     logoImg.onerror = () => undefined;
     logoImg.decoding = "async";
@@ -923,7 +948,7 @@ export function SplashScreen({ onDone }: { onDone: () => void }) {
       window.clearTimeout(failSafe);
       window.removeEventListener("resize", onResize);
     };
-  }, [onDone]);
+  }, [onDone, onWarm]);
 
   return (
     <div

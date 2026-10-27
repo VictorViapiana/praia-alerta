@@ -98,7 +98,8 @@ function readSeen(key: string) {
 }
 
 function Spotlight({ hole }: { hole: Hole | null }) {
-  if (!hole) return <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />;
+  // sem backdrop-blur: no celular ele trava a entrada do Guará
+  if (!hole) return <div className="absolute inset-0 bg-black/72" />;
 
   const { x, y, width, height, radius } = hole;
   const radiusPx = Math.min(Number.parseFloat(radius) || 0, width / 2, height / 2);
@@ -166,10 +167,10 @@ function CoachBubble({
     <AnimatePresence mode="wait">
       <motion.div
         key={step}
-        initial={{ opacity: 0, y: 12, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: -8 }}
-        transition={{ duration: 0.22 }}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.18, ease: "easeOut" }}
         className={`relative min-w-0 rounded-[24px] bg-white px-3.5 py-3 text-[#1c120c] shadow-[0_16px_40px_rgba(0,0,0,0.35)] ${tail === "down" ? "mb-3 w-full" : "mb-2 flex-1"}`}
       >
         <span
@@ -217,13 +218,17 @@ export function GuaraOnboarding({
   steps,
   storageKey,
   replay = 0,
+  reveal = true,
 }: {
   rootRef: RefObject<HTMLDivElement | null>;
   steps: TourStep[];
   storageKey: string;
   replay?: number;
+  /** quando false, só pré-aquece; a UI do tour espera a splash sumir */
+  reveal?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [pending, setPending] = useState(false);
   const [step, setStep] = useState(0);
   const [hole, setHole] = useState<Hole | null>(null);
   const [narrating, setNarrating] = useState(false);
@@ -232,14 +237,28 @@ export function GuaraOnboarding({
   const last = index === steps.length - 1;
 
   useEffect(() => {
-    if (!readSeen(storageKey)) setOpen(true);
+    if (readSeen(storageKey)) return;
+    setPending(true);
   }, [storageKey]);
 
   useEffect(() => {
     if (replay < 1) return;
     setStep(0);
-    setOpen(true);
+    setPending(true);
   }, [replay]);
+
+  useEffect(() => {
+    if (!pending || !reveal || open) return undefined;
+    // um frame depois da splash sair: evita tilt na transição
+    let inner = 0;
+    const outer = window.requestAnimationFrame(() => {
+      inner = window.requestAnimationFrame(() => setOpen(true));
+    });
+    return () => {
+      cancelAnimationFrame(outer);
+      cancelAnimationFrame(inner);
+    };
+  }, [pending, reveal, open]);
 
   const measure = useCallback(() => {
     const root = rootRef.current;
@@ -278,7 +297,7 @@ export function GuaraOnboarding({
       });
     }
     measure();
-    const timer = window.setTimeout(measure, 360);
+    const timer = window.setTimeout(measure, 280);
     window.addEventListener("resize", measure);
     return () => {
       window.clearTimeout(timer);
@@ -319,12 +338,12 @@ export function GuaraOnboarding({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.28 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
           onClick={next}
         >
           <Spotlight hole={hole} />
           {!current.target ? (
-            <div className="@container pointer-events-none absolute inset-0 z-[90] flex items-center justify-center px-6">
+            <div className="pointer-events-none absolute inset-0 z-[90] flex items-center justify-center px-6">
               <div className="pointer-events-auto flex max-h-full w-full max-w-[19.5rem] flex-col items-center">
                 <CoachBubble
                   step={step}
@@ -344,25 +363,22 @@ export function GuaraOnboarding({
                   }}
                   onNext={next}
                 />
-                <motion.img
+                <img
                   src="/guara-inteiro.png?v=1"
                   alt="Guará"
-                  className="h-auto max-h-[min(19rem,50cqh)] w-auto max-w-full object-contain object-bottom drop-shadow-[0_16px_28px_rgba(0,0,0,0.45)]"
-                  initial={{ opacity: 0, y: 18 }}
-                  animate={{ opacity: 1, y: [0, -6, 0] }}
-                  transition={{ opacity: { duration: 0.25 }, y: { duration: 3.2, repeat: Infinity, ease: "easeInOut" } }}
+                  decoding="async"
+                  fetchPriority="high"
+                  className="guara-float-lg h-auto max-h-[min(19rem,50cqh)] w-auto max-w-full object-contain object-bottom drop-shadow-[0_16px_28px_rgba(0,0,0,0.45)]"
                 />
               </div>
             </div>
           ) : (
             <div className="pointer-events-none absolute z-[90] flex items-end gap-2" style={coachPlace(hole)}>
-              <motion.img
+              <img
                 src="/guara.png?v=3"
                 alt="Guará"
-                className="pointer-events-none h-12 w-auto shrink-0 object-contain drop-shadow-[0_8px_14px_rgba(0,0,0,0.4)]"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: [0, -4, 0] }}
-                transition={{ opacity: { duration: 0.25 }, y: { duration: 2.8, repeat: Infinity, ease: "easeInOut" } }}
+                decoding="async"
+                className="guara-float pointer-events-none h-12 w-auto shrink-0 object-contain drop-shadow-[0_8px_14px_rgba(0,0,0,0.4)]"
               />
               <div className="pointer-events-auto min-w-0 flex-1">
                 <CoachBubble

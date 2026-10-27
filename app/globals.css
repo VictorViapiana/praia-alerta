@@ -109,6 +109,39 @@ body {
   will-change: transform, opacity;
 }
 
+@keyframes guara-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.guara-float {
+  animation: guara-float 3.2s ease-in-out infinite;
+  will-change: transform;
+}
+
+.guara-float-lg {
+  animation: guara-float 3.4s ease-in-out infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guara-float,
+  .guara-float-lg,
+  .pin-pulse {
+    animation: none;
+  }
+}
+
+.content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 640px;
+}
+
 .orla-map.leaflet-container .leaflet-tile {
   /* evita repaints caros durante o gesto */
   image-rendering: auto;
