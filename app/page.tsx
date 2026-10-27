@@ -222,6 +222,8 @@ function OceanWash({ urgent = false, paused = false }: { urgent?: boolean; pause
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(125%_85%_at_50%_115%,#0f5968_0%,#0a3142_38%,#07131d_100%)]" />
+      {paused ? null : (
+      <>
       <motion.div
         className="absolute -right-10 -top-8 h-64 w-64 rounded-full blur-3xl"
         animate={
@@ -272,6 +274,8 @@ function OceanWash({ urgent = false, paused = false }: { urgent?: boolean; pause
       </motion.svg>
       <div className="absolute inset-0 shadow-[inset_0_0_90px_rgba(0,0,0,0.38)]" />
       <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-white/10 to-transparent" />
+      </>
+      )}
     </div>
   );
 }
@@ -280,6 +284,8 @@ function Stage({ urgent, paused = false }: { urgent: boolean; paused?: boolean }
   return (
     <div className="pointer-events-none fixed inset-0">
       <div className="absolute inset-0 bg-[radial-gradient(90%_70%_at_50%_20%,#16384a_0%,#07141e_46%,#03080d_100%)]" />
+      {paused ? null : (
+      <>
       <motion.div
         className="absolute right-[8%] top-[14%] h-48 w-48 rounded-full blur-2xl"
         animate={
@@ -306,7 +312,9 @@ function Stage({ urgent, paused = false }: { urgent: boolean; paused?: boolean }
         animate={paused ? undefined : { y: [0, 30, 0] }}
         transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
       />
-      {!paused && <div className="grain absolute inset-0 opacity-[0.18] mix-blend-overlay" />}
+      <div className="grain absolute inset-0 opacity-[0.18] mix-blend-overlay" />
+      </>
+      )}
     </div>
   );
 }
@@ -1845,7 +1853,7 @@ function Phone({
       <span className="absolute -left-[3px] top-56 hidden h-14 w-[3px] rounded-l-sm bg-gray-800 sm:block" />
       <span className="absolute -right-[3px] top-44 hidden h-20 w-[3px] rounded-r-sm bg-gray-800 sm:block" />
 
-      <div ref={shellRef} className="relative h-full w-full overflow-hidden bg-gray-900 sm:rounded-[3rem] sm:border-8 sm:border-gray-900 sm:shadow-2xl">
+      <div ref={shellRef} className={`relative h-full w-full overflow-hidden bg-gray-900 sm:rounded-[3rem] sm:border-8 sm:border-gray-900 sm:shadow-2xl ${splashActive ? "pa-hold" : ""}`}>
         <OceanWash urgent={sos} paused={splashActive} />
         <LayoutGroup id="alegretto-phone">
           <div className="relative z-10 flex h-full flex-col">
@@ -1934,13 +1942,13 @@ function Phone({
         <p className="sr-only" aria-live="assertive">
           {sos ? "Alerta crítico acionado na Praia do Morro." : ""}
         </p>
-        {!mapOpen && splashDone && (
+        {!mapOpen && (
           <GuaraOnboarding
             rootRef={shellRef}
             steps={HOME_STEPS}
             storageKey={HOME_TOUR_KEY}
             replay={tourReplay}
-            reveal={!splashActive}
+            reveal={splashDone || !splashActive}
           />
         )}
       </div>

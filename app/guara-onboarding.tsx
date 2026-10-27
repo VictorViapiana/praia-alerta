@@ -4,9 +4,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useLayoutEffect, useState, type RefObject } from "react";
 import { speakGuara, stopSpeaking } from "./voice";
 
-// v2: o startOnMap antigo gravava essas chaves sem o usuário ver o tour
-export const HOME_TOUR_KEY = "hasSeenGuaraTutorial_v2";
-export const MAP_TOUR_KEY = "hasSeenGuaraMapTutorial_v2";
+// v3: versões anteriores marcavam o passeio como visto ou não abriam na home
+export const HOME_TOUR_KEY = "hasSeenGuaraTutorial_v3";
+export const MAP_TOUR_KEY = "hasSeenGuaraMapTutorial_v3";
 
 export type TourStep = {
   text: string;
@@ -35,7 +35,7 @@ export const HOME_STEPS: TourStep[] = [
     coach: "bottom-[8.5rem] items-end",
   },
   {
-    text: "Tudo certo! Pode contar comigo. Clique em concluir e aproveite a praia com segurança!",
+    text: "Tudo certo! Pode contar comigo. Toque em qualquer lugar da tela para começar.",
     target: null,
     guara: "small",
     coach: "bottom-6 items-end",
@@ -152,7 +152,6 @@ function CoachBubble({
   count,
   tail,
   onToggle,
-  onNext,
 }: {
   step: number;
   text: string;
@@ -161,7 +160,6 @@ function CoachBubble({
   count: number;
   tail: "center" | "bottom" | "down";
   onToggle: () => void;
-  onNext: () => void;
 }) {
   return (
     <AnimatePresence mode="wait">
@@ -183,11 +181,12 @@ function CoachBubble({
           <span className="flex items-center gap-2">
             <button
               type="button"
+              data-tour-speak
               onClick={(event) => {
                 event.stopPropagation();
                 onToggle();
               }}
-              className="text-[11px] font-semibold text-[#e11d48]"
+              className="pointer-events-auto relative z-10 px-1 py-1 text-[11px] font-semibold text-[#e11d48]"
             >
               {narrating ? "Pausar" : "Ouvir"}
             </button>
@@ -197,16 +196,9 @@ function CoachBubble({
               ))}
             </span>
           </span>
-          <button
-            type="button"
-            onClick={(event) => {
-              event.stopPropagation();
-              onNext();
-            }}
-            className="shrink-0 whitespace-nowrap rounded-full bg-[#e11d48] px-3.5 py-1.5 text-[12px] font-semibold text-white"
-          >
+          <span className="pointer-events-none shrink-0 whitespace-nowrap rounded-full bg-[#e11d48] px-3.5 py-1.5 text-[12px] font-semibold text-white">
             {last ? "Começar a usar" : "Próximo >>"}
-          </button>
+          </span>
         </div>
       </motion.div>
     </AnimatePresence>
@@ -228,7 +220,6 @@ export function GuaraOnboarding({
   reveal?: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const [pending, setPending] = useState(false);
   const [step, setStep] = useState(0);
   const [hole, setHole] = useState<Hole | null>(null);
   const [narrating, setNarrating] = useState(false);
@@ -236,29 +227,17 @@ export function GuaraOnboarding({
   const current = steps[index];
   const last = index === steps.length - 1;
 
-  useEffect(() => {
-    if (readSeen(storageKey)) return;
-    setPending(true);
-  }, [storageKey]);
+  useLayoutEffect(() => {
+    if (!reveal) return;
+    if (replay < 1 && readSeen(storageKey)) return;
+    setOpen(true);
+  }, [reveal, storageKey, replay]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (replay < 1) return;
     setStep(0);
-    setPending(true);
+    setOpen(true);
   }, [replay]);
-
-  useEffect(() => {
-    if (!pending || !reveal || open) return undefined;
-    // um frame depois da splash sair: evita tilt na transição
-    let inner = 0;
-    const outer = window.requestAnimationFrame(() => {
-      inner = window.requestAnimationFrame(() => setOpen(true));
-    });
-    return () => {
-      cancelAnimationFrame(outer);
-      cancelAnimationFrame(inner);
-    };
-  }, [pending, reveal, open]);
 
   const measure = useCallback(() => {
     const root = rootRef.current;
@@ -339,12 +318,16 @@ export function GuaraOnboarding({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
-          onClick={next}
+          onClick={(event) => {
+            const target = event.target as HTMLElement | null;
+            if (target?.closest("[data-tour-speak]")) return;
+            next();
+          }}
         >
           <Spotlight hole={hole} />
           {!current.target ? (
             <div className="pointer-events-none absolute inset-0 z-[90] flex items-center justify-center px-6">
-              <div className="pointer-events-auto flex max-h-full w-full max-w-[19.5rem] flex-col items-center">
+              <div className="pointer-events-none flex max-h-full w-full max-w-[19.5rem] flex-col items-center">
                 <CoachBubble
                   step={step}
                   text={current.text}
@@ -361,7 +344,6 @@ export function GuaraOnboarding({
                     setNarrating(true);
                     speakGuara(current.text, () => setNarrating(false));
                   }}
-                  onNext={next}
                 />
                 <img
                   src="/guara-inteiro.png?v=1"
@@ -380,7 +362,7 @@ export function GuaraOnboarding({
                 decoding="async"
                 className="guara-float pointer-events-none h-12 w-auto shrink-0 object-contain drop-shadow-[0_8px_14px_rgba(0,0,0,0.4)]"
               />
-              <div className="pointer-events-auto min-w-0 flex-1">
+              <div className="pointer-events-none min-w-0 flex-1">
                 <CoachBubble
                   step={step}
                   text={current.text}
@@ -397,7 +379,6 @@ export function GuaraOnboarding({
                     setNarrating(true);
                     speakGuara(current.text, () => setNarrating(false));
                   }}
-                  onNext={next}
                 />
               </div>
             </div>
