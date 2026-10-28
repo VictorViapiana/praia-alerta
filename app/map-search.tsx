@@ -4,7 +4,17 @@ import { AnimatePresence, motion } from "framer-motion";
 import { MapPin, Search, Star, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { fold } from "./coast";
-import { AMBULANTES, CARRINHO_SRC, ESCUNA_POINT, PLACES, SHOWERS, escunasPatrocinadoras, type Place } from "./places";
+import {
+  AMBULANTES,
+  CARRINHO_SRC,
+  ESCUNA_POINT,
+  MARLIN,
+  ORLA_LANDMARKS,
+  PLACES,
+  SHOWERS,
+  escunasPatrocinadoras,
+  type Place,
+} from "./places";
 import { RAMPA_NOTE, RAMPA_PRINCIPAL } from "./rampas";
 import type { PinKind } from "./page-types";
 
@@ -184,6 +194,43 @@ function resultsFor(
         ]
       : [];
 
+  const marlinBlob = fold(`${MARLIN.name} ${MARLIN.detail} peixe estatua simbolo orla`);
+  const marlinHits: Hit[] =
+    filter === "neutro" && (!query || marlinBlob.includes(query))
+      ? [
+          {
+            key: MARLIN.id,
+            name: MARLIN.name,
+            hours: "Marco da orla",
+            detail: MARLIN.detail,
+            sponsor: false,
+            cover: "/guarapari/marlin-por-do-sol.jpg",
+            tag: "Patrimônio",
+            lat: MARLIN.lat,
+            lng: MARLIN.lng,
+            placeId: MARLIN.id,
+          },
+        ]
+      : [];
+
+  const landmarkHits: Hit[] =
+    filter === "neutro"
+      ? ORLA_LANDMARKS.filter((item) => !query || fold(`${item.name} ${item.detail} ${item.search}`).includes(query)).map(
+          (item) => ({
+            key: item.id,
+            name: item.name,
+            hours: item.tone === "pier" ? "Costão · pesca" : "Parque natural",
+            detail: item.detail,
+            sponsor: false,
+            cover: item.cover,
+            tag: item.tone === "pier" ? "Pier" : "Parque",
+            lat: item.lat,
+            lng: item.lng,
+            placeId: item.id,
+          }),
+        )
+      : [];
+
   const hits = (
     query
       ? [
@@ -194,9 +241,11 @@ function resultsFor(
           ...showers.filter((hit) => fold(hit.name).includes(query) || kindHit("duchas", query)),
           ...vendors.filter((hit) => fold(`${hit.name} ${hit.tag ?? ""}`).includes(query) || kindHit("ambulantes", query)),
           ...escunas,
+          ...marlinHits,
+          ...landmarkHits,
           ...ramps,
         ]
-      : [...places, ...showers, ...vendors, ...escunas]
+      : [...places, ...showers, ...vendors, ...escunas, ...marlinHits, ...landmarkHits]
   ).sort((a, b) => Number(b.sponsor) - Number(a.sponsor) || Number(Boolean(a.vendor)) - Number(Boolean(b.vendor)) || spotOrder(a.name) - spotOrder(b.name) || a.name.localeCompare(b.name, "pt"));
 
   return { hits };

@@ -432,6 +432,85 @@ export const MARLIN_TIPS = [
 export const MARLIN_SPEAK =
   "O Marlin Azul é patrimônio da Praia do Morro. Atenção: a pedra escorrega, então ande com cuidado. Não deixe lixo. E não risque, não suba e não danifique o monumento. Foto, sim. Dano, não.";
 
+export type OrlaLandmark = {
+  id: string;
+  name: string;
+  short: string;
+  detail: string;
+  lat: number;
+  lng: number;
+  tone: "pier" | "park";
+  cover: string;
+  tips: readonly { title: string; text: string }[];
+  speak: string;
+  search: string;
+};
+
+/** Pier / ponto de pesca no costão do Morro da Pescaria (coords Google Maps). */
+export const PIER_PESCARIA: OrlaLandmark = {
+  id: "pier-pescaria",
+  name: "Pier · Morro da Pescaria",
+  short: "Pier",
+  detail: "Ponto de pesca no costão",
+  lat: -20.656173,
+  lng: -40.47415,
+  tone: "pier",
+  cover: "/guarapari/praia-enseada.jpg",
+  tips: [
+    {
+      title: "Pedra molhada",
+      text: "O píer e as pedras escorregam com a maresia. Ande devagar e firme o passo.",
+    },
+    {
+      title: "Olho na onda",
+      text: "O mar bate no costão. Não vire as costas para a água e não se encoste na beira.",
+    },
+    {
+      title: "Leve o que trouxe",
+      text: "Linha, isca e lixo voltam com você. O ponto de pesca é da orla — deixe limpo.",
+    },
+  ],
+  speak:
+    "O píer do Morro da Pescaria é o ponto de pesca no costão, no fim da praia. A pedra escorrega, olhe a onda e não deixe lixo. Foto e pesca com cuidado.",
+  search: "pier píer ponto de pesca morro da pescaria costão pesca anzol",
+};
+
+/** Parque Natural Municipal Morro da Pescaria (coords Google Maps). */
+export const PARQUE_PESCARIA: OrlaLandmark = {
+  id: "parque-pescaria",
+  name: "Parque Morro da Pescaria",
+  short: "Parque",
+  detail: "Parque Natural Municipal",
+  lat: -20.657067,
+  lng: -40.471832,
+  tone: "park",
+  cover: "/guarapari/praia-vista.jpg",
+  tips: [
+    {
+      title: "Trilha e mata",
+      text: "É parque natural: fique nas trilhas, não corte planta e não faça fogo.",
+    },
+    {
+      title: "Leve água",
+      text: "Há pouco comércio no alto. Leve água, chapéu e saia antes do escurecer.",
+    },
+    {
+      title: "Silêncio na fauna",
+      text: "Não alimente animais e não leve nada da mata. Observe e fotografe só.",
+    },
+  ],
+  speak:
+    "O Parque Natural Municipal Morro da Pescaria fecha a baía no norte da Praia do Morro. Trilha, mata e vista do mar. Fique no caminho, leve água e respeite a fauna.",
+  search: "parque natural municipal morro da pescaria mata trilha reserva floresta",
+};
+
+export const ORLA_LANDMARKS: OrlaLandmark[] = [PIER_PESCARIA, PARQUE_PESCARIA];
+
+export function landmarkById(id: string | null | undefined) {
+  if (!id) return null;
+  return ORLA_LANDMARKS.find((item) => item.id === id) ?? null;
+}
+
 export const ESCUNA_SRC = "/pins/escuna.png?v=2";
 export const ESCUNA_WAKE_SRC = "/pins/escuna-onda.png?v=1";
 export const CARRINHO_SRC = "/pins/carrinho-festa.png";

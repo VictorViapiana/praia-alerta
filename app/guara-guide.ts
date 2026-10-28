@@ -1,5 +1,5 @@
 import { fold, type TideNow, type WeatherNow } from "./coast";
-import { AMBULANTES, ESCUNA_POINT, MARLIN, PLACES, SHOWERS } from "./places";
+import { AMBULANTES, ESCUNA_POINT, MARLIN, PARQUE_PESCARIA, PIER_PESCARIA, PLACES, SHOWERS } from "./places";
 import type { PinKind } from "./page-types";
 
 export type MapFilter = "neutro" | PinKind;
@@ -40,6 +40,8 @@ export const MAP_PROMPTS: GuaraPrompt[] = [
   { emoji: "📍", label: "Eu", ask: "Onde estou?" },
   { emoji: "🏨", label: "Hotéis", ask: "Mostra os hotéis" },
   { emoji: "🐟", label: "Marlin", ask: "Cadê o Marlin?" },
+  { emoji: "🎣", label: "Pier", ask: "Onde fica o pier da pescaria?" },
+  { emoji: "🌳", label: "Parque", ask: "Leva ao Parque do Morro" },
 ];
 
 export type GuaraLive = {
@@ -136,15 +138,54 @@ export function answerGuara(raw: string, live: GuaraLive = { tide: null, weather
       route: { id: MARLIN.id, lat: MARLIN.lat, lng: MARLIN.lng, name: MARLIN.name },
     };
   }
-  if (has(text, "escuna", "barco", "pier", "passeio de barco")) {
+  if (has(text, "parque", "mata do morro", "reserva", "trilha do morro")) {
     return {
-      answer: "O ponto das escunas fica na água, ao sul da praia. Pirata, Monte Aghá e a do Canal saem dali. Abri o píer.",
+      answer: "O Parque Natural Municipal Morro da Pescaria fica no alto, fechando a baía. Te levo até a entrada.",
+      filter: "neutro",
+      query: "",
+      fly: { lat: PARQUE_PESCARIA.lat, lng: PARQUE_PESCARIA.lng },
+      openId: PARQUE_PESCARIA.id,
+      sheet: null,
+      route: {
+        id: PARQUE_PESCARIA.id,
+        lat: PARQUE_PESCARIA.lat,
+        lng: PARQUE_PESCARIA.lng,
+        name: PARQUE_PESCARIA.name,
+      },
+    };
+  }
+  if (has(text, "pescaria", "ponto de pesca", "pier do morro", "pier da pescaria", "píer")) {
+    return {
+      answer: "O píer do Morro da Pescaria é o ponto de pesca no costão, no fim da praia. Estou te levando.",
+      filter: "neutro",
+      query: "",
+      fly: { lat: PIER_PESCARIA.lat, lng: PIER_PESCARIA.lng },
+      openId: PIER_PESCARIA.id,
+      sheet: null,
+      route: { id: PIER_PESCARIA.id, lat: PIER_PESCARIA.lat, lng: PIER_PESCARIA.lng, name: PIER_PESCARIA.name },
+    };
+  }
+  if (has(text, "escuna", "barco", "passeio de barco", "canal")) {
+    return {
+      answer: "O ponto das escunas fica na água, ao sul da praia. Pirata, Monte Aghá e a do Canal saem dali.",
       filter: "neutro",
       query: "",
       fly: { lat: ESCUNA_POINT.lat, lng: ESCUNA_POINT.lng },
       openId: null,
       sheet: "escunas",
       route: { id: "escunas", lat: ESCUNA_POINT.lat, lng: ESCUNA_POINT.lng, name: "Ponto das Escunas" },
+    };
+  }
+  if (has(text, "pier")) {
+    return {
+      answer:
+        "Tem dois: o píer de pesca no Morro da Pescaria, no fim da praia, e o ponto das escunas no canal, ao sul. Te levo ao de pesca.",
+      filter: "neutro",
+      query: "",
+      fly: { lat: PIER_PESCARIA.lat, lng: PIER_PESCARIA.lng },
+      openId: PIER_PESCARIA.id,
+      sheet: null,
+      route: { id: PIER_PESCARIA.id, lat: PIER_PESCARIA.lat, lng: PIER_PESCARIA.lng, name: PIER_PESCARIA.name },
     };
   }
 
