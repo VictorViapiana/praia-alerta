@@ -377,7 +377,7 @@ function GuaraIsland({ onReplay, onMission }: { onReplay: () => void; onMission:
       return;
     }
     setOpen(true);
-    say(GUARA_SPEECH);
+    // Só mostra o texto — fala apenas pelo botão "Ouvir".
   };
 
   return (
@@ -431,7 +431,7 @@ function GuaraIsland({ onReplay, onMission }: { onReplay: () => void; onMission:
                 <Equalizer />
               ) : (
                 <span className="rounded-full border border-white/15 bg-white/10 px-1.5 py-0.5 text-[9px] font-medium text-white/60">
-                  {open ? "Toque p/ fechar" : "Toque p/ falar"}
+                  {open ? "Toque p/ fechar" : "Toque p/ abrir"}
                 </span>
               )}
             </div>
@@ -497,7 +497,8 @@ function GuaraIsland({ onReplay, onMission }: { onReplay: () => void; onMission:
                         const guide = answerGuara(prompt.ask, { tide, weather });
                         setPicked(prompt.label);
                         setLine(guide.answer);
-                        say(guide.answer);
+                        stopSpeaking();
+                        setNarrating(false);
                       }}
                       className={cx(
                         "flex items-center gap-2 rounded-2xl border px-2.5 py-2 text-left text-[12px] text-white/90",
@@ -1065,25 +1066,7 @@ function MapScreen({
     locate();
   }, []);
 
-  useEffect(() => {
-    if (!rampAlert || driving) return;
-    speakGuara(RAMPA_WARN);
-  }, [rampAlert, driving]);
-
-  useEffect(() => {
-    if (!rampTalk || rampAlert || driving || marlinTalk || landmarkTalk) return;
-    speakGuara(RAMPA_RULE);
-  }, [rampTalk, rampAlert, driving, marlinTalk, landmarkTalk]);
-
-  useEffect(() => {
-    if (!marlinTalk || driving) return;
-    speakGuara(MARLIN_SPEAK);
-  }, [marlinTalk, driving]);
-
-  useEffect(() => {
-    if (!landmarkTalk || driving) return;
-    speakGuara(landmarkTalk.speak);
-  }, [landmarkTalk, driving]);
+  // Dicas/alertas do mapa NÃO falam sozinhas — só via botão "Ouvir" no card.
 
   const markOnMap = (mark: MapMark) => {
     setCoach(false);
@@ -1299,13 +1282,26 @@ function MapScreen({
                   </li>
                 ))}
               </ul>
-              <button
-                type="button"
-                onClick={() => setMarlinTalk(false)}
-                className="mt-2.5 rounded-full bg-[#1d4ed8] px-3 py-1.5 text-[13px] font-semibold text-white"
-              >
-                Entendi
-              </button>
+              <div className="mt-2.5 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => speakGuara(MARLIN_SPEAK)}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-[#1d4ed8]/25 bg-[#1d4ed8]/10 px-3 py-1.5 text-[13px] font-semibold text-[#1d4ed8]"
+                >
+                  <Volume2 className="h-3.5 w-3.5" />
+                  Ouvir
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    stopSpeaking();
+                    setMarlinTalk(false);
+                  }}
+                  className="rounded-full bg-[#1d4ed8] px-3 py-1.5 text-[13px] font-semibold text-white"
+                >
+                  Entendi
+                </button>
+              </div>
             </div>
             <img
               src="/guara-inteiro.png?v=1"
@@ -1374,13 +1370,26 @@ function MapScreen({
                       </li>
                     ))}
                 </ul>
-                <button
-                  type="button"
-                  onClick={() => setLandmarkTalkId(null)}
-                  className="mt-3 w-full rounded-full bg-[#0f766e] px-3 py-2 text-[13px] font-semibold text-white"
-                >
-                  Entendi, Guará
-                </button>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => speakGuara(landmarkTalk.speak)}
+                    className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full border border-[#0f766e]/25 bg-[#0f766e]/10 px-3 py-2 text-[13px] font-semibold text-[#0f766e]"
+                  >
+                    <Volume2 className="h-3.5 w-3.5" />
+                    Ouvir
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      stopSpeaking();
+                      setLandmarkTalkId(null);
+                    }}
+                    className="flex-1 rounded-full bg-[#0f766e] px-3 py-2 text-[13px] font-semibold text-white"
+                  >
+                    Entendi, Guará
+                  </button>
+                </div>
               </div>
             </div>
             <img
@@ -1407,16 +1416,27 @@ function MapScreen({
             <div className="w-full rounded-[22px] bg-white px-3.5 py-3 text-[#1c120c] shadow-[0_16px_36px_rgba(0,0,0,0.28)]">
               <p className="text-[15px] font-semibold leading-snug">Corredor da rampa</p>
               <p className="mt-1 text-[13px] leading-snug text-neutral-600">{rampAlert ? RAMPA_WARN : RAMPA_RULE}</p>
-              <button
-                type="button"
-                onClick={() => {
-                  if (rampAlert) onDismissRamp();
-                  setRampTalk(false);
-                }}
-                className="mt-2.5 rounded-full bg-[#0284c7] px-3 py-1.5 text-[13px] font-semibold text-white"
-              >
-                {rampAlert ? "Entendi, vou sair" : "Entendi"}
-              </button>
+              <div className="mt-2.5 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => speakGuara(rampAlert ? RAMPA_WARN : RAMPA_RULE)}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-[#0284c7]/25 bg-[#0284c7]/10 px-3 py-1.5 text-[13px] font-semibold text-[#0284c7]"
+                >
+                  <Volume2 className="h-3.5 w-3.5" />
+                  Ouvir
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    stopSpeaking();
+                    if (rampAlert) onDismissRamp();
+                    setRampTalk(false);
+                  }}
+                  className="rounded-full bg-[#0284c7] px-3 py-1.5 text-[13px] font-semibold text-white"
+                >
+                  {rampAlert ? "Entendi, vou sair" : "Entendi"}
+                </button>
+              </div>
             </div>
             <img
               src="/guara-inteiro.png?v=1"
