@@ -432,7 +432,17 @@ export const MARLIN_TIPS = [
 export const MARLIN_SPEAK =
   "O Marlin Azul é patrimônio da Praia do Morro. Atenção: a pedra escorrega, então ande com cuidado. Não deixe lixo. E não risque, não suba e não danifique o monumento. Foto, sim. Dano, não.";
 
-export type LandmarkTone = "pier" | "park" | "banheiro" | "esporte" | "praca" | "acesso" | "abrigo" | "playground" | "salva";
+export type LandmarkTone =
+  | "pier"
+  | "park"
+  | "banheiro"
+  | "esporte"
+  | "praca"
+  | "acesso"
+  | "abrigo"
+  | "playground"
+  | "salva"
+  | "golfinho";
 
 export type LandmarkTip = {
   kind: "alerta" | "convivencia";
@@ -492,14 +502,14 @@ function banheiro(
   };
 }
 
-/** Pier / ponto de pesca no costão do Morro da Pescaria (coords Google Maps). */
+/** Pier de pesca: centro do deque, não o largo da estátua (coords Google Maps). */
 export const PIER_PESCARIA: OrlaLandmark = {
   id: "pier-pescaria",
   name: "Pier · Morro da Pescaria",
   short: "Pier",
   detail: "Ponto de pesca no costão",
-  lat: -20.656173,
-  lng: -40.47415,
+  lat: -20.656011,
+  lng: -40.474337,
   tone: "pier",
   cover: "/guarapari/praia-enseada.jpg",
   tips: [
@@ -561,8 +571,8 @@ export const PRACA_PAZ: OrlaLandmark = {
   name: "Praça da Paz",
   short: "Praça",
   detail: "Praça na Av. Beira Mar",
-  lat: -20.65205,
-  lng: -40.479129,
+  lat: -20.651888,
+  lng: -40.479302,
   tone: "praca",
   cover: "/guarapari/praia-orla.jpg",
   tips: [
@@ -589,8 +599,8 @@ export const PRACA_PAZ: OrlaLandmark = {
 
 export const ARENA_03: OrlaLandmark = {
   id: "arena-03",
-  name: "Arena 03",
-  short: "Arena",
+  name: "Quadra 03",
+  short: "Quadra",
   detail: "Quadra de areia na orla",
   lat: -20.655741,
   lng: -40.490022,
@@ -605,7 +615,7 @@ export const ARENA_03: OrlaLandmark = {
     {
       kind: "convivencia",
       title: "Respeite o tempo",
-      text: "A arena é coletiva: combine o tempo, não monopolize e deixe o próximo time entrar.",
+      text: "A quadra é coletiva: combine o tempo, não monopolize e deixe o próximo time entrar.",
     },
     {
       kind: "convivencia",
@@ -614,8 +624,8 @@ export const ARENA_03: OrlaLandmark = {
     },
   ],
   speak:
-    "Arena 03, quadra de areia na orla. Olhe as crianças ao redor, divida o tempo de jogo e mantenha o respeito.",
-  search: "arena 03 arena03 quadra areia vôlei futevôlei esporte",
+    "Quadra 03, na areia da orla. Olhe as crianças ao redor, divida o tempo de jogo e mantenha o respeito.",
+  search: "quadra 03 arena 03 arena03 quadra areia vôlei futevôlei esporte",
 };
 
 export const QUADRA_AREIA: OrlaLandmark = {
@@ -623,8 +633,8 @@ export const QUADRA_AREIA: OrlaLandmark = {
   name: "Quadra de Areia",
   short: "Quadra",
   detail: "Quadra no trecho sul",
-  lat: -20.659111,
-  lng: -40.494271,
+  lat: -20.659309,
+  lng: -40.494386,
   tone: "esporte",
   cover: "/guarapari/praia-sul.jpg",
   tips: [
@@ -695,7 +705,7 @@ export const BANCOS_MARLIN = bancos(
   "Bancos",
   "Bancos cobertos · Marlin",
   "Conjunto de 3 bancos na areia",
-  -20.652345,
+  -20.652309,
   -40.479111,
   "banco bancos coberto cobertos gazebo sombra marlin areia conjunto tres",
 );
@@ -745,7 +755,7 @@ export const PLAYGROUND: OrlaLandmark = {
 export const SALVA_VIDAS: OrlaLandmark = {
   id: "salva-vidas",
   name: "Salva-vidas",
-  short: "Salva",
+  short: "Salva-vidas",
   detail: "Posto de salva-vidas",
   lat: -20.653246,
   lng: -40.485064,
@@ -773,6 +783,38 @@ export const SALVA_VIDAS: OrlaLandmark = {
   search: "salva vidas salva-vidas posto guarda bombeiro resgate bandeira",
 };
 
+/** Estátua do Golfinho no largo do costão, ao lado do píer (coords Google Maps). */
+export const GOLFINHO: OrlaLandmark = {
+  id: "golfinho",
+  name: "Estátua do Golfinho",
+  short: "Golfinho",
+  detail: "Monumento no Morro da Pescaria",
+  lat: -20.656174,
+  lng: -40.47415,
+  tone: "golfinho",
+  cover: "/guarapari/praia-enseada.jpg",
+  tips: [
+    {
+      kind: "alerta",
+      title: "Pedra escorrega",
+      text: "O piso do costão fica molhado de maresia. Segure a criança e não corra em volta da estátua.",
+    },
+    {
+      kind: "alerta",
+      title: "Não suba",
+      text: "A estátua não é brinquedo. Não sente, não escale e não apoie o peso no golfinho.",
+    },
+    {
+      kind: "convivencia",
+      title: "Foto sem dano",
+      text: "Não escreva, não risque e não deixe lixo no monumento. O golfinho é da orla.",
+    },
+  ],
+  speak:
+    "A estátua do golfinho fica no costão do Morro da Pescaria, ao lado do píer. A pedra escorrega. Não suba, não risque e não deixe lixo.",
+  search: "golfinho estatua estátua do golfinho monumento pescaria costão",
+};
+
 export const BANHEIRO_II = banheiro("banheiro-ii", "Banheiro II", "Banheiro II · Praia do Morro", -20.65634, -40.490857);
 export const BANHEIRO_III = banheiro("banheiro-iii", "Banheiro III", "Banheiro III · Praia do Morro", -20.654513, -40.487769);
 export const BANHEIRO_V = banheiro("banheiro-v", "Banheiro V", "Banheiro V · Praia do Morro", -20.652247, -40.480678);
@@ -792,6 +834,7 @@ export const ORLA_LANDMARKS: OrlaLandmark[] = [
   SALVA_VIDAS,
   PRACA_PAZ,
   PIER_PESCARIA,
+  GOLFINHO,
   PARQUE_PESCARIA,
 ];
 

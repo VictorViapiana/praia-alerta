@@ -1343,6 +1343,7 @@ function MapScreen({
                     abrigo: "Bancos",
                     playground: "Playground",
                     salva: "Salva-vidas",
+                    golfinho: "Golfinho",
                   }[landmarkTalk.tone]}
                 </span>
               </div>

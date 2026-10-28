@@ -4,6 +4,7 @@ import {
   ARENA_03,
   BANCOS_MARLIN,
   BANCOS_NORTE,
+  GOLFINHO,
   PLAYGROUND,
   SALVA_VIDAS,
   BANHEIRO_V,
@@ -59,8 +60,9 @@ export const MAP_PROMPTS: GuaraPrompt[] = [
   { emoji: "🎣", label: "Pier", ask: "Onde fica o pier da pescaria?" },
   { emoji: "🌳", label: "Parque", ask: "Leva ao Parque do Morro" },
   { emoji: "🚻", label: "Banheiro", ask: "Onde tem banheiro?" },
-  { emoji: "🏐", label: "Arena", ask: "Cadê a arena de areia?" },
-  { emoji: "☂️", label: "Bancos", ask: "Onde ficam os bancos cobertos?" },
+  { emoji: "🏐", label: "Quadra", ask: "Cadê a quadra?" },
+  { emoji: "🐬", label: "Golfinho", ask: "Cadê a estátua do golfinho?" },
+  { emoji: "🪑", label: "Bancos", ask: "Onde ficam os bancos cobertos?" },
 ];
 
 export type GuaraLive = {
@@ -173,6 +175,17 @@ export function answerGuara(raw: string, live: GuaraLive = { tide: null, weather
       },
     };
   }
+  if (has(text, "golfinho", "estatua do golfinho")) {
+    return {
+      answer: "A estátua do golfinho fica no costão, ao lado do píer do Morro da Pescaria. Te levo até ela.",
+      filter: "neutro",
+      query: "",
+      fly: { lat: GOLFINHO.lat, lng: GOLFINHO.lng },
+      openId: GOLFINHO.id,
+      sheet: null,
+      route: { id: GOLFINHO.id, lat: GOLFINHO.lat, lng: GOLFINHO.lng, name: GOLFINHO.name },
+    };
+  }
   if (has(text, "pescaria", "ponto de pesca", "pier do morro", "pier da pescaria", "píer")) {
     return {
       answer: "O píer do Morro da Pescaria é o ponto de pesca no costão, no fim da praia. Estou te levando.",
@@ -195,8 +208,8 @@ export function answerGuara(raw: string, live: GuaraLive = { tide: null, weather
       route: { id: BANHEIRO_V.id, lat: BANHEIRO_V.lat, lng: BANHEIRO_V.lng, name: BANHEIRO_V.name },
     };
   }
-  if (has(text, "arena", "quadra de areia", "futevolei", "volei de praia")) {
-    const spot = has(text, "sul", "quadra") && !has(text, "arena") ? QUADRA_AREIA : ARENA_03;
+  if (has(text, "arena", "quadra", "futevolei", "volei de praia")) {
+    const spot = has(text, "sul", "areia") && !has(text, "arena", "03") ? QUADRA_AREIA : ARENA_03;
     return {
       answer: `${spot.name}: quadra na areia. Te levo até lá — e lembro das regras de convivência.`,
       filter: "neutro",
