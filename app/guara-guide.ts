@@ -2,6 +2,7 @@ import { fold, type TideNow, type WeatherNow } from "./coast";
 import {
   AMBULANTES,
   ARENA_03,
+  BANCOS_MARLIN,
   BANHEIRO_V,
   ESCUNA_POINT,
   MARLIN,
@@ -56,6 +57,7 @@ export const MAP_PROMPTS: GuaraPrompt[] = [
   { emoji: "🌳", label: "Parque", ask: "Leva ao Parque do Morro" },
   { emoji: "🚻", label: "Banheiro", ask: "Onde tem banheiro?" },
   { emoji: "🏐", label: "Arena", ask: "Cadê a arena de areia?" },
+  { emoji: "☂️", label: "Bancos", ask: "Onde ficam os bancos cobertos?" },
 ];
 
 export type GuaraLive = {
@@ -200,6 +202,17 @@ export function answerGuara(raw: string, live: GuaraLive = { tide: null, weather
       openId: spot.id,
       sheet: null,
       route: { id: spot.id, lat: spot.lat, lng: spot.lng, name: spot.name },
+    };
+  }
+  if (has(text, "banco coberto", "bancos cobertos", "bancos", "gazebo", "sombra")) {
+    return {
+      answer: "Tem bancos cobertos na areia: um conjunto ao lado do Marlin e outros junto aos quiosques 8 e 17. Te levo ao do Marlin.",
+      filter: "neutro",
+      query: "",
+      fly: { lat: BANCOS_MARLIN.lat, lng: BANCOS_MARLIN.lng },
+      openId: BANCOS_MARLIN.id,
+      sheet: null,
+      route: { id: BANCOS_MARLIN.id, lat: BANCOS_MARLIN.lat, lng: BANCOS_MARLIN.lng, name: BANCOS_MARLIN.name },
     };
   }
   if (has(text, "praca da paz", "praça da paz")) {
