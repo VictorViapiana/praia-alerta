@@ -28,7 +28,16 @@ import { requestCompass, useDeviceHeading } from "./heading-beam";
 import { MapSearch, type MapMark } from "./map-search";
 import { AmbulanteSheet, EscunaSheet, SponsorSheet } from "./marker-popup";
 import { FlagsLink, FotosScreen, LiveClima, LiveMare, MarlinScreen, OrlaCards, FlagsScreen, type StoryId } from "./orla";
-import { AMBULANTES, MARLIN, MARLIN_SPEAK, MARLIN_TIPS, PLACES, SHOWERS } from "./places";
+import {
+  AMBULANTES,
+  landmarkById,
+  MARLIN,
+  MARLIN_SPEAK,
+  MARLIN_TIPS,
+  ORLA_LANDMARKS,
+  PLACES,
+  SHOWERS,
+} from "./places";
 import type { PinKind } from "./page-types";
 import { CameraFab, TouristCamera } from "./tourist-camera";
 import { GuaraOnboarding, HOME_STEPS, HOME_TOUR_KEY, MAP_STEPS, MAP_TOUR_KEY } from "./guara-onboarding";
@@ -727,7 +736,13 @@ function MapSos({ onTrigger, parked = false }: { onTrigger: () => void; parked?:
 
 function cardOwnsRoute(id?: string) {
   if (!id || id === "ponto" || id === "sul" || id === "norte") return false;
-  return id === "escunas" || id === MARLIN.id || PLACES.some((place) => place.id === id) || AMBULANTES.some((vendor) => vendor.id === id);
+  return (
+    id === "escunas" ||
+    id === MARLIN.id ||
+    ORLA_LANDMARKS.some((item) => item.id === id) ||
+    PLACES.some((place) => place.id === id) ||
+    AMBULANTES.some((vendor) => vendor.id === id)
+  );
 }
 
 const ROUTE_COLOR: Record<TravelMode, string> = {
@@ -763,6 +778,8 @@ function MapScreen({
   const [searchOpen, setSearchOpen] = useState(false);
   const [rampTalk, setRampTalk] = useState(false);
   const [marlinTalk, setMarlinTalk] = useState(false);
+  const [landmarkTalkId, setLandmarkTalkId] = useState<string | null>(null);
+  const landmarkTalk = landmarkById(landmarkTalkId);
   const [basemap, setBasemap] = useState<"satellite" | "clean">("satellite");
   const onSearchActive = useCallback((active: boolean) => setSearchOpen(active), []);
   const foldedQuery = fold(query.trim());
@@ -770,7 +787,13 @@ function MapScreen({
   const catalog = [
     ...SHOWERS.map((pin) => ({ kind: pin.mapKind, name: pin.name })),
     ...PLACES.map((place) => ({ kind: place.mapKind, name: place.name })),
-    ...(filter === "neutro" ? [{ kind: "parceiros" as const, name: "Ponto das Escunas" }] : []),
+    ...(filter === "neutro"
+      ? [
+          { kind: "parceiros" as const, name: "Ponto das Escunas" },
+          { kind: "parceiros" as const, name: MARLIN.name },
+          ...ORLA_LANDMARKS.map((item) => ({ kind: "parceiros" as const, name: item.name })),
+        ]
+      : []),
   ];
   const hits = catalog.filter((pin) => {
     const inCategory = filter === "neutro" || pin.kind === filter;
@@ -1048,14 +1071,19 @@ function MapScreen({
   }, [rampAlert, driving]);
 
   useEffect(() => {
-    if (!rampTalk || rampAlert || driving || marlinTalk) return;
+    if (!rampTalk || rampAlert || driving || marlinTalk || landmarkTalk) return;
     speakGuara(RAMPA_RULE);
-  }, [rampTalk, rampAlert, driving, marlinTalk]);
+  }, [rampTalk, rampAlert, driving, marlinTalk, landmarkTalk]);
 
   useEffect(() => {
     if (!marlinTalk || driving) return;
     speakGuara(MARLIN_SPEAK);
   }, [marlinTalk, driving]);
+
+  useEffect(() => {
+    if (!landmarkTalk || driving) return;
+    speakGuara(landmarkTalk.speak);
+  }, [landmarkTalk, driving]);
 
   const markOnMap = (mark: MapMark) => {
     setCoach(false);
@@ -1064,6 +1092,17 @@ function MapScreen({
     setFlyTo({ id: Date.now(), lat: mark.lat, lng: mark.lng });
     const vendor = AMBULANTES.find((item) => item.id === mark.placeId && item.isSponsor && item.isOnline);
     if (vendor) setSheetId(vendor.id);
+    const landmark = landmarkById(mark.placeId);
+    if (landmark) {
+      setRampTalk(false);
+      setMarlinTalk(false);
+      setLandmarkTalkId(landmark.id);
+    }
+    if (mark.placeId === MARLIN.id) {
+      setRampTalk(false);
+      setLandmarkTalkId(null);
+      setMarlinTalk(true);
+    }
   };
 
   return (
@@ -1117,10 +1156,20 @@ function MapScreen({
               if (id === MARLIN.id) {
                 setOpenId(MARLIN.id);
                 setRampTalk(false);
+                setLandmarkTalkId(null);
                 setMarlinTalk(true);
                 return;
               }
+              const landmark = landmarkById(id);
+              if (landmark) {
+                setOpenId(landmark.id);
+                setRampTalk(false);
+                setMarlinTalk(false);
+                setLandmarkTalkId(landmark.id);
+                return;
+              }
               setMarlinTalk(false);
+              setLandmarkTalkId(null);
               setOpenId((current) => (current === id ? null : id));
             }}
             onOpen={(id) => setSheetId(id)}
@@ -1136,11 +1185,13 @@ function MapScreen({
             onRampTap={() => {
               setCoach(false);
               setMarlinTalk(false);
+              setLandmarkTalkId(null);
               setRampTalk(true);
             }}
             onClear={() => {
               setOpenId(null);
               setMarlinTalk(false);
+              setLandmarkTalkId(null);
             }}
             onHold={holdPoint}
             flyTo={flyTo}
@@ -1267,7 +1318,68 @@ function MapScreen({
         </motion.div>
       )}
 
-      {!driving && !marlinTalk && (rampAlert || rampTalk) && !cameraOpen && !searchOpen && (
+      {!driving && landmarkTalk && !cameraOpen && !searchOpen && (
+        <motion.div
+          role="dialog"
+          aria-label={landmarkTalk.name}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="@container absolute inset-0 z-[75] flex items-center justify-center bg-black/45 px-5"
+        >
+          <div className="flex max-h-full w-full max-w-[19.5rem] flex-col items-center">
+            <div className="w-full overflow-hidden rounded-[22px] bg-white text-[#1c120c] shadow-[0_16px_36px_rgba(0,0,0,0.28)]">
+              <div className="relative h-[92px] overflow-hidden">
+                <img src={landmarkTalk.cover} alt="" className="h-full w-full object-cover" />
+                <span className="absolute inset-0 bg-gradient-to-t from-white via-white/20 to-black/25" />
+                <span
+                  className={`absolute left-3 top-3 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-white ${
+                    landmarkTalk.tone === "pier" ? "bg-cyan-700/90" : "bg-emerald-700/90"
+                  }`}
+                >
+                  {landmarkTalk.tone === "pier" ? "Costão" : "Parque"}
+                </span>
+              </div>
+              <div className="px-3.5 pb-3 pt-2">
+                <p className="text-[15px] font-semibold leading-snug">{landmarkTalk.name}</p>
+                <p className="mt-0.5 text-[12px] text-neutral-500">{landmarkTalk.detail}</p>
+                <ul className="mt-2 space-y-2">
+                  {landmarkTalk.tips.map((tip) => (
+                    <li key={tip.title}>
+                      <p
+                        className={`text-[12px] font-semibold leading-snug ${
+                          landmarkTalk.tone === "pier" ? "text-[#0e7490]" : "text-[#047857]"
+                        }`}
+                      >
+                        {tip.title}
+                      </p>
+                      <p className="mt-0.5 text-[12px] leading-snug text-neutral-600">{tip.text}</p>
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  type="button"
+                  onClick={() => setLandmarkTalkId(null)}
+                  className={`mt-2.5 rounded-full px-3 py-1.5 text-[13px] font-semibold text-white ${
+                    landmarkTalk.tone === "pier" ? "bg-cyan-700" : "bg-emerald-700"
+                  }`}
+                >
+                  Entendi
+                </button>
+              </div>
+            </div>
+            <img
+              src="/guara-inteiro.png?v=1"
+              alt="Guará"
+              draggable={false}
+              decoding="async"
+              className="guara-float-lg h-auto max-h-[min(18rem,42cqh)] w-auto max-w-full object-contain object-bottom drop-shadow-[0_16px_28px_rgba(0,0,0,0.45)]"
+            />
+          </div>
+        </motion.div>
+      )}
+
+      {!driving && !marlinTalk && !landmarkTalk && (rampAlert || rampTalk) && !cameraOpen && !searchOpen && (
         <motion.div
           role="dialog"
           aria-label="Corredor da rampa"
@@ -1325,7 +1437,18 @@ function MapScreen({
           if (guide.query !== undefined) setQuery(guide.query);
           if (guide.filter) setFilter(guide.filter);
           if (guide.basemap) setBasemap(guide.basemap);
-          if (guide.openId !== undefined) setOpenId(guide.openId);
+          if (guide.openId !== undefined) {
+            setOpenId(guide.openId);
+            if (guide.openId === MARLIN.id) {
+              setMarlinTalk(true);
+              setLandmarkTalkId(null);
+              setRampTalk(false);
+            } else if (landmarkById(guide.openId)) {
+              setLandmarkTalkId(guide.openId);
+              setMarlinTalk(false);
+              setRampTalk(false);
+            }
+          }
           if (guide.sheet !== undefined) setSheetId(guide.sheet);
           if (guide.fly) setFlyTo({ id: Date.now(), lat: guide.fly.lat, lng: guide.fly.lng });
           if (guide.locate) locate();

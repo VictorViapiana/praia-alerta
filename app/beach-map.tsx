@@ -6,11 +6,25 @@ import { createPortal } from "react-dom";
 import { MapContainer, Marker, Polygon, Polyline, TileLayer, useMap, useMapEvents } from "react-leaflet";
 import type { DivIcon, LatLngExpression } from "leaflet";
 import L from "leaflet";
-import { Hotel, IceCreamCone, Martini, Pill, ShoppingBag, ShowerHead, Star, Utensils, type LucideIcon } from "lucide-react";
+import { Anchor, Hotel, IceCreamCone, Martini, Pill, ShoppingBag, ShowerHead, Star, Trees, Utensils, type LucideIcon } from "lucide-react";
 import { fold } from "./coast";
 import { MarkerPopup } from "./marker-popup";
 import { RouteChoice } from "./route-choice";
-import { AMBULANTES, CARRINHO_SRC, ESCUNA_POINT, ESCUNA_SRC, ESCUNA_WAKE_SRC, MARLIN, MARLIN_SRC, PLACES, SHOWERS, type Ambulante, type Place } from "./places";
+import {
+  AMBULANTES,
+  CARRINHO_SRC,
+  ESCUNA_POINT,
+  ESCUNA_SRC,
+  ESCUNA_WAKE_SRC,
+  MARLIN,
+  MARLIN_SRC,
+  ORLA_LANDMARKS,
+  PLACES,
+  SHOWERS,
+  type Ambulante,
+  type OrlaLandmark,
+  type Place,
+} from "./places";
 import type { PinKind } from "./page-types";
 import { HeadingBeam } from "./heading-beam";
 import { RAMPA_CORRIDOR, RAMPA_EDGE_LEFT, RAMPA_EDGE_RIGHT, RAMPA_NOTE, RAMPA_PRINCIPAL } from "./rampas";
@@ -616,6 +630,78 @@ function MarlinPin({ selected, onSelect }: { selected: boolean; onSelect: () => 
   );
 }
 
+const LANDMARK_STYLE = {
+  pier: {
+    border: "border-[#0e7490]",
+    ring: "ring-cyan-200",
+    bubble: "border-cyan-100",
+    title: "text-[#0e4a5c]",
+    label: "text-[#0e4a5c]",
+    iconBg: "from-cyan-400 to-teal-700",
+    Icon: Anchor,
+  },
+  park: {
+    border: "border-[#047857]",
+    ring: "ring-emerald-200",
+    bubble: "border-emerald-100",
+    title: "text-[#065f46]",
+    label: "text-[#065f46]",
+    iconBg: "from-emerald-400 to-green-800",
+    Icon: Trees,
+  },
+} as const;
+
+function LandmarkPin({
+  landmark,
+  selected,
+  onSelect,
+}: {
+  landmark: OrlaLandmark;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  const style = LANDMARK_STYLE[landmark.tone];
+  const Icon = style.Icon;
+  return (
+    <div className="relative h-12 w-12">
+      {selected && (
+        <div className="absolute bottom-[calc(100%+4px)] left-1/2 z-30 w-[200px] -translate-x-1/2">
+          <div className={`rounded-2xl border bg-white px-2.5 py-2 text-left shadow-[0_12px_24px_rgba(15,23,42,0.22)] ${style.bubble}`}>
+            <p className={`text-[12px] font-semibold leading-tight ${style.title}`}>{landmark.name}</p>
+            <p className="mt-0.5 text-[11px] text-neutral-500">{landmark.detail}</p>
+            <RouteChoice
+              place={{ id: landmark.id, lat: landmark.lat, lng: landmark.lng, name: landmark.name }}
+              tone="light"
+            />
+          </div>
+          <span className={`mx-auto -mt-1 block h-2.5 w-2.5 rotate-45 border-b border-r bg-white ${style.bubble}`} />
+        </div>
+      )}
+      <button
+        type="button"
+        aria-label={landmark.name}
+        aria-pressed={selected}
+        onPointerDown={(event) => event.stopPropagation()}
+        onClick={(event) => {
+          event.stopPropagation();
+          onSelect();
+        }}
+        className={`grid h-12 w-12 place-items-center rounded-full border-2 bg-white shadow-[0_6px_14px_rgba(15,23,42,0.3)] ${style.border} ${selected ? `ring-2 ${style.ring}` : ""}`}
+      >
+        <span className={`grid h-8 w-8 place-items-center rounded-full bg-gradient-to-b text-white shadow-inner ${style.iconBg}`}>
+          <Icon className="h-[18px] w-[18px]" strokeWidth={2.3} />
+        </span>
+      </button>
+      <span
+        className={`pointer-events-none absolute top-full left-1/2 mt-0.5 -translate-x-1/2 whitespace-nowrap text-[11px] font-bold leading-none ${style.label}`}
+        style={{ textShadow: "0 0 3px #fff, 0 0 6px #fff, 1px 0 0 #fff, -1px 0 0 #fff, 0 1px 0 #fff, 0 -1px 0 #fff" }}
+      >
+        {landmark.short}
+      </span>
+    </div>
+  );
+}
+
 function UserDot({ heading, driving }: { heading: number; driving?: boolean }) {
   if (driving) {
     return (
@@ -837,6 +923,22 @@ function OrlaMarkers({
           <MarlinPin selected={openId === MARLIN.id} onSelect={() => onSelect(MARLIN.id)} />
         </ReactPin>
       )}
+      {showPlaces &&
+        ORLA_LANDMARKS.map((landmark) => (
+          <ReactPin
+            key={landmark.id}
+            position={[landmark.lat, landmark.lng]}
+            zIndexOffset={openId === landmark.id ? 965 : 255}
+            size={48}
+            anchor="center"
+          >
+            <LandmarkPin
+              landmark={landmark}
+              selected={openId === landmark.id}
+              onSelect={() => onSelect(landmark.id)}
+            />
+          </ReactPin>
+        ))}
       {showRamp && (
         <>
           <Polygon
