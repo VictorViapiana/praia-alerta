@@ -377,98 +377,84 @@ body {
 
 .sx-guara-rig {
   position: relative;
-  width: min(78vw, 360px);
-  height: min(72vw, 330px);
+  width: min(92vw, 440px);
+  aspect-ratio: 734 / 294;
   transform: translateZ(0);
-  filter: drop-shadow(0 18px 22px rgba(127, 29, 29, 0.55));
+  filter: drop-shadow(0 16px 20px rgba(80, 10, 20, 0.55));
 }
 
 .sx-guara-photo {
   position: absolute;
-  left: 8%;
-  top: 12%;
-  width: 78%;
-  height: auto;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
   display: block;
   z-index: 2;
-  transform: translateZ(0) rotate(-8deg);
+  transform-origin: 45% 55%;
+  animation: sx-flap-body 0.38s ease-in-out infinite;
+  will-change: transform;
   -webkit-user-drag: none;
   user-select: none;
 }
 
-.sx-wing {
+/* Micro-batida no corpo inteiro (foto já tem asas abertas) */
+@keyframes sx-flap-body {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1, 1);
+  }
+  35% {
+    transform: translate3d(0, 3px, 0) rotate(1.2deg) scale(1.02, 0.94);
+  }
+  70% {
+    transform: translate3d(0, -2px, 0) rotate(-0.8deg) scale(0.99, 1.03);
+  }
+}
+
+.sx-guara-glow {
   position: absolute;
-  width: 72%;
-  height: auto;
-  will-change: transform;
-  transform-origin: 12% 78%;
+  inset: 18% 10%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(255, 80, 60, 0.35) 0%, transparent 70%);
   z-index: 1;
+  animation: sx-glow 0.76s ease-in-out infinite alternate;
+  will-change: opacity, transform;
 }
 
-.sx-wing-back {
-  left: 18%;
-  top: 2%;
-  z-index: 1;
-  opacity: 0.85;
-  animation: sx-flap-back 0.34s ease-in-out infinite;
-}
-
-.sx-wing-front {
-  left: 22%;
-  top: 6%;
-  z-index: 3;
-  opacity: 0.92;
-  animation: sx-flap-front 0.34s ease-in-out infinite;
-}
-
-@keyframes sx-flap-front {
-  0%,
-  100% {
-    transform: rotate(-26deg) scaleY(1) scaleX(1);
+@keyframes sx-glow {
+  from {
+    opacity: 0.35;
+    transform: scale(0.92);
   }
-  40% {
-    transform: rotate(38deg) scaleY(0.82) scaleX(1.04);
-  }
-  70% {
-    transform: rotate(8deg) scaleY(0.94) scaleX(1);
-  }
-}
-
-@keyframes sx-flap-back {
-  0%,
-  100% {
-    transform: rotate(30deg) scaleY(0.88) scaleX(0.98);
-  }
-  40% {
-    transform: rotate(-22deg) scaleY(1) scaleX(1.02);
-  }
-  70% {
-    transform: rotate(6deg) scaleY(0.93) scaleX(1);
+  to {
+    opacity: 0.7;
+    transform: scale(1.08);
   }
 }
 
 .sx-guara-wake {
   position: absolute;
-  right: -4%;
-  top: 48%;
-  width: 48%;
-  height: 4px;
+  right: -6%;
+  top: 52%;
+  width: 40%;
+  height: 3px;
   border-radius: 999px;
-  background: linear-gradient(90deg, transparent, rgba(254, 205, 211, 0.65), rgba(255, 255, 255, 0.25));
+  background: linear-gradient(90deg, transparent, rgba(254, 205, 211, 0.55), rgba(255, 255, 255, 0.2));
   transform: translate3d(0, -50%, 0);
-  animation: sx-wake 0.36s ease-in-out infinite alternate;
+  animation: sx-wake 0.4s ease-in-out infinite alternate;
   will-change: transform, opacity;
   z-index: 0;
 }
 
 @keyframes sx-wake {
   from {
-    opacity: 0.2;
-    transform: translate3d(0, -50%, 0) scaleX(0.65);
+    opacity: 0.15;
+    transform: translate3d(0, -50%, 0) scaleX(0.7);
   }
   to {
-    opacity: 0.85;
-    transform: translate3d(10px, -50%, 0) scaleX(1.25);
+    opacity: 0.75;
+    transform: translate3d(12px, -50%, 0) scaleX(1.3);
   }
 }
 
@@ -717,8 +703,8 @@ body {
   .sx-kelp,
   .sx-school,
   .sx-bubble,
-  .sx-wing-front,
-  .sx-wing-back,
+  .sx-guara-photo,
+  .sx-guara-glow,
   .sx-guara-wake {
     animation: none !important;
   }

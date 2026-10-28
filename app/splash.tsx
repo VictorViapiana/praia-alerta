@@ -28,52 +28,21 @@ function Fish({ className }: { className?: string }) {
   );
 }
 
-function Wing({ className, gradId }: { className?: string; gradId: string }) {
-  return (
-    <svg className={className} viewBox="0 0 160 90" aria-hidden>
-      <defs>
-        <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#fb7185" />
-          <stop offset="45%" stopColor="#e11d48" />
-          <stop offset="78%" stopColor="#9f1239" />
-          <stop offset="100%" stopColor="#0f172a" />
-        </linearGradient>
-      </defs>
-      <path
-        fill={`url(#${gradId})`}
-        d="M12 70C28 28 70 6 118 8c12 1 22 6 28 14-22 8-48 22-68 44-10 12-20 20-34 24-8-6-16-12-32-20z"
-      />
-      <path
-        fill="#0f172a"
-        d="M118 14c14 2 24 8 30 16-10 6-22 12-36 16 2-12 4-22 6-32z"
-      />
-      <path
-        stroke="#fecdd3"
-        strokeOpacity="0.35"
-        strokeWidth="1.2"
-        fill="none"
-        d="M28 62c22-24 52-38 86-40M36 70c20-18 48-30 78-32"
-      />
-    </svg>
-  );
-}
-
-/** Guará real (PNG cutout) + asas articuladas batendo. */
+/** Guará real em voo (foto Cubatão/SP) — batida via CSS no asset. */
 function GuaraBird() {
   return (
     <div className="sx-guara-rig" aria-hidden>
-      <Wing className="sx-wing sx-wing-back" gradId="sxWingBack" />
+      <span className="sx-guara-glow" />
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         className="sx-guara-photo"
         src="/pins/guara-fly.webp"
         alt=""
-        width={640}
-        height={614}
+        width={734}
+        height={294}
         decoding="async"
         draggable={false}
       />
-      <Wing className="sx-wing sx-wing-front" gradId="sxWingFront" />
       <span className="sx-guara-wake" />
     </div>
   );
