@@ -73,13 +73,17 @@ export function SplashScreen({ onWarm, onDone }: { onWarm?: () => void; onDone: 
       transition={{ duration: 3.2, times: [0, 0.78, 1], ease: "linear" }}
     >
       <div className="sx-wash" aria-hidden />
-      <span className="sx-sun" aria-hidden />
+      <div className="sx-sun-wrap" aria-hidden>
+        <span className="sx-sun-halo" />
+        <span className="sx-sun-corona" />
+        <span className="sx-sun" />
+      </div>
       <span className="sx-sea" aria-hidden />
 
       <div className="sx-stage">
         <motion.div
           className="sx-bird"
-          initial={{ opacity: 0, y: 28, scale: 0.92 }}
+          initial={{ opacity: 0, y: 36, scale: 0.92 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 1.05, delay: 0.12, ease: EASE }}
         >
