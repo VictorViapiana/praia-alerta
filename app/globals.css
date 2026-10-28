@@ -301,14 +301,13 @@ body {
 }
 
 
-/* Ascensão Cinematográfica — parallax 300vh, só transform/opacity. */
+/* Ascensão Cinematográfica — parallax 300vh + Guará hiper-realista. */
 .sx-splash {
   position: fixed;
   inset: 0;
   z-index: 200;
   overflow: hidden;
   background: #0369a1;
-  contain: strict;
   touch-action: none;
   user-select: none;
   pointer-events: none;
@@ -332,133 +331,144 @@ body {
 }
 
 .sx-sky {
-  background: linear-gradient(180deg, #0ea5e9 0%, #38bdf8 28%, #7dd3fc 58%, #fef3c7 86%, #fdba74 100%);
+  background: linear-gradient(180deg, #0284c7 0%, #38bdf8 26%, #7dd3fc 52%, #fef3c7 82%, #fdba74 100%);
 }
 
 .sx-haze {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at 50% 42%, rgba(255, 255, 255, 0.35) 0%, transparent 55%);
+  background: radial-gradient(ellipse at 50% 38%, rgba(255, 255, 255, 0.42) 0%, transparent 58%);
 }
 
 .sx-sun {
   position: absolute;
-  top: 28%;
+  top: 26%;
   left: 50%;
-  width: min(22vw, 96px);
-  height: min(22vw, 96px);
+  width: min(26vw, 110px);
+  height: min(26vw, 110px);
   margin: 0;
   border-radius: 999px;
   background: radial-gradient(circle at 35% 30%, #fffbeb 0%, #fde68a 28%, #fb923c 68%, #ea580c 100%);
   box-shadow:
-    0 0 40px 12px rgba(253, 224, 71, 0.55),
-    0 0 90px 28px rgba(251, 146, 60, 0.35);
+    0 0 48px 16px rgba(253, 224, 71, 0.6),
+    0 0 110px 36px rgba(251, 146, 60, 0.38);
   transform: translate3d(-50%, -50%, 0);
-  will-change: transform, opacity;
+  will-change: transform;
+  z-index: 1;
+}
+
+/* Camada fixa do Guará — viewport inteiro, acima do parallax */
+.sx-guara-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  overflow: visible;
+  pointer-events: none;
 }
 
 .sx-guara {
   position: absolute;
-  top: 30%;
+  top: 28%;
   left: 0;
-  will-change: transform, opacity;
+  will-change: transform;
   transform: translateZ(0);
+  z-index: 7;
 }
 
 .sx-guara-rig {
   position: relative;
-  width: min(42vw, 188px);
-  height: auto;
+  width: min(78vw, 360px);
+  height: min(72vw, 330px);
   transform: translateZ(0);
-  filter: drop-shadow(0 14px 18px rgba(127, 29, 29, 0.4));
+  filter: drop-shadow(0 18px 22px rgba(127, 29, 29, 0.55));
 }
 
-.sx-guara-svg {
-  width: 100%;
+.sx-guara-photo {
+  position: absolute;
+  left: 8%;
+  top: 12%;
+  width: 78%;
   height: auto;
   display: block;
-  overflow: visible;
+  z-index: 2;
+  transform: translateZ(0) rotate(-8deg);
+  -webkit-user-drag: none;
+  user-select: none;
 }
 
-/* Batida de asas — só transform, origem no ombro */
 .sx-wing {
-  transform-box: fill-box;
-  transform-origin: 18% 70%;
+  position: absolute;
+  width: 72%;
+  height: auto;
   will-change: transform;
-}
-
-.sx-wing-front {
-  animation: sx-flap-front 0.22s ease-in-out infinite;
+  transform-origin: 12% 78%;
+  z-index: 1;
 }
 
 .sx-wing-back {
-  animation: sx-flap-back 0.22s ease-in-out infinite;
-  animation-delay: -0.11s;
+  left: 18%;
+  top: 2%;
+  z-index: 1;
+  opacity: 0.85;
+  animation: sx-flap-back 0.34s ease-in-out infinite;
+}
+
+.sx-wing-front {
+  left: 22%;
+  top: 6%;
+  z-index: 3;
+  opacity: 0.92;
+  animation: sx-flap-front 0.34s ease-in-out infinite;
 }
 
 @keyframes sx-flap-front {
   0%,
   100% {
-    transform: rotate(-18deg) scaleY(1);
+    transform: rotate(-26deg) scaleY(1) scaleX(1);
   }
-  50% {
-    transform: rotate(28deg) scaleY(0.88);
+  40% {
+    transform: rotate(38deg) scaleY(0.82) scaleX(1.04);
+  }
+  70% {
+    transform: rotate(8deg) scaleY(0.94) scaleX(1);
   }
 }
 
 @keyframes sx-flap-back {
   0%,
   100% {
-    transform: rotate(22deg) scaleY(0.9);
+    transform: rotate(30deg) scaleY(0.88) scaleX(0.98);
   }
-  50% {
-    transform: rotate(-16deg) scaleY(1);
+  40% {
+    transform: rotate(-22deg) scaleY(1) scaleX(1.02);
   }
-}
-
-.sx-legs {
-  opacity: 0.85;
-}
-
-.sx-body {
-  transform-box: fill-box;
-  transform-origin: 50% 50%;
-  animation: sx-body-glide 0.44s ease-in-out infinite alternate;
-  will-change: transform;
-}
-
-@keyframes sx-body-glide {
-  from {
-    transform: translate3d(0, -1px, 0) rotate(-1deg);
-  }
-  to {
-    transform: translate3d(0, 2px, 0) rotate(1.5deg);
+  70% {
+    transform: rotate(6deg) scaleY(0.93) scaleX(1);
   }
 }
 
-/* Rastro de velocidade (só opacity/transform) */
 .sx-guara-wake {
   position: absolute;
-  right: -8%;
-  top: 42%;
-  width: 42%;
-  height: 3px;
+  right: -4%;
+  top: 48%;
+  width: 48%;
+  height: 4px;
   border-radius: 999px;
-  background: linear-gradient(90deg, transparent, rgba(254, 205, 211, 0.55));
+  background: linear-gradient(90deg, transparent, rgba(254, 205, 211, 0.65), rgba(255, 255, 255, 0.25));
   transform: translate3d(0, -50%, 0);
-  animation: sx-wake 0.28s ease-in-out infinite alternate;
+  animation: sx-wake 0.36s ease-in-out infinite alternate;
   will-change: transform, opacity;
-  pointer-events: none;
+  z-index: 0;
 }
 
 @keyframes sx-wake {
   from {
-    opacity: 0.25;
-    transform: translate3d(0, -50%, 0) scaleX(0.7);
+    opacity: 0.2;
+    transform: translate3d(0, -50%, 0) scaleX(0.65);
   }
   to {
-    opacity: 0.7;
-    transform: translate3d(6px, -50%, 0) scaleX(1.15);
+    opacity: 0.85;
+    transform: translate3d(10px, -50%, 0) scaleX(1.25);
   }
 }
 
@@ -471,9 +481,9 @@ body {
   top: 0;
   left: 0;
   width: 100%;
-  height: 3px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.95), transparent);
-  box-shadow: 0 0 24px 6px rgba(255, 255, 255, 0.45);
+  height: 4px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.98), transparent);
+  box-shadow: 0 0 28px 8px rgba(255, 255, 255, 0.5);
   transform: translateZ(0);
 }
 
@@ -481,8 +491,8 @@ body {
   position: absolute;
   inset: 8% 0 auto;
   height: 40%;
-  background: radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.28) 0%, transparent 70%);
-  opacity: 0.7;
+  background: radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+  opacity: 0.75;
 }
 
 .sx-deep {
@@ -580,22 +590,22 @@ body {
   display: flex;
   gap: 10px;
   color: #fde68a;
-  animation: sx-school 7s linear infinite;
+  animation: sx-school 9s linear infinite;
   will-change: transform;
 }
 
 .sx-school-a {
   top: 28%;
   left: -40%;
-  animation-duration: 9s;
+  animation-duration: 11s;
 }
 
 .sx-school-b {
   top: 48%;
   left: -50%;
   color: #fdba74;
-  animation-duration: 11s;
-  animation-delay: -3s;
+  animation-duration: 14s;
+  animation-delay: -4s;
 }
 
 @keyframes sx-school {
@@ -620,7 +630,7 @@ body {
   border-radius: 999px;
   border: 1.5px solid rgba(186, 230, 253, 0.65);
   background: rgba(255, 255, 255, 0.12);
-  animation: sx-bubble 4.5s linear infinite;
+  animation: sx-bubble 5.5s linear infinite;
   will-change: transform, opacity;
 }
 
@@ -683,8 +693,8 @@ body {
 .sx-flare {
   position: absolute;
   inset: 0;
-  z-index: 5;
-  background: radial-gradient(circle at 50% 28%, #fff7ed 0%, #ffedd5 40%, #fff 100%);
+  z-index: 10;
+  background: radial-gradient(circle at 50% 26%, #fff7ed 0%, #ffedd5 38%, #fff 100%);
   pointer-events: none;
   will-change: opacity;
 }
@@ -709,7 +719,6 @@ body {
   .sx-bubble,
   .sx-wing-front,
   .sx-wing-back,
-  .sx-body,
   .sx-guara-wake {
     animation: none !important;
   }
