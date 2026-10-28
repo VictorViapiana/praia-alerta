@@ -23,7 +23,8 @@ export function CloseButton({
         onClose();
       }}
       className={[
-        "pointer-events-auto relative z-[90] grid h-11 w-11 place-items-center rounded-full border text-white touch-manipulation",
+        // `absolute` (não `relative`) — evita conflito com Tailwind e mantém o X no canto certo
+        "pointer-events-auto absolute z-[90] grid h-11 w-11 place-items-center rounded-full border text-white touch-manipulation",
         "before:absolute before:-inset-3 before:content-['']",
         light
           ? "border-white/45 bg-black/55 shadow-[0_8px_24px_rgba(0,0,0,0.35)] backdrop-blur-md"

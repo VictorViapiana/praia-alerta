@@ -1863,7 +1863,7 @@ function Phone({
         <OceanWash urgent={sos} paused={splashActive} />
         <div
           className="relative z-10 flex h-full flex-col"
-          style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
+          style={{ paddingTop: "max(0.35rem, env(safe-area-inset-top, 0px))" }}
         >
           <GuaraIsland
             onMission={() => setMissionOpen(true)}
