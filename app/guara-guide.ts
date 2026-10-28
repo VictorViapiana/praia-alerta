@@ -1,5 +1,17 @@
 import { fold, type TideNow, type WeatherNow } from "./coast";
-import { AMBULANTES, ESCUNA_POINT, MARLIN, PARQUE_PESCARIA, PIER_PESCARIA, PLACES, SHOWERS } from "./places";
+import {
+  AMBULANTES,
+  ARENA_03,
+  BANHEIRO_V,
+  ESCUNA_POINT,
+  MARLIN,
+  PARQUE_PESCARIA,
+  PIER_PESCARIA,
+  PLACES,
+  PRACA_PAZ,
+  QUADRA_AREIA,
+  SHOWERS,
+} from "./places";
 import type { PinKind } from "./page-types";
 
 export type MapFilter = "neutro" | PinKind;
@@ -42,6 +54,8 @@ export const MAP_PROMPTS: GuaraPrompt[] = [
   { emoji: "🐟", label: "Marlin", ask: "Cadê o Marlin?" },
   { emoji: "🎣", label: "Pier", ask: "Onde fica o pier da pescaria?" },
   { emoji: "🌳", label: "Parque", ask: "Leva ao Parque do Morro" },
+  { emoji: "🚻", label: "Banheiro", ask: "Onde tem banheiro?" },
+  { emoji: "🏐", label: "Arena", ask: "Cadê a arena de areia?" },
 ];
 
 export type GuaraLive = {
@@ -163,6 +177,40 @@ export function answerGuara(raw: string, live: GuaraLive = { tide: null, weather
       openId: PIER_PESCARIA.id,
       sheet: null,
       route: { id: PIER_PESCARIA.id, lat: PIER_PESCARIA.lat, lng: PIER_PESCARIA.lng, name: PIER_PESCARIA.name },
+    };
+  }
+  if (has(text, "banheiro", "sanitario", "wc")) {
+    return {
+      answer: "Tem banheiros públicos na orla. Estou no Banheiro V, na Beira Mar. Também tem o II, III e VI.",
+      filter: "neutro",
+      query: "",
+      fly: { lat: BANHEIRO_V.lat, lng: BANHEIRO_V.lng },
+      openId: BANHEIRO_V.id,
+      sheet: null,
+      route: { id: BANHEIRO_V.id, lat: BANHEIRO_V.lat, lng: BANHEIRO_V.lng, name: BANHEIRO_V.name },
+    };
+  }
+  if (has(text, "arena", "quadra de areia", "futevolei", "volei de praia")) {
+    const spot = has(text, "sul", "quadra") && !has(text, "arena") ? QUADRA_AREIA : ARENA_03;
+    return {
+      answer: `${spot.name}: quadra na areia. Te levo até lá — e lembro das regras de convivência.`,
+      filter: "neutro",
+      query: "",
+      fly: { lat: spot.lat, lng: spot.lng },
+      openId: spot.id,
+      sheet: null,
+      route: { id: spot.id, lat: spot.lat, lng: spot.lng, name: spot.name },
+    };
+  }
+  if (has(text, "praca da paz", "praça da paz")) {
+    return {
+      answer: "A Praça da Paz fica na Beira Mar, perto do Marlin. Vamos até ela.",
+      filter: "neutro",
+      query: "",
+      fly: { lat: PRACA_PAZ.lat, lng: PRACA_PAZ.lng },
+      openId: PRACA_PAZ.id,
+      sheet: null,
+      route: { id: PRACA_PAZ.id, lat: PRACA_PAZ.lat, lng: PRACA_PAZ.lng, name: PRACA_PAZ.name },
     };
   }
   if (has(text, "escuna", "barco", "passeio de barco", "canal")) {

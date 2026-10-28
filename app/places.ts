@@ -432,6 +432,14 @@ export const MARLIN_TIPS = [
 export const MARLIN_SPEAK =
   "O Marlin Azul é patrimônio da Praia do Morro. Atenção: a pedra escorrega, então ande com cuidado. Não deixe lixo. E não risque, não suba e não danifique o monumento. Foto, sim. Dano, não.";
 
+export type LandmarkTone = "pier" | "park" | "banheiro" | "esporte" | "praca" | "acesso";
+
+export type LandmarkTip = {
+  kind: "alerta" | "convivencia";
+  title: string;
+  text: string;
+};
+
 export type OrlaLandmark = {
   id: string;
   name: string;
@@ -439,12 +447,50 @@ export type OrlaLandmark = {
   detail: string;
   lat: number;
   lng: number;
-  tone: "pier" | "park";
+  tone: LandmarkTone;
   cover: string;
-  tips: readonly { title: string; text: string }[];
+  tips: readonly LandmarkTip[];
   speak: string;
   search: string;
 };
+
+function banheiro(
+  id: string,
+  short: string,
+  name: string,
+  lat: number,
+  lng: number,
+): OrlaLandmark {
+  return {
+    id,
+    name,
+    short,
+    detail: "Banheiro público da orla",
+    lat,
+    lng,
+    tone: "banheiro",
+    cover: "/guarapari/praia-orla.jpg",
+    tips: [
+      {
+        kind: "alerta",
+        title: "Fila e pressa",
+        text: "Molhado e com pressa? Cuidado no piso. Segure a criança e não corra no corredor.",
+      },
+      {
+        kind: "convivencia",
+        title: "Deixe como achou",
+        text: "Não jogue papel fora da lixeira, não escreva na parede e liberte o box assim que terminar.",
+      },
+      {
+        kind: "convivencia",
+        title: "Respeito na fila",
+        text: "Prioridade para criança, idoso e quem precisa. Sem empurrão e sem gritaria.",
+      },
+    ],
+    speak: `${name}: piso molhado, sem correria. Use a lixeira, respeite a fila e deixe o lugar limpo para o próximo.`,
+    search: `${name} banheiro banheiros publico wc sanitário orla praia do morro ${short}`,
+  };
+}
 
 /** Pier / ponto de pesca no costão do Morro da Pescaria (coords Google Maps). */
 export const PIER_PESCARIA: OrlaLandmark = {
@@ -458,14 +504,17 @@ export const PIER_PESCARIA: OrlaLandmark = {
   cover: "/guarapari/praia-enseada.jpg",
   tips: [
     {
+      kind: "alerta",
       title: "Pedra molhada",
       text: "O píer e as pedras escorregam com a maresia. Ande devagar e firme o passo.",
     },
     {
+      kind: "alerta",
       title: "Olho na onda",
       text: "O mar bate no costão. Não vire as costas para a água e não se encoste na beira.",
     },
     {
+      kind: "convivencia",
       title: "Leve o que trouxe",
       text: "Linha, isca e lixo voltam com você. O ponto de pesca é da orla — deixe limpo.",
     },
@@ -487,14 +536,17 @@ export const PARQUE_PESCARIA: OrlaLandmark = {
   cover: "/guarapari/praia-vista.jpg",
   tips: [
     {
+      kind: "alerta",
       title: "Trilha e mata",
       text: "É parque natural: fique nas trilhas, não corte planta e não faça fogo.",
     },
     {
+      kind: "alerta",
       title: "Leve água",
       text: "Há pouco comércio no alto. Leve água, chapéu e saia antes do escurecer.",
     },
     {
+      kind: "convivencia",
       title: "Silêncio na fauna",
       text: "Não alimente animais e não leve nada da mata. Observe e fotografe só.",
     },
@@ -504,7 +556,148 @@ export const PARQUE_PESCARIA: OrlaLandmark = {
   search: "parque natural municipal morro da pescaria mata trilha reserva floresta",
 };
 
-export const ORLA_LANDMARKS: OrlaLandmark[] = [PIER_PESCARIA, PARQUE_PESCARIA];
+export const ACESSO_PESCARIA: OrlaLandmark = {
+  id: "acesso-pescaria",
+  name: "Acesso · Morro da Pescaria",
+  short: "Acesso",
+  detail: "Entrada da orla para o morro",
+  lat: -20.654619,
+  lng: -40.473597,
+  tone: "acesso",
+  cover: "/guarapari/praia-vista.jpg",
+  tips: [
+    {
+      kind: "alerta",
+      title: "Calçada e areia",
+      text: "A transição da avenida para o morro tem desnível. Olhe o chão e firme o passo.",
+    },
+    {
+      kind: "alerta",
+      title: "Sol forte",
+      text: "Pouco sombra no começo da subida. Use chapéu e leve água antes de seguir.",
+    },
+    {
+      kind: "convivencia",
+      title: "Não bloqueie a passagem",
+      text: "Bicicleta, carrinho e grupo grande: deixe o caminho livre para quem sobe e desce.",
+    },
+  ],
+  speak:
+    "Esse é o acesso da orla ao Morro da Pescaria. Cuidado com o desnível, leve água e não bloqueie a passagem de quem sobe.",
+  search: "acesso entrada morro da pescaria subida trilha orla beira mar",
+};
+
+export const PRACA_PAZ: OrlaLandmark = {
+  id: "praca-paz",
+  name: "Praça da Paz",
+  short: "Praça",
+  detail: "Praça na Av. Beira Mar",
+  lat: -20.65205,
+  lng: -40.479129,
+  tone: "praca",
+  cover: "/guarapari/praia-orla.jpg",
+  tips: [
+    {
+      kind: "alerta",
+      title: "Atenção no cruzamento",
+      text: "Fica na Beira Mar com movimento de carro. Cruze na faixa e segure a criança.",
+    },
+    {
+      kind: "convivencia",
+      title: "Espaço de todos",
+      text: "Som alto, churrasco improvisado e lixo no banco estragam a praça. Use a lixeira.",
+    },
+    {
+      kind: "convivencia",
+      title: "Noite com cuidado",
+      text: "Depois do escurecer, prefira o calçadão iluminado e evite ficar isolado.",
+    },
+  ],
+  speak:
+    "A Praça da Paz fica na Beira Mar, perto do Marlin. Cruze na faixa, não deixe lixo e à noite prefira o calçadão iluminado.",
+  search: "praça da paz praca paz beira mar marlin",
+};
+
+export const ARENA_03: OrlaLandmark = {
+  id: "arena-03",
+  name: "Arena 03",
+  short: "Arena",
+  detail: "Quadra de areia na orla",
+  lat: -20.655741,
+  lng: -40.490022,
+  tone: "esporte",
+  cover: "/guarapari/praia-verao.jpg",
+  tips: [
+    {
+      kind: "alerta",
+      title: "Bola na areia",
+      text: "Jogo forte perto de criança e guarda-sol. Avise antes de sacar e olhe quem está atrás.",
+    },
+    {
+      kind: "convivencia",
+      title: "Respeite o tempo",
+      text: "A arena é coletiva: combine o tempo, não monopolize e deixe o próximo time entrar.",
+    },
+    {
+      kind: "convivencia",
+      title: "Sem briga",
+      text: "Discussão de ponto não vira gritaria. O clima da orla vem antes do placar.",
+    },
+  ],
+  speak:
+    "Arena 03, quadra de areia na orla. Olhe as crianças ao redor, divida o tempo de jogo e mantenha o respeito.",
+  search: "arena 03 arena03 quadra areia vôlei futevôlei esporte",
+};
+
+export const QUADRA_AREIA: OrlaLandmark = {
+  id: "quadra-areia",
+  name: "Quadra de Areia",
+  short: "Quadra",
+  detail: "Quadra no trecho sul",
+  lat: -20.659111,
+  lng: -40.494271,
+  tone: "esporte",
+  cover: "/guarapari/praia-sul.jpg",
+  tips: [
+    {
+      kind: "alerta",
+      title: "Sol e esforço",
+      text: "No meio-dia a areia queima. Hidrate, use protetor e faça pausa entre os sets.",
+    },
+    {
+      kind: "convivencia",
+      title: "Espaço compartilhado",
+      text: "Não espalhe coolers na quadra. Guarde o material na beira e liberte a marca.",
+    },
+    {
+      kind: "convivencia",
+      title: "Som e respeito",
+      text: "Caixa de som no talo atrapalha o jogo e o banho. Volume baixo, bom senso alto.",
+    },
+  ],
+  speak:
+    "Quadra de areia no sul da praia. Hidrate no calor, não ocupe a marca com cooler e mantenha o som baixo.",
+  search: "quadra de areia quadra sul esporte vôlei futevôlei",
+};
+
+export const BANHEIRO_II = banheiro("banheiro-ii", "Banheiro II", "Banheiro II · Praia do Morro", -20.65634, -40.490857);
+export const BANHEIRO_III = banheiro("banheiro-iii", "Banheiro III", "Banheiro III · Praia do Morro", -20.654513, -40.487769);
+export const BANHEIRO_V = banheiro("banheiro-v", "Banheiro V", "Banheiro V · Praia do Morro", -20.652247, -40.480678);
+export const BANHEIRO_VI = banheiro("banheiro-vi", "Banheiro VI", "Banheiro VI · Praia do Morro", -20.652737, -40.476609);
+
+/** Marcos da orla com dicas de convivência e alerta do Guará (coords Google Maps). */
+export const ORLA_LANDMARKS: OrlaLandmark[] = [
+  BANHEIRO_II,
+  BANHEIRO_III,
+  BANHEIRO_V,
+  BANHEIRO_VI,
+  ARENA_03,
+  QUADRA_AREIA,
+  PRACA_PAZ,
+  ACESSO_PESCARIA,
+  PIER_PESCARIA,
+  PARQUE_PESCARIA,
+];
 
 export function landmarkById(id: string | null | undefined) {
   if (!id) return null;

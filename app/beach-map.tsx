@@ -6,7 +6,23 @@ import { createPortal } from "react-dom";
 import { MapContainer, Marker, Polygon, Polyline, TileLayer, useMap, useMapEvents } from "react-leaflet";
 import type { DivIcon, LatLngExpression } from "leaflet";
 import L from "leaflet";
-import { Anchor, Hotel, IceCreamCone, Martini, Pill, ShoppingBag, ShowerHead, Star, Trees, Utensils, type LucideIcon } from "lucide-react";
+import {
+  Anchor,
+  DoorOpen,
+  Footprints,
+  Hotel,
+  IceCreamCone,
+  Landmark,
+  Martini,
+  Pill,
+  ShoppingBag,
+  ShowerHead,
+  Star,
+  Trees,
+  Trophy,
+  Utensils,
+  type LucideIcon,
+} from "lucide-react";
 import { fold } from "./coast";
 import { MarkerPopup } from "./marker-popup";
 import { RouteChoice } from "./route-choice";
@@ -648,6 +664,42 @@ const LANDMARK_STYLE = {
     label: "text-[#065f46]",
     iconBg: "from-emerald-400 to-green-800",
     Icon: Trees,
+  },
+  banheiro: {
+    border: "border-[#0369a1]",
+    ring: "ring-sky-200",
+    bubble: "border-sky-100",
+    title: "text-[#0c4a6e]",
+    label: "text-[#0c4a6e]",
+    iconBg: "from-sky-400 to-blue-800",
+    Icon: DoorOpen,
+  },
+  esporte: {
+    border: "border-[#c2410c]",
+    ring: "ring-orange-200",
+    bubble: "border-orange-100",
+    title: "text-[#9a3412]",
+    label: "text-[#9a3412]",
+    iconBg: "from-orange-400 to-amber-800",
+    Icon: Trophy,
+  },
+  praca: {
+    border: "border-[#7c3aed]",
+    ring: "ring-violet-200",
+    bubble: "border-violet-100",
+    title: "text-[#5b21b6]",
+    label: "text-[#5b21b6]",
+    iconBg: "from-violet-400 to-purple-800",
+    Icon: Landmark,
+  },
+  acesso: {
+    border: "border-[#a16207]",
+    ring: "ring-yellow-200",
+    bubble: "border-yellow-100",
+    title: "text-[#854d0e]",
+    label: "text-[#854d0e]",
+    iconBg: "from-amber-400 to-yellow-800",
+    Icon: Footprints,
   },
 } as const;
 
