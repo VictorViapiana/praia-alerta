@@ -276,15 +276,18 @@ export function CriancaModal({ onClose }: { onClose: () => void }) {
         }}
       />
 
-      <header className="relative z-10 flex items-center gap-2 px-3 pb-2 pt-4">
+      <header
+        className="relative z-10 flex items-center gap-2 px-3 pb-2"
+        style={{ paddingTop: "max(1rem, calc(env(safe-area-inset-top, 0px) + 0.35rem))" }}
+      >
         {step === "escolha" || step === "enviado" ? (
-          <span className="h-10 w-10" />
+          <span className="h-11 w-11" />
         ) : (
           <button
             type="button"
             aria-label="Voltar"
             onClick={back}
-            className="grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-white/10"
+            className="relative grid h-11 w-11 place-items-center rounded-full border border-white/20 bg-white/10 touch-manipulation before:absolute before:-inset-2 before:content-['']"
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
@@ -308,7 +311,7 @@ export function CriancaModal({ onClose }: { onClose: () => void }) {
           type="button"
           aria-label="Fechar"
           onClick={onClose}
-          className="grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-white/10"
+          className="relative grid h-11 w-11 place-items-center rounded-full border border-white/20 bg-white/10 touch-manipulation before:absolute before:-inset-2 before:content-['']"
         >
           <X className="h-4 w-4" />
         </button>

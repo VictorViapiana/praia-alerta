@@ -1,9 +1,10 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { AlertTriangle, Ban, ChevronRight, Clock, Droplets, Sun, Trash2, Wind, X } from "lucide-react";
+import { AlertTriangle, Ban, ChevronRight, Clock, Droplets, Sun, Trash2, Wind } from "lucide-react";
 import { useState } from "react";
 import { meters, tideDot, tidePath, useTide, useWeather, uvLabel, weatherMark } from "./coast";
+import { CloseButton, closeTopClass, screenEnter } from "./nav-chrome";
 
 export type StoryId = "marlin" | "fotos" | "bandeiras";
 
@@ -137,23 +138,6 @@ const FLAGS = [
   },
 ] as const;
 
-function CloseButton({ onClose, light = false }: { onClose: () => void; light?: boolean }) {
-  return (
-    <button
-      type="button"
-      aria-label="Fechar"
-      onClick={onClose}
-      className={
-        light
-          ? "grid h-10 w-10 place-items-center rounded-full border border-white/40 bg-black/40 text-white backdrop-blur-md"
-          : "grid h-10 w-10 place-items-center rounded-full border border-white/25 bg-white/15 text-white backdrop-blur-md"
-      }
-    >
-      <X className="h-4 w-4" />
-    </button>
-  );
-}
-
 export function OrlaCards({
   hidden,
   onOpen,
@@ -168,7 +152,6 @@ export function OrlaCards({
       ) : (
         <motion.button
           type="button"
-          layoutId="marlin-card"
           initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={spring}
@@ -199,7 +182,6 @@ export function OrlaCards({
       ) : (
         <motion.button
           type="button"
-          layoutId="fotos-card"
           initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={spring}
@@ -239,11 +221,11 @@ export function OrlaCards({
 export function MarlinScreen({ onClose }: { onClose: () => void }) {
   return (
     <motion.div
-      layoutId="marlin-card"
-      transition={spring}
-      style={{ borderRadius: 32 }}
+      {...screenEnter}
+      style={{ borderRadius: 0 }}
       className="absolute inset-0 z-40 overflow-hidden bg-[#061018]"
     >
+      <CloseButton onClose={onClose} light className={closeTopClass} />
       <div className="no-scrollbar h-full overflow-x-hidden overflow-y-auto">
         <div className="relative h-[300px]">
           <img
@@ -252,9 +234,6 @@ export function MarlinScreen({ onClose }: { onClose: () => void }) {
             className="h-full w-full object-cover"
           />
           <span className="absolute inset-0 bg-gradient-to-t from-[#061018] via-[#061018]/10 to-black/30" />
-          <div className="absolute right-4 top-4">
-            <CloseButton onClose={onClose} light />
-          </div>
           <div className="absolute bottom-4 left-5 right-16">
             <p className="text-[11px] uppercase tracking-[0.2em] text-cyan-100/80">Praia do Morro · Guarapari</p>
             <h2 className="mt-1 font-serif text-4xl leading-none text-white">Marlin Azul</h2>
@@ -341,11 +320,11 @@ export function FotosScreen({ onClose }: { onClose: () => void }) {
 
   return (
     <motion.div
-      layoutId="fotos-card"
-      transition={spring}
-      style={{ borderRadius: 32 }}
+      {...screenEnter}
+      style={{ borderRadius: 0 }}
       className="absolute inset-0 z-40 overflow-hidden bg-[#07131c]"
     >
+      <CloseButton onClose={onClose} light className={closeTopClass} />
       <div className="no-scrollbar h-full overflow-x-hidden overflow-y-auto">
         <div className="relative h-[300px]">
           <img
@@ -354,9 +333,6 @@ export function FotosScreen({ onClose }: { onClose: () => void }) {
             className="h-full w-full object-cover object-[center_55%]"
           />
           <span className="absolute inset-0 bg-gradient-to-t from-[#07131c] via-transparent to-black/25" />
-          <div className="absolute right-4 top-4">
-            <CloseButton onClose={onClose} light />
-          </div>
           <div className="absolute bottom-4 left-5 right-16">
             <p className="text-[11px] uppercase tracking-[0.2em] text-sky-100/80">Guarapari · ES</p>
             <h2 className="mt-1 font-serif text-4xl leading-none text-white">Praia do Morro</h2>
@@ -400,9 +376,7 @@ export function FotosScreen({ onClose }: { onClose: () => void }) {
           >
             <img src={photo.src} alt={photo.caption} className="h-full w-full object-cover" />
             <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/25" />
-            <div className="absolute right-4 top-4">
-              <CloseButton onClose={() => setZoom(null)} light />
-            </div>
+            <CloseButton onClose={() => setZoom(null)} light className={closeTopClass} />
             <div className="absolute bottom-6 left-5 right-16">
               <p className="text-sm font-semibold text-white">{photo.title}</p>
               <p className="mt-1 text-[11px] text-white/70">{photo.credit}</p>
@@ -418,21 +392,21 @@ export function FlagsScreen({ onClose }: { onClose: () => void }) {
   return (
     <motion.div
       className="absolute inset-0 z-40 overflow-hidden bg-[#07140c]"
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 16 }}
-      transition={spring}
+      {...screenEnter}
       role="dialog"
       aria-label="Bandeiras de sinalização"
     >
-      <div className="flex items-start justify-between px-5 pb-2 pt-5">
+      <CloseButton onClose={onClose} className={closeTopClass} />
+      <div
+        className="flex items-start justify-between px-5 pb-2 pr-16"
+        style={{ paddingTop: "max(1.1rem, calc(env(safe-area-inset-top, 0px) + 0.35rem))" }}
+      >
         <div>
           <p className="text-[11px] uppercase tracking-[0.18em] text-emerald-100/70">Sinalização</p>
           <h2 className="font-serif text-3xl leading-none text-white">Bandeiras</h2>
         </div>
-        <CloseButton onClose={onClose} />
       </div>
-      <div className="no-scrollbar h-[calc(100%-88px)] space-y-2.5 overflow-y-auto px-5 pb-8">
+      <div className="no-scrollbar h-[calc(100%-88px)] space-y-2.5 overflow-y-auto px-5 pb-[max(2rem,env(safe-area-inset-bottom))]">
         <p className="pb-1 text-sm leading-relaxed text-white/70">
           Na Praia do Morro a bandeira vale mais do que o aspecto do mar. Leia antes de entrar na água.
         </p>

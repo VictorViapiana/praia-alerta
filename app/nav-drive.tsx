@@ -73,7 +73,10 @@ export function NavDrive({
   return (
     <>
       <div className="absolute inset-x-0 top-0 z-[65] bg-[#0b0d10] text-white">
-        <div className="flex items-center gap-3 px-4 pb-3 pr-16 pt-4">
+        <div
+          className="flex items-center gap-3 px-4 pb-3 pr-16"
+          style={{ paddingTop: "max(1rem, calc(env(safe-area-inset-top, 0px) + 0.35rem))" }}
+        >
           <ManeuverArrow modifier={arrived ? "arrive" : maneuver?.modifier ?? "straight"} className="h-14 w-14 shrink-0" />
           <div className="min-w-0 flex-1">
             <div className="flex items-end justify-between gap-2">
