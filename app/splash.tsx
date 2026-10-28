@@ -3,12 +3,12 @@
 import { useEffect, useRef } from "react";
 
 /**
- * Abertura surreal: o sol nasce debaixo d'água.
- * Zero imagens. Só transform/opacity no compositor — não disputa CPU com o mapa.
+ * Portal da Maré: a gota que contém o oceano inteiro.
+ * Zero imagens / zero canvas. Só transform + opacity no compositor.
  */
 
-const FILM_MS = 5400;
-const WARM_MS = 3000;
+const FILM_MS = 6400;
+const WARM_MS = 3400;
 
 export function SplashScreen({ onWarm, onDone }: { onWarm?: () => void; onDone: () => void }) {
   const doneRef = useRef(false);
@@ -60,18 +60,35 @@ export function SplashScreen({ onWarm, onDone }: { onWarm?: () => void; onDone: 
     <div className="sx-splash is-on" role="img" aria-label="Abrindo Praia Alerta">
       <div className="sx-void sx-anim" />
 
-      <div className="sx-fold sx-fold-sea sx-anim" aria-hidden />
-      <div className="sx-fold sx-fold-sky sx-anim" aria-hidden />
+      {/* Mundo invertido atrás do portal */}
+      <div className="sx-world sx-anim" aria-hidden>
+        <div className="sx-world-sky" />
+        <div className="sx-world-sea" />
+      </div>
 
-      <span className="sx-orb sx-anim" aria-hidden />
-      <span className="sx-ring sx-r1 sx-anim" aria-hidden />
-      <span className="sx-ring sx-r2 sx-anim" aria-hidden />
-      <span className="sx-ring sx-r3 sx-anim" aria-hidden />
-      <span className="sx-spark sx-anim" aria-hidden />
-      <span className="sx-blade sx-anim" aria-hidden />
+      {/* Câmara com perspectiva: a gota engole a tela */}
+      <div className="sx-stage" aria-hidden>
+        <div className="sx-drop sx-anim">
+          <span className="sx-drop-core" />
+          <span className="sx-drop-sun" />
+          <span className="sx-drop-shine" />
+        </div>
 
+        <span className="sx-gyro sx-gyro-a sx-anim" />
+        <span className="sx-gyro sx-gyro-b sx-anim" />
+        <span className="sx-gyro sx-gyro-c sx-anim" />
+
+        {/* Horizonte circular que vira uma linha — topologia impossível */}
+        <span className="sx-halo sx-anim" />
+      </div>
+
+      <span className="sx-flash sx-anim" aria-hidden />
+
+      <p className="sx-mirror sx-anim" aria-hidden>
+        Guarapari
+      </p>
       <p className="sx-title sx-anim">Guarapari</p>
-      <p className="sx-sub sx-anim">onde o mar começa</p>
+      <p className="sx-sub sx-anim">o mar cabe numa gota</p>
     </div>
   );
 }
