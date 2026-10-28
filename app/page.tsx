@@ -2,7 +2,6 @@
 
 import {
   AnimatePresence,
-  LayoutGroup,
   animate,
   motion,
   useMotionValue,
@@ -10,19 +9,15 @@ import {
 } from "framer-motion";
 import {
   Baby,
-  BatteryFull,
   LifeBuoy,
   LocateFixed,
   MapPin,
   Phone as PhoneIcon,
   RotateCcw,
   ShieldAlert,
-  Signal,
   Sun,
   Volume2,
   Waves,
-  Wifi,
-  X,
   type LucideIcon,
 } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -45,6 +40,7 @@ import { RAMPA_RULE, RAMPA_WARN } from "./rampas";
 import { speakGuara, stopSpeaking } from "./voice";
 import { NavDrive } from "./nav-drive";
 import { MissionModal, MissionTrigger } from "./mission-modal";
+import { CloseButton, closeTopClass, screenEnter, useEdgeSwipeBack } from "./nav-chrome";
 import { SplashScreen } from "./splash";
 import { CALL_OUT, followRoute, formatDistance, formatWalk, metersBetween, modeLabel, nextManeuvers, OFF_ROUTE, planRoute, routeIntro, routeSurface, type TravelMode, type WalkPoint, type WalkRoute } from "./walk-route";
 
@@ -177,25 +173,6 @@ function cx(...parts: Array<string | false | null | undefined>) {
 
 function speakPortuguese(text: string, onEnd: () => void) {
   speakGuara(text, onEnd);
-}
-
-function useClock() {
-  const [time, setTime] = useState("--:--");
-
-  useEffect(() => {
-    const tick = () =>
-      setTime(
-        new Date().toLocaleTimeString("pt-BR", {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      );
-    tick();
-    const id = window.setInterval(tick, 10_000);
-    return () => window.clearInterval(id);
-  }, []);
-
-  return time;
 }
 
 function useTypewriter(text: string, speed = 32) {
@@ -395,7 +372,7 @@ function GuaraIsland({ onReplay, onMission }: { onReplay: () => void; onMission:
   };
 
   return (
-    <div className="relative z-20 px-3 pt-1">
+    <div className="relative z-20 px-3 pt-2">
       <motion.div
         layout
         transition={{ layout: islandSpring }}
@@ -581,7 +558,6 @@ function FeatureCard({
   return (
     <motion.button
       type="button"
-      layoutId={feature.id}
       initial={false}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       whileHover={{ y: -3, scale: 1.015 }}
@@ -602,16 +578,13 @@ function FeatureCard({
           <span className="relative h-2.5 w-2.5 rounded-full bg-purple-100" />
         </span>
       )}
-      <motion.span layoutId={`${feature.id}-icon`} className="relative inline-flex w-fit">
+      <span className="relative inline-flex w-fit">
         <FeatureGlyph feature={feature} />
-      </motion.span>
+      </span>
       <span className="relative">
-        <motion.span
-          layoutId={`${feature.id}-title`}
-          className="block text-[15px] font-semibold leading-tight text-white"
-        >
+        <span className="block text-[15px] font-semibold leading-tight text-white">
           {feature.title}
-        </motion.span>
+        </span>
         <span className="mt-0.5 block text-[11px] text-white/60">{feature.subtitle}</span>
       </span>
     </motion.button>
@@ -629,51 +602,30 @@ function SheetShell({
 }) {
   return (
     <motion.div
-      layoutId={feature.id}
-      transition={cardSpring}
-      style={{ borderRadius: 36 }}
-      className="absolute inset-0 z-40 overflow-hidden border border-white/20 bg-[#071820]/75 shadow-2xl backdrop-blur-2xl"
+      {...screenEnter}
+      style={{ borderRadius: 0 }}
+      className="absolute inset-0 z-40 overflow-hidden border-0 bg-[#071820]/92 shadow-2xl backdrop-blur-2xl"
     >
       <div
         className="pointer-events-none absolute -right-10 -top-16 h-48 w-48 rounded-full blur-3xl"
         style={{ background: feature.wash }}
       />
-      <div className="relative flex items-center gap-3 px-5 pb-1 pr-16 pt-5">
-        <motion.span
-          layoutId={`${feature.id}-icon`}
-          className="grid h-12 w-12 place-items-center rounded-2xl border border-white/15 bg-white/10"
-        >
+      <div
+        className="relative flex items-center gap-3 px-5 pb-1 pr-16"
+        style={{ paddingTop: "max(1.1rem, calc(env(safe-area-inset-top, 0px) + 0.35rem))" }}
+      >
+        <span className="grid h-12 w-12 place-items-center rounded-2xl border border-white/15 bg-white/10">
           <FeatureGlyph feature={feature} size="h-7 w-7" />
-        </motion.span>
+        </span>
         <div className="min-w-0">
-          <motion.h2
-            layoutId={`${feature.id}-title`}
-            className="truncate text-[1.35rem] font-semibold leading-none text-white"
-          >
-            {feature.title}
-          </motion.h2>
+          <h2 className="truncate text-[1.35rem] font-semibold leading-none text-white">{feature.title}</h2>
           <p className="mt-1 text-xs text-white/55">{feature.subtitle}</p>
         </div>
       </div>
-      <motion.button
-        type="button"
-        aria-label="Fechar"
-        onClick={onClose}
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ ...cardSpring, delay: 0.18 }}
-        className="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full border border-white/25 bg-white/15 text-white backdrop-blur-md"
-      >
-        <X className="h-4 w-4" />
-      </motion.button>
-      <motion.div
-        initial={{ opacity: 0, y: 18 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ ...cardSpring, delay: 0.22 }}
-        className="no-scrollbar relative h-[calc(100%-88px)] overflow-y-auto px-5 pb-6 pt-4"
-      >
+      <CloseButton onClose={onClose} className={closeTopClass} />
+      <div className="no-scrollbar relative h-[calc(100%-5.5rem)] overflow-y-auto px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-4">
         {children}
-      </motion.div>
+      </div>
     </motion.div>
   );
 }
@@ -720,7 +672,14 @@ function MapSos({ onTrigger, parked = false }: { onTrigger: () => void; parked?:
   };
 
   return (
-    <div className={`absolute left-3 z-[70] ${parked ? "top-[10.4rem]" : "top-[4.45rem]"}`}>
+    <div
+      className="absolute left-3 z-[70]"
+      style={{
+        top: parked
+          ? "max(10.4rem, calc(env(safe-area-inset-top, 0px) + 8.6rem))"
+          : "max(4.45rem, calc(env(safe-area-inset-top, 0px) + 3.55rem))",
+      }}
+    >
       <button
         type="button"
         data-map-ui
@@ -1143,9 +1102,8 @@ function MapScreen({
     >
     <motion.div
       ref={mapRef}
-      layoutId="mapa"
-      transition={cardSpring}
-      style={{ borderRadius: 36 }}
+      {...screenEnter}
+      style={{ borderRadius: 0 }}
       className="absolute inset-0 z-40 overflow-hidden bg-[#2c3832]"
     >
       <div className="absolute inset-0 z-0 bg-[#2c3832]">
@@ -1215,31 +1173,26 @@ function MapScreen({
       {!driving && <div className="pointer-events-none absolute inset-x-0 bottom-0 z-40 h-40 bg-gradient-to-t from-black/50 to-transparent" />}
 
       {!driving && (
-        <div className="pointer-events-none absolute left-5 right-16 top-4 z-50">
-          <motion.p layoutId="mapa-kicker" className="text-[11px] uppercase tracking-[0.2em] text-white/85 drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]">
+        <div
+          className="pointer-events-none absolute left-5 right-16 z-50"
+          style={{ top: "max(0.85rem, calc(env(safe-area-inset-top, 0px) + 0.35rem))" }}
+        >
+          <p className="text-[11px] uppercase tracking-[0.2em] text-white/85 drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]">
             Praia do Morro
-          </motion.p>
-          <motion.h2 layoutId="mapa-title" className="mt-1 text-[1.35rem] font-semibold leading-none text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
+          </p>
+          <h2 className="mt-1 text-[1.35rem] font-semibold leading-none text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
             Mapa & Localização
-          </motion.h2>
+          </h2>
         </div>
       )}
 
-      <motion.button
-        type="button"
-        data-map-ui
-        aria-label="Fechar"
-        onClick={onClose}
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ ...cardSpring, delay: 0.12 }}
-        className={`absolute right-3 z-[72] grid h-10 w-10 place-items-center rounded-full border text-white backdrop-blur-md ${driving ? "top-3 border-white/25 bg-white/15" : "top-4 border-white/40 bg-black/40"}`}
-      >
-        <X className="h-4 w-4" />
-      </motion.button>
+      <CloseButton onClose={onClose} light={!driving} className={closeTopClass} data-map-ui />
 
       {!driving && (
-      <div className="absolute right-4 top-[4.7rem] z-50 flex flex-col items-end gap-1">
+      <div
+        className="absolute right-4 z-50 flex flex-col items-end gap-1"
+        style={{ top: "max(4.7rem, calc(env(safe-area-inset-top, 0px) + 3.7rem))" }}
+      >
         <button
           type="button"
           data-map-ui
@@ -1440,7 +1393,6 @@ function MapHighlight({
   return (
     <motion.button
       type="button"
-      layoutId="mapa"
       initial={false}
       animate={{ opacity: 1, scale: 1 }}
       whileHover={{ borderColor: "rgba(255,255,255,0.45)" }}
@@ -1462,12 +1414,8 @@ function MapHighlight({
           <MapPin className="h-5 w-5 text-blue-200" style={{ filter: "drop-shadow(0 0 10px rgba(96,165,250,0.95))" }} />
         </span>
         <span>
-          <motion.span layoutId="mapa-kicker" className="block text-[11px] uppercase tracking-[0.2em] text-cyan-100/75">
-            Praia do Morro
-          </motion.span>
-          <motion.span layoutId="mapa-title" className="mt-1 block text-[1.35rem] font-semibold leading-none text-white">
-            Mapa & Localização
-          </motion.span>
+          <span className="block text-[11px] uppercase tracking-[0.2em] text-cyan-100/75">Praia do Morro</span>
+          <span className="mt-1 block text-[1.35rem] font-semibold leading-none text-white">Mapa & Localização</span>
           <span className="mt-1.5 block text-xs text-white/65">Você no calçadão · areia na frente, comércio atrás</span>
         </span>
       </span>
@@ -1629,7 +1577,7 @@ function SosSlider({ onTrigger }: { onTrigger: () => void }) {
   };
 
   return (
-    <div className="absolute bottom-6 left-4 right-4 z-30">
+    <div className="absolute bottom-[max(1.1rem,env(safe-area-inset-bottom))] left-4 right-4 z-30">
       <div
         ref={trackRef}
         className="relative h-16 overflow-hidden rounded-full border border-white/15 bg-black/45 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-md"
@@ -1716,7 +1664,10 @@ function SosModal({ onClose }: { onClose: () => void }) {
         animate={{ x: ["-60%", "280%"] }}
         transition={{ duration: 1.7, repeat: Infinity, ease: "linear", repeatDelay: 0.35 }}
       />
-      <div className="no-scrollbar relative flex h-full flex-col overflow-y-auto px-6 pb-8 pt-10 text-center text-white">
+      <div
+        className="no-scrollbar relative flex h-full flex-col overflow-y-auto px-6 pb-[max(2rem,env(safe-area-inset-bottom))] text-center text-white"
+        style={{ paddingTop: "max(2.5rem, calc(env(safe-area-inset-top, 0px) + 1rem))" }}
+      >
         <div className="relative mx-auto grid h-24 w-24 place-items-center">
           {[0, 1, 2].map((ring) => (
             <motion.span
@@ -1823,7 +1774,6 @@ function Phone({
   splashDone?: boolean;
   splashActive?: boolean;
 }) {
-  const time = useClock();
   const shellRef = useRef<HTMLDivElement>(null);
   const [tourReplay, setTourReplay] = useState(0);
   const [activeId, setActiveId] = useState<FeatureId | null>(null);
@@ -1835,6 +1785,32 @@ function Phone({
   const ramp = useRampWatch(mapOpen, !splashActive);
   const active = FEATURES.find((feature) => feature.id === activeId) ?? null;
   const sheet = active && active.id !== "crianca" ? active : null;
+
+  // Gesto de voltar do iPhone — desligado no mapa para não sair ao arrastar a orla.
+  const canEdgeBack = Boolean(missionOpen || sos || childOpen || story || sheet);
+  useEdgeSwipeBack(
+    canEdgeBack,
+    useCallback(() => {
+      if (missionOpen) {
+        setMissionOpen(false);
+        return;
+      }
+      if (sos) {
+        onCloseSos();
+        setSosKey((value) => value + 1);
+        return;
+      }
+      if (childOpen) {
+        setChildOpen(false);
+        return;
+      }
+      if (story) {
+        setStory(null);
+        return;
+      }
+      if (sheet) setActiveId(null);
+    }, [missionOpen, sos, childOpen, story, sheet, onCloseSos]),
+  );
 
   const openFeature = (id: FeatureId) => {
     setStory(null);
@@ -1885,75 +1861,68 @@ function Phone({
 
       <div ref={shellRef} className={`relative h-full w-full overflow-hidden bg-gray-900 sm:rounded-[3rem] sm:border-8 sm:border-gray-900 sm:shadow-2xl ${splashActive ? "pa-hold" : ""}`}>
         <OceanWash urgent={sos} paused={splashActive} />
-        <LayoutGroup id="alegretto-phone">
-          <div className="relative z-10 flex h-full flex-col">
-            <div className="relative z-20 flex items-center justify-between px-5 pt-1.5 text-white">
-              <span className="text-[13px] font-semibold tabular-nums">{time}</span>
-              <span className="flex items-center gap-1.5 text-white/90">
-                <Signal className="h-3.5 w-3.5" />
-                <Wifi className="h-3.5 w-3.5" />
-                <BatteryFull className="h-4 w-4" />
-              </span>
-            </div>
+        <div
+          className="relative z-10 flex h-full flex-col"
+          style={{ paddingTop: "max(0.35rem, env(safe-area-inset-top, 0px))" }}
+        >
+          <GuaraIsland
+            onMission={() => setMissionOpen(true)}
+            onReplay={() => {
+              try {
+                localStorage.removeItem(HOME_TOUR_KEY);
+                localStorage.removeItem(MAP_TOUR_KEY);
+              } catch {
+                /* ignore private mode */
+              }
+              setMapOpen(false);
+              setActiveId(null);
+              setStory(null);
+              setTourReplay((value) => value + 1);
+            }}
+          />
 
-            <GuaraIsland
-              onMission={() => setMissionOpen(true)}
-              onReplay={() => {
-                try {
-                  localStorage.removeItem(HOME_TOUR_KEY);
-                  localStorage.removeItem(MAP_TOUR_KEY);
-                } catch {
-                  /* ignore private mode */
-                }
-                setMapOpen(false);
+          <div className={`no-scrollbar min-h-0 flex-1 overflow-y-auto px-4 pb-28 pt-2.5 ${splashActive ? "content-visibility-auto" : ""}`}>
+            <BeachHome
+              mapOpen={mapOpen}
+              activeId={activeId}
+              story={story}
+              onOpenMap={() => {
                 setActiveId(null);
+                setChildOpen(false);
                 setStory(null);
-                setTourReplay((value) => value + 1);
+                setMapOpen(true);
               }}
+              onOpen={openFeature}
+              onOpenStory={openStory}
             />
-
-            <div className={`no-scrollbar min-h-0 flex-1 overflow-y-auto px-4 pb-28 pt-2.5 ${splashActive ? "content-visibility-auto" : ""}`}>
-              <BeachHome
-                mapOpen={mapOpen}
-                activeId={activeId}
-                story={story}
-                onOpenMap={() => {
-                  setActiveId(null);
-                  setChildOpen(false);
-                  setStory(null);
-                  setMapOpen(true);
-                }}
-                onOpen={openFeature}
-                onOpenStory={openStory}
-              />
-            </div>
           </div>
+        </div>
 
+        <AnimatePresence>
           {sheet && (
-            <SheetShell feature={sheet} onClose={() => setActiveId(null)}>
+            <SheetShell key={sheet.id} feature={sheet} onClose={() => setActiveId(null)}>
               <FeatureBody id={sheet.id} onFlags={() => openStory("bandeiras")} />
             </SheetShell>
           )}
+        </AnimatePresence>
+        <AnimatePresence>
           {mapOpen && (
             <MapScreen
+              key="map"
               onClose={() => setMapOpen(false)}
               onSos={onSos}
               rampAlert={ramp.alert}
               onDismissRamp={ramp.dismiss}
             />
           )}
-          {story === "marlin" && <MarlinScreen onClose={() => setStory(null)} />}
-          {story === "fotos" && <FotosScreen onClose={() => setStory(null)} />}
-          <AnimatePresence>
-            {story === "bandeiras" && <FlagsScreen onClose={() => setStory(null)} />}
-          </AnimatePresence>
-        </LayoutGroup>
+        </AnimatePresence>
+        <AnimatePresence>
+          {story === "marlin" && <MarlinScreen key="marlin" onClose={() => setStory(null)} />}
+          {story === "fotos" && <FotosScreen key="fotos" onClose={() => setStory(null)} />}
+          {story === "bandeiras" && <FlagsScreen key="bandeiras" onClose={() => setStory(null)} />}
+        </AnimatePresence>
 
         <SosSlider key={sosKey} onTrigger={onSos} />
-
-        {!sheet && !mapOpen && !childOpen && !story && !sos && !missionOpen && (
-          <div className="pointer-events-none absolute bottom-1.5 left-1/2 z-30 h-1 w-28 -translate-x-1/2 rounded-full bg-white/45" />
-        )}
 
         <AnimatePresence>
           {childOpen && <CriancaModal onClose={() => setChildOpen(false)} />}
