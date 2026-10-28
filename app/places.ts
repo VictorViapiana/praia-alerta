@@ -432,7 +432,7 @@ export const MARLIN_TIPS = [
 export const MARLIN_SPEAK =
   "O Marlin Azul é patrimônio da Praia do Morro. Atenção: a pedra escorrega, então ande com cuidado. Não deixe lixo. E não risque, não suba e não danifique o monumento. Foto, sim. Dano, não.";
 
-export type LandmarkTone = "pier" | "park" | "banheiro" | "esporte" | "praca" | "acesso" | "abrigo";
+export type LandmarkTone = "pier" | "park" | "banheiro" | "esporte" | "praca" | "acesso" | "abrigo" | "playground" | "salva";
 
 export type LandmarkTip = {
   kind: "alerta" | "convivencia";
@@ -554,37 +554,6 @@ export const PARQUE_PESCARIA: OrlaLandmark = {
   speak:
     "O Parque Natural Municipal Morro da Pescaria fecha a baía no norte da Praia do Morro. Trilha, mata e vista do mar. Fique no caminho, leve água e respeite a fauna.",
   search: "parque natural municipal morro da pescaria mata trilha reserva floresta",
-};
-
-export const ACESSO_PESCARIA: OrlaLandmark = {
-  id: "acesso-pescaria",
-  name: "Acesso · Morro da Pescaria",
-  short: "Acesso",
-  detail: "Entrada da orla para o morro",
-  lat: -20.654619,
-  lng: -40.473597,
-  tone: "acesso",
-  cover: "/guarapari/praia-vista.jpg",
-  tips: [
-    {
-      kind: "alerta",
-      title: "Calçada e areia",
-      text: "A transição da avenida para o morro tem desnível. Olhe o chão e firme o passo.",
-    },
-    {
-      kind: "alerta",
-      title: "Sol forte",
-      text: "Pouco sombra no começo da subida. Use chapéu e leve água antes de seguir.",
-    },
-    {
-      kind: "convivencia",
-      title: "Não bloqueie a passagem",
-      text: "Bicicleta, carrinho e grupo grande: deixe o caminho livre para quem sobe e desce.",
-    },
-  ],
-  speak:
-    "Esse é o acesso da orla ao Morro da Pescaria. Cuidado com o desnível, leve água e não bloqueie a passagem de quem sobe.",
-  search: "acesso entrada morro da pescaria subida trilha orla beira mar",
 };
 
 export const PRACA_PAZ: OrlaLandmark = {
@@ -720,38 +689,89 @@ function bancos(
   };
 }
 
-/** Conjunto de gazebos na areia, ao lado do Marlin (3 cliques + Street View). */
+/** Três gazebos enfileirados na areia, ao lado do Marlin. */
 export const BANCOS_MARLIN = bancos(
   "bancos-marlin",
   "Bancos",
   "Bancos cobertos · Marlin",
-  "Conjunto na areia, ao lado do Marlin",
+  "Conjunto de 3 bancos na areia",
   -20.652345,
   -40.479111,
-  "banco bancos coberto cobertos gazebo sombra marlin areia conjunto",
+  "banco bancos coberto cobertos gazebo sombra marlin areia conjunto tres",
 );
 
-/** Par de coberturas brancas na areia, junto ao Quiosque 8. */
-export const BANCOS_Q8 = bancos(
-  "bancos-quiosque-8",
+/** Três bancos cobertos no fim da praia, no Morro da Pescaria. */
+export const BANCOS_NORTE = bancos(
+  "bancos-norte",
   "Bancos",
-  "Bancos cobertos · Quiosque 8",
-  "Conjunto de coberturas na areia",
-  -20.653436,
-  -40.485284,
-  "banco bancos coberto cobertos gazebo sombra quiosque 8 conjunto",
+  "Bancos cobertos · Norte",
+  "Conjunto de 3 bancos no fim da praia",
+  -20.654601,
+  -40.473615,
+  "banco bancos coberto cobertos gazebo sombra norte pescaria conjunto tres",
 );
 
-/** Par de coberturas brancas na areia, junto ao Quiosque 17. */
-export const BANCOS_Q17 = bancos(
-  "bancos-quiosque-17",
-  "Bancos",
-  "Bancos cobertos · Quiosque 17",
-  "Conjunto de coberturas na areia",
-  -20.652869,
-  -40.484136,
-  "banco bancos coberto cobertos gazebo sombra quiosque 17 conjunto",
-);
+export const PLAYGROUND: OrlaLandmark = {
+  id: "playground",
+  name: "Playground",
+  short: "Play",
+  detail: "Parquinho na areia",
+  lat: -20.653436,
+  lng: -40.485284,
+  tone: "playground",
+  cover: "/guarapari/praia-verao.jpg",
+  tips: [
+    {
+      kind: "alerta",
+      title: "Ferro quente",
+      text: "No sol o brinquedo queima. Confira com a mão antes de a criança sentar ou escorregar.",
+    },
+    {
+      kind: "alerta",
+      title: "Olho na criança",
+      text: "Areia e brinquedo juntos. Não deixe sozinha e não deixe correr para o mar daqui.",
+    },
+    {
+      kind: "convivencia",
+      title: "Fila no brinquedo",
+      text: "Um de cada vez no escorrega e no balanço. Espere a vez e ajude quem é menor.",
+    },
+  ],
+  speak:
+    "Playground na areia. O ferro esquenta no sol, fique com a criança e respeite a fila do brinquedo.",
+  search: "playground play parquinho brinquedo crianca escorrega balanco areia",
+};
+
+export const SALVA_VIDAS: OrlaLandmark = {
+  id: "salva-vidas",
+  name: "Salva-vidas",
+  short: "Salva",
+  detail: "Posto de salva-vidas",
+  lat: -20.653246,
+  lng: -40.485064,
+  tone: "salva",
+  cover: "/guarapari/praia-orla.jpg",
+  tips: [
+    {
+      kind: "alerta",
+      title: "Bandeira manda",
+      text: "Amarela é cuidado, vermelha é sem banho. O posto vale mais do que o mar parecer calmo.",
+    },
+    {
+      kind: "alerta",
+      title: "Corredor livre",
+      text: "Não pare cadeira, guarda-sol ou carrinho na frente do posto. A saída para o resgate tem que estar livre.",
+    },
+    {
+      kind: "convivencia",
+      title: "Posto não é quiosque",
+      text: "Não peça gelo, tomada ou guarda-volume. Em emergência, chame alto e aponte o ponto.",
+    },
+  ],
+  speak:
+    "Posto de salva-vidas. Respeite a bandeira, deixe o corredor livre e chame o posto só para emergência.",
+  search: "salva vidas salva-vidas posto guarda bombeiro resgate bandeira",
+};
 
 export const BANHEIRO_II = banheiro("banheiro-ii", "Banheiro II", "Banheiro II · Praia do Morro", -20.65634, -40.490857);
 export const BANHEIRO_III = banheiro("banheiro-iii", "Banheiro III", "Banheiro III · Praia do Morro", -20.654513, -40.487769);
@@ -767,10 +787,10 @@ export const ORLA_LANDMARKS: OrlaLandmark[] = [
   ARENA_03,
   QUADRA_AREIA,
   BANCOS_MARLIN,
-  BANCOS_Q8,
-  BANCOS_Q17,
+  BANCOS_NORTE,
+  PLAYGROUND,
+  SALVA_VIDAS,
   PRACA_PAZ,
-  ACESSO_PESCARIA,
   PIER_PESCARIA,
   PARQUE_PESCARIA,
 ];
