@@ -8,9 +8,11 @@ import type { DivIcon, LatLngExpression } from "leaflet";
 import L from "leaflet";
 import {
   Anchor,
+  Baby,
   DoorOpen,
   Footprints,
   Hotel,
+  LifeBuoy,
   IceCreamCone,
   Landmark,
   Martini,
@@ -710,6 +712,24 @@ const LANDMARK_STYLE = {
     label: "text-[#92400e]",
     iconBg: "from-amber-300 to-orange-700",
     Icon: Umbrella,
+  },
+  playground: {
+    border: "border-[#db2777]",
+    ring: "ring-pink-200",
+    bubble: "border-pink-100",
+    title: "text-[#9d174d]",
+    label: "text-[#9d174d]",
+    iconBg: "from-pink-400 to-rose-700",
+    Icon: Baby,
+  },
+  salva: {
+    border: "border-[#dc2626]",
+    ring: "ring-red-200",
+    bubble: "border-red-100",
+    title: "text-[#991b1b]",
+    label: "text-[#991b1b]",
+    iconBg: "from-red-400 to-red-800",
+    Icon: LifeBuoy,
   },
 } as const;
 

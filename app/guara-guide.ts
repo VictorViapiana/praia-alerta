@@ -3,6 +3,9 @@ import {
   AMBULANTES,
   ARENA_03,
   BANCOS_MARLIN,
+  BANCOS_NORTE,
+  PLAYGROUND,
+  SALVA_VIDAS,
   BANHEIRO_V,
   ESCUNA_POINT,
   MARLIN,
@@ -204,15 +207,41 @@ export function answerGuara(raw: string, live: GuaraLive = { tide: null, weather
       route: { id: spot.id, lat: spot.lat, lng: spot.lng, name: spot.name },
     };
   }
-  if (has(text, "banco coberto", "bancos cobertos", "bancos", "gazebo", "sombra")) {
+  if (has(text, "playground", "parquinho", "brinquedo", "escorrega", "balanco")) {
     return {
-      answer: "Tem bancos cobertos na areia: um conjunto ao lado do Marlin e outros junto aos quiosques 8 e 17. Te levo ao do Marlin.",
+      answer: "O playground fica na areia. Te levo até lá — e lembro: ferro quente e fila no brinquedo.",
       filter: "neutro",
       query: "",
-      fly: { lat: BANCOS_MARLIN.lat, lng: BANCOS_MARLIN.lng },
-      openId: BANCOS_MARLIN.id,
+      fly: { lat: PLAYGROUND.lat, lng: PLAYGROUND.lng },
+      openId: PLAYGROUND.id,
       sheet: null,
-      route: { id: BANCOS_MARLIN.id, lat: BANCOS_MARLIN.lat, lng: BANCOS_MARLIN.lng, name: BANCOS_MARLIN.name },
+      route: { id: PLAYGROUND.id, lat: PLAYGROUND.lat, lng: PLAYGROUND.lng, name: PLAYGROUND.name },
+    };
+  }
+  if (has(text, "salva", "salva-vidas", "salva vidas", "posto de guarda", "bombeiro")) {
+    return {
+      answer: "O posto de salva-vidas fica na areia. Bandeira manda, e o corredor do posto fica livre.",
+      filter: "neutro",
+      query: "",
+      fly: { lat: SALVA_VIDAS.lat, lng: SALVA_VIDAS.lng },
+      openId: SALVA_VIDAS.id,
+      sheet: null,
+      route: { id: SALVA_VIDAS.id, lat: SALVA_VIDAS.lat, lng: SALVA_VIDAS.lng, name: SALVA_VIDAS.name },
+    };
+  }
+  if (has(text, "banco coberto", "bancos cobertos", "bancos", "gazebo")) {
+    const norte = has(text, "norte", "pescaria");
+    const spot = norte ? BANCOS_NORTE : BANCOS_MARLIN;
+    return {
+      answer: norte
+        ? "Conjunto de três bancos cobertos no fim da praia. Te levo até eles."
+        : "São dois conjuntos de três bancos: um ao lado do Marlin e outro no fim da praia. Te levo ao do Marlin.",
+      filter: "neutro",
+      query: "",
+      fly: { lat: spot.lat, lng: spot.lng },
+      openId: spot.id,
+      sheet: null,
+      route: { id: spot.id, lat: spot.lat, lng: spot.lng, name: spot.name },
     };
   }
   if (has(text, "praca da paz", "praça da paz")) {

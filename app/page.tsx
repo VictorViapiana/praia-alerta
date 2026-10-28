@@ -1341,6 +1341,8 @@ function MapScreen({
                     praca: "Praça",
                     acesso: "Acesso",
                     abrigo: "Bancos",
+                    playground: "Playground",
+                    salva: "Salva-vidas",
                   }[landmarkTalk.tone]}
                 </span>
               </div>
