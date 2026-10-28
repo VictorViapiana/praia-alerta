@@ -21,8 +21,6 @@ import {
   ShowerHead,
   Star,
   Trees,
-  Trophy,
-  Umbrella,
   Utensils,
   type LucideIcon,
 } from "lucide-react";
@@ -41,6 +39,7 @@ import {
   PLACES,
   SHOWERS,
   type Ambulante,
+  type LandmarkTone,
   type OrlaLandmark,
   type Place,
 } from "./places";
@@ -684,7 +683,7 @@ const LANDMARK_STYLE = {
     title: "text-[#9a3412]",
     label: "text-[#9a3412]",
     iconBg: "from-orange-400 to-amber-800",
-    Icon: Trophy,
+    Icon: null,
   },
   praca: {
     border: "border-[#7c3aed]",
@@ -711,7 +710,7 @@ const LANDMARK_STYLE = {
     title: "text-[#92400e]",
     label: "text-[#92400e]",
     iconBg: "from-amber-300 to-orange-700",
-    Icon: Umbrella,
+    Icon: null,
   },
   playground: {
     border: "border-[#db2777]",
@@ -731,7 +730,89 @@ const LANDMARK_STYLE = {
     iconBg: "from-red-400 to-red-800",
     Icon: LifeBuoy,
   },
+  golfinho: {
+    border: "border-[#1d4ed8]",
+    ring: "ring-sky-200",
+    bubble: "border-sky-100",
+    title: "text-[#082E84]",
+    label: "text-[#12315c]",
+    iconBg: "from-sky-400 to-blue-800",
+    Icon: null,
+  },
 } as const;
+
+const LANDMARK_BOX: Record<LandmarkTone, number> = {
+  abrigo: 28,
+  praca: 28,
+  playground: 28,
+  banheiro: 40,
+  esporte: 40,
+  salva: 40,
+  pier: 40,
+  acesso: 40,
+  park: 48,
+  golfinho: 48,
+};
+
+function BenchMark() {
+  return (
+    <svg viewBox="0 0 32 32" className="h-[22px] w-[22px]" aria-hidden>
+      <path d="M4.5 14.2 16 5.2 27.5 14.2v1.8H4.5Z" fill="#fb923c" stroke="#9a3412" strokeWidth="1.3" strokeLinejoin="round" />
+      <path d="M7.2 16h17.6v1.5H7.2Z" fill="#c2410c" />
+      <path d="M10 17.4v8.4M22 17.4v8.4" fill="none" stroke="#7c2d12" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M7.4 20.2h17.2v2.4c0 .6-.5 1.1-1.1 1.1H8.5c-.6 0-1.1-.5-1.1-1.1v-2.4Z" fill="#fde68a" stroke="#92400e" strokeWidth="0.9" />
+      <path d="M8.2 23.8h15.6v1.5H8.2Z" fill="#b45309" />
+    </svg>
+  );
+}
+
+function CourtMark() {
+  return (
+    <svg viewBox="0 0 32 32" className="h-7 w-7" aria-hidden>
+      <rect x="2.2" y="9" width="27.6" height="14" rx="2" fill="#f6d7a2" stroke="#9a3412" strokeWidth="1.4" />
+      <path d="M16 9v14" stroke="#fff7ed" strokeWidth="1.6" />
+      <path d="M16 9.4v13.2" stroke="#57534e" strokeWidth="0.8" strokeDasharray="1.5 1.35" />
+      <circle cx="22.4" cy="16" r="2.15" fill="#fff" stroke="#ea580c" strokeWidth="1.15" />
+    </svg>
+  );
+}
+
+function DolphinMark() {
+  return (
+    <svg viewBox="0 0 64 64" className="h-8 w-8" aria-hidden>
+      <path
+        d="M18 36c1.5-12 14-20 28-15 7 2.4 12 8 13 13-3 .4-6-.2-8-2-1 9-8 15-17 15-1.5 7 3 12 9 13-9 2.2-16-1.2-18-8-7 2.4-15-.4-16-7 .2-3 2.4-6 5-9Z"
+        fill="#2f6fed"
+        stroke="#0c2340"
+        strokeWidth="2.2"
+        strokeLinejoin="round"
+      />
+      <path d="M16 34 5 22l6 11L5 44l11-6Z" fill="#1d4ed8" stroke="#0c2340" strokeWidth="2" strokeLinejoin="round" />
+      <path d="M30 20 26 7l11 11Z" fill="#1e4fd7" stroke="#0c2340" strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="M34 36 27 49l13-8Z" fill="#1d4ed8" stroke="#0c2340" strokeWidth="1.7" strokeLinejoin="round" />
+      <path d="M28 34c8-1 16-4 22-2-3 7-12 11-22 9-2-2-2-5 0-7Z" fill="#dbeafe" />
+      <circle cx="46" cy="26" r="3.1" fill="#fff" stroke="#0c2340" strokeWidth="1.3" />
+      <circle cx="47.1" cy="26.1" r="1.45" fill="#0c2340" />
+      <path d="M50 31c2.2 1.6 4.2 1.5 6 .2" fill="none" stroke="#0c2340" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function LandmarkGlyph({ tone, box }: { tone: Exclude<LandmarkTone, "golfinho">; box: number }) {
+  if (tone === "abrigo") return <BenchMark />;
+  if (tone === "esporte") return <CourtMark />;
+  const Icon = LANDMARK_STYLE[tone].Icon;
+  if (!Icon) return null;
+  const glyph = box <= 28 ? "h-[18px] w-[18px]" : box <= 40 ? "h-6 w-6" : "h-[18px] w-[18px]";
+  if (box >= 48) {
+    return (
+      <span className={`grid h-8 w-8 place-items-center rounded-full bg-gradient-to-b text-white shadow-inner ${LANDMARK_STYLE[tone].iconBg}`}>
+        <Icon className={glyph} strokeWidth={2.3} />
+      </span>
+    );
+  }
+  return <Icon className={`${glyph} ${LANDMARK_STYLE[tone].label}`} strokeWidth={2.4} />;
+}
 
 function LandmarkPin({
   landmark,
@@ -742,10 +823,16 @@ function LandmarkPin({
   selected: boolean;
   onSelect: () => void;
 }) {
+  if (landmark.tone === "golfinho") {
+    return <GolfinhoPin landmark={landmark} selected={selected} onSelect={onSelect} />;
+  }
   const style = LANDMARK_STYLE[landmark.tone];
-  const Icon = style.Icon;
+  const box = LANDMARK_BOX[landmark.tone];
+  const frame = box <= 28 ? "h-7 w-7" : box <= 40 ? "h-10 w-10" : "h-12 w-12";
+  const label = box <= 28 ? "text-[9px]" : "text-[11px]";
+  const ring = box <= 28 ? "border" : "border-2";
   return (
-    <div className="relative h-12 w-12">
+    <div className={`relative ${frame}`}>
       {selected && (
         <div className="absolute bottom-[calc(100%+4px)] left-1/2 z-30 w-[200px] -translate-x-1/2">
           <div className={`rounded-2xl border bg-white px-2.5 py-2 text-left shadow-[0_12px_24px_rgba(15,23,42,0.22)] ${style.bubble}`}>
@@ -768,17 +855,59 @@ function LandmarkPin({
           event.stopPropagation();
           onSelect();
         }}
-        className={`grid h-12 w-12 place-items-center rounded-full border-2 bg-white shadow-[0_6px_14px_rgba(15,23,42,0.3)] ${style.border} ${selected ? `ring-2 ${style.ring}` : ""}`}
+        className={`grid ${frame} place-items-center rounded-full bg-white shadow-[0_4px_8px_rgba(0,0,0,0.4)] ${ring} ${style.border} ${selected ? `ring-2 ${style.ring}` : ""}`}
       >
-        <span className={`grid h-8 w-8 place-items-center rounded-full bg-gradient-to-b text-white shadow-inner ${style.iconBg}`}>
-          <Icon className="h-[18px] w-[18px]" strokeWidth={2.3} />
-        </span>
+        <LandmarkGlyph tone={landmark.tone} box={box} />
       </button>
       <span
-        className={`pointer-events-none absolute top-full left-1/2 mt-0.5 -translate-x-1/2 whitespace-nowrap text-[11px] font-bold leading-none ${style.label}`}
+        className={`pointer-events-none absolute top-full left-1/2 mt-0.5 -translate-x-1/2 whitespace-nowrap font-bold leading-none ${label} ${style.label}`}
         style={{ textShadow: "0 0 3px #fff, 0 0 6px #fff, 1px 0 0 #fff, -1px 0 0 #fff, 0 1px 0 #fff, 0 -1px 0 #fff" }}
       >
         {landmark.short}
+      </span>
+    </div>
+  );
+}
+
+function GolfinhoPin({
+  landmark,
+  selected,
+  onSelect,
+}: {
+  landmark: OrlaLandmark;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <div className="relative h-12 w-12">
+      {selected && (
+        <div className="absolute bottom-[calc(100%+4px)] left-1/2 z-30 w-[200px] -translate-x-1/2">
+          <div className="rounded-2xl border border-sky-100 bg-white px-2.5 py-2 text-left shadow-[0_12px_24px_rgba(15,23,42,0.2)]">
+            <p className="text-[12px] font-semibold leading-tight text-[#082E84]">{landmark.name}</p>
+            <p className="mt-0.5 text-[11px] text-neutral-500">{landmark.detail}</p>
+            <RouteChoice place={{ id: landmark.id, lat: landmark.lat, lng: landmark.lng, name: landmark.name }} tone="light" />
+          </div>
+          <span className="mx-auto -mt-1 block h-2.5 w-2.5 rotate-45 border-b border-r border-sky-100 bg-white" />
+        </div>
+      )}
+      <button
+        type="button"
+        aria-label={landmark.name}
+        aria-pressed={selected}
+        onPointerDown={(event) => event.stopPropagation()}
+        onClick={(event) => {
+          event.stopPropagation();
+          onSelect();
+        }}
+        className={`grid h-12 w-12 place-items-center rounded-full border-2 border-[#1d4ed8] bg-white shadow-[0_6px_14px_rgba(15,23,42,0.3)] ${selected ? "ring-2 ring-sky-200" : ""}`}
+      >
+        <DolphinMark />
+      </button>
+      <span
+        className="pointer-events-none absolute top-full left-1/2 mt-0.5 -translate-x-1/2 whitespace-nowrap text-[11px] font-bold leading-none text-[#12315c]"
+        style={{ textShadow: "0 0 3px #fff, 0 0 6px #fff, 1px 0 0 #fff, -1px 0 0 #fff, 0 1px 0 #fff, 0 -1px 0 #fff" }}
+      >
+        Golfinho
       </span>
     </div>
   );
@@ -1011,7 +1140,7 @@ function OrlaMarkers({
             key={landmark.id}
             position={[landmark.lat, landmark.lng]}
             zIndexOffset={openId === landmark.id ? 965 : 255}
-            size={48}
+            size={LANDMARK_BOX[landmark.tone]}
             anchor="center"
           >
             <LandmarkPin
