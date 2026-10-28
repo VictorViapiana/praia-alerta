@@ -321,10 +321,18 @@ body {
 }
 
 .sx-ocean {
+  --sx-hole: 0%;
   position: absolute;
   inset: 0;
   will-change: transform, clip-path;
   transform: translateZ(0);
+  -webkit-mask-image: radial-gradient(
+    circle at 50% 50%,
+    transparent 0%,
+    transparent var(--sx-hole),
+    #000 var(--sx-hole)
+  );
+  mask-image: radial-gradient(circle at 50% 50%, transparent 0%, transparent var(--sx-hole), #000 var(--sx-hole));
 }
 
 .sx-ocean-body {

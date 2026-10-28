@@ -73,10 +73,10 @@ export function SplashScreen({ onWarm, onDone }: { onWarm?: () => void; onDone: 
     <div className="sx-splash" role="img" aria-label="Abrindo Praia Alerta">
       <div className="sx-night" />
 
-      {/* Oceano negro: sobe, recua um pouco, depois o clip rasga do centro */}
+      {/* Oceano negro: sobe, recua; --sx-hole 0%→150% rasga do centro; clip-path fecha no fim */}
       <motion.div
         className="sx-ocean"
-        initial={{ y: "102%", clipPath: "circle(150% at 50% 50%)" }}
+        initial={{ y: "102%", clipPath: "circle(150% at 50% 50%)", ["--sx-hole" as string]: "0%" }}
         animate={{
           y: ["102%", "0%", "0%", "6%", "6%"],
           clipPath: [
@@ -86,6 +86,7 @@ export function SplashScreen({ onWarm, onDone }: { onWarm?: () => void; onDone: 
             "circle(150% at 50% 50%)",
             "circle(0% at 50% 50%)",
           ],
+          ["--sx-hole" as string]: ["0%", "0%", "0%", "0%", "150%"],
         }}
         transition={{
           duration: 3.2,
