@@ -1,9 +1,35 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { AlertTriangle, Ban, ChevronRight, Clock, Droplets, Sun, Trash2, Wind } from "lucide-react";
+import {
+  AlertTriangle,
+  Ban,
+  Camera,
+  ChevronRight,
+  Clock,
+  Compass,
+  Droplets,
+  Fish,
+  Footprints,
+  Waves,
+  Sun,
+  Thermometer,
+  Trash2,
+  Wind,
+} from "lucide-react";
 import { useState } from "react";
-import { meters, tideDot, tidePath, useTide, useWeather, uvLabel, weatherMark } from "./coast";
+import {
+  bearingArrow,
+  compass,
+  meters,
+  tideDot,
+  tidePath,
+  useTide,
+  useWeather,
+  uvLabel,
+  weatherMark,
+  type TideNow,
+} from "./coast";
 import { CloseButton, closeTopClass, screenEnter } from "./nav-chrome";
 
 export type StoryId = "marlin" | "fotos" | "bandeiras";
@@ -571,6 +597,78 @@ export function LiveClima() {
   );
 }
 
+function wavePath(series: number[]) {
+  if (series.length < 2) return "";
+  const min = Math.min(...series);
+  const max = Math.max(...series);
+  const span = Math.max(0.15, max - min);
+  return series
+    .map((value, index) => {
+      const x = (index / (series.length - 1)) * 320;
+      const y = 12 + (1 - (value - min) / span) * 56;
+      return `${index === 0 ? "M" : "L"} ${x.toFixed(1)} ${y.toFixed(1)}`;
+    })
+    .join(" ");
+}
+
+function mareTips(data: TideNow) {
+  const bath =
+    data.wave < 0.7
+      ? { tone: "bom", text: "Banho confortável no raso entre os postos." }
+      : data.wave < 1.3
+        ? { tone: "cuidado", text: "Banho com atenção: ondas picadas no raso." }
+        : { tone: "evitar", text: "Prefira a areia se a bandeira apertar." };
+
+  const walk =
+    data.trend === "Vazante"
+      ? { tone: "bom", text: "Boa hora para caminhar na faixa molhada." }
+      : { tone: "ok", text: "Faixa molhada mais estreita — caminhe perto do calçadão." };
+
+  const fish =
+    data.trend === "Enchente"
+      ? { tone: "bom", text: "Enchente favorece a pesca de beira e pedra." }
+      : { tone: "ok", text: "Mar em movimento: escolha pedras firmes e secas." };
+
+  const photo =
+    data.wave < 1.1
+      ? { tone: "bom", text: "Mar mais limpo para foto na orla e no Marlin." }
+      : { tone: "ok", text: "Espuma alta: use o costão e o pôr do sol a favor." };
+
+  return [
+    { icon: Waves, title: "Banho", ...bath },
+    { icon: Footprints, title: "Caminhada", ...walk },
+    { icon: Fish, title: "Pesca", ...fish },
+    { icon: Camera, title: "Foto", ...photo },
+  ] as const;
+}
+
+function toneClass(tone: string) {
+  if (tone === "bom") return "border-emerald-300/25 bg-emerald-400/10 text-emerald-50";
+  if (tone === "cuidado") return "border-amber-300/30 bg-amber-400/10 text-amber-50";
+  if (tone === "evitar") return "border-rose-300/30 bg-rose-400/10 text-rose-50";
+  return "border-white/15 bg-white/10 text-white";
+}
+
+function CompassDial({ deg, label }: { deg: number; label: string }) {
+  const angle = bearingArrow(deg);
+  return (
+    <div className="flex flex-col items-center gap-1.5">
+      <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-white/20 bg-white/5">
+        <span className="absolute top-1 z-[1] text-[9px] font-semibold text-white/45">N</span>
+        <span
+          className="absolute inset-0"
+          style={{ transform: `rotate(${angle}deg)` }}
+          aria-hidden
+        >
+          <span className="absolute left-1/2 top-2 h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-cyan-200 shadow-[0_0_12px_rgba(165,243,252,0.65)]" />
+        </span>
+        <span className="relative z-[1] text-[11px] font-semibold text-white">{compass(deg)}</span>
+      </div>
+      <p className="text-[10px] uppercase tracking-[0.14em] text-white/45">{label}</p>
+    </div>
+  );
+}
+
 export function LiveMare() {
   const { data, failed } = useTide();
 
@@ -586,10 +684,22 @@ export function LiveMare() {
 
   const line = tidePath(data.series);
   const dot = tideDot(data.series);
+  const waves = wavePath(data.waveSeries);
   const turns = [
     data.nextHigh ? ["Preamar", data.nextHigh.label, meters(data.nextHigh.level)] : null,
     data.nextLow ? ["Baixa-mar", data.nextLow.label, meters(data.nextLow.level)] : null,
   ].filter((item): item is [string, string, string] => item !== null);
+
+  const span = Math.max(0.25, data.rangeMax - data.rangeMin);
+  const fill = Math.max(0.08, Math.min(1, (data.level - data.rangeMin) / span));
+  const tips = mareTips(data);
+  const upcoming = data.extremes.slice(0, 5);
+  const guaraTip =
+    data.trend === "Enchente"
+      ? "Na enchente a água sobe rápido no raso. Olhe a bandeira e fique onde o salva-vidas enxerga."
+      : data.trend === "Vazante"
+        ? "Na vazante o raso abre, mas a corrente ainda puxa. Criança sempre de mão dada."
+        : "Mar estável agora. Mesmo assim, o posto manda mais do que o aspecto da água.";
 
   return (
     <div className="space-y-4">
@@ -619,6 +729,169 @@ export function LiveMare() {
         <Clock className="h-3.5 w-3.5 shrink-0" />
         {data.note}
       </p>
+
+      {/* Régua viva da maré */}
+      <div className="rounded-[1.4rem] border border-white/15 bg-gradient-to-b from-white/12 to-cyan-500/10 p-4 backdrop-blur-md">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.18em] text-cyan-100/70">Régua da maré</p>
+            <p className="mt-1 text-sm text-white/70">Onde estamos entre a baixa e a preamar desta janela.</p>
+          </div>
+          <Waves className="h-5 w-5 text-cyan-100/70" />
+        </div>
+        <div className="mt-4 flex items-end gap-4">
+          <div className="relative h-36 w-14 overflow-hidden rounded-full border border-white/20 bg-[#06263a]/70">
+            <div
+              className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-cyan-500 via-sky-300 to-cyan-100/90 transition-[height] duration-700"
+              style={{ height: `${Math.round(fill * 100)}%` }}
+            />
+            <div className="absolute inset-x-1 top-[18%] h-px bg-white/25" />
+            <div className="absolute inset-x-1 top-[50%] h-px bg-white/20" />
+            <div className="absolute inset-x-1 top-[82%] h-px bg-white/25" />
+            <span
+              className="absolute left-1/2 h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]"
+              style={{ bottom: `calc(${Math.round(fill * 100)}% - 5px)` }}
+            />
+          </div>
+          <div className="min-w-0 flex-1 space-y-3">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-white/45">Preamar da janela</span>
+              <span className="font-semibold text-white">{meters(data.rangeMax)}</span>
+            </div>
+            <div className="rounded-xl border border-cyan-200/20 bg-cyan-300/10 px-3 py-2">
+              <p className="text-[10px] uppercase tracking-[0.14em] text-cyan-100/70">Agora</p>
+              <p className="text-lg font-semibold text-white">
+                {meters(data.level)} · {data.trend}
+              </p>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-white/45">Baixa da janela</span>
+              <span className="font-semibold text-white">{meters(data.rangeMin)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Pulsos do mar */}
+      <div>
+        <p className="mb-2 text-[11px] uppercase tracking-[0.16em] text-white/45">Pulso do mar agora</p>
+        <div className="grid grid-cols-2 gap-2.5">
+          {[
+            {
+              icon: Waves,
+              label: "Onda",
+              value: meters(data.wave),
+              sub: `período ${data.wavePeriod.toFixed(1).replace(".", ",")} s`,
+            },
+            {
+              icon: Thermometer,
+              label: "Água",
+              value: data.seaTemp != null ? `${data.seaTemp.toFixed(1).replace(".", ",")}°` : "—",
+              sub: "temperatura da superfície",
+            },
+            {
+              icon: Compass,
+              label: "Direção",
+              value: compass(data.waveDir),
+              sub: `${Math.round(data.waveDir)}° · vinda da onda`,
+            },
+            {
+              icon: Wind,
+              label: "Corrente",
+              value: `${data.currentSpeed.toFixed(1).replace(".", ",")} m/s`,
+              sub: `rumo ${compass(data.currentDir)}`,
+            },
+          ].map((stat) => (
+            <div key={stat.label} className="rounded-2xl border border-white/15 bg-white/10 p-3 backdrop-blur-md">
+              <stat.icon className="h-4 w-4 text-cyan-100/80" />
+              <p className="mt-2 text-lg font-semibold leading-tight text-white">{stat.value}</p>
+              <p className="text-[11px] text-white/55">{stat.label}</p>
+              <p className="mt-0.5 text-[10px] text-white/40">{stat.sub}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Swell + bússolas */}
+      <div className="rounded-[1.4rem] border border-white/15 bg-white/10 p-4 backdrop-blur-md">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.18em] text-cyan-100/70">Swell e rumo</p>
+            <p className="mt-1 font-serif text-3xl leading-none text-white">{meters(data.swell)}</p>
+            <p className="mt-2 text-xs text-white/55">
+              Ondulação de fundo · período {data.swellPeriod.toFixed(1).replace(".", ",")} s
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <CompassDial deg={data.waveDir} label="Onda" />
+            <CompassDial deg={data.swellDir} label="Swell" />
+          </div>
+        </div>
+        <svg viewBox="0 0 320 80" className="mt-3 h-16 w-full" aria-hidden>
+          <path d={waves} fill="none" stroke="rgba(125,211,252,0.9)" strokeWidth="2.5" strokeLinecap="round" />
+        </svg>
+        <p className="text-[11px] text-white/40">Altura das ondas nas próximas horas</p>
+      </div>
+
+      {/* Agenda */}
+      {upcoming.length > 0 && (
+        <div>
+          <p className="mb-2 text-[11px] uppercase tracking-[0.16em] text-white/45">Agenda das marés</p>
+          <div className="no-scrollbar flex gap-2 overflow-x-auto pb-1">
+            {upcoming.map((item) => (
+              <div
+                key={`${item.kind}-${item.time}`}
+                className="min-w-[7.4rem] rounded-2xl border border-white/15 bg-white/10 px-3 py-3 backdrop-blur-md"
+              >
+                <p className="text-[10px] uppercase tracking-[0.14em] text-white/45">
+                  {item.kind === "high" ? "Preamar" : "Baixa-mar"}
+                </p>
+                <p className="mt-1 text-xl font-semibold text-white">{item.label}</p>
+                <p className="text-xs text-cyan-100/80">{meters(item.level)}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Para você agora */}
+      <div>
+        <p className="mb-2 text-[11px] uppercase tracking-[0.16em] text-white/45">Para você agora</p>
+        <div className="space-y-2">
+          {tips.map((tip) => (
+            <div
+              key={tip.title}
+              className={`flex items-start gap-3 rounded-2xl border px-3 py-3 backdrop-blur-md ${toneClass(tip.tone)}`}
+            >
+              <tip.icon className="mt-0.5 h-4 w-4 shrink-0 opacity-90" />
+              <div className="min-w-0">
+                <p className="text-sm font-semibold">{tip.title}</p>
+                <p className="mt-0.5 text-[13px] leading-snug opacity-85">{tip.text}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Dica do Guará */}
+      <div className="overflow-hidden rounded-[1.4rem] border border-rose-300/25 bg-gradient-to-br from-rose-500/20 via-white/10 to-cyan-500/10 p-4 backdrop-blur-md">
+        <div className="flex items-center gap-3">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/pins/guara-mascot.webp"
+            alt=""
+            width={72}
+            height={96}
+            className="h-16 w-12 object-contain drop-shadow-[0_8px_16px_rgba(127,29,29,0.35)]"
+            draggable={false}
+          />
+          <div className="min-w-0">
+            <p className="text-[11px] uppercase tracking-[0.18em] text-rose-100/70">Dica do Guará</p>
+            <p className="mt-1 text-sm leading-relaxed text-white/85">{guaraTip}</p>
+          </div>
+        </div>
+      </div>
+
       <p className="text-[11px] text-white/40">Open-Meteo Marine · nível do mar e ondas na costa de Guarapari.</p>
     </div>
   );

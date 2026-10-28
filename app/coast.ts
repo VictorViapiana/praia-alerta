@@ -32,15 +32,29 @@ export type WeatherNow = {
 
 export type TidePoint = { time: string; label: string; level: number };
 
+export type TideExtreme = TidePoint & { kind: "high" | "low" };
+
 export type TideNow = {
   level: number;
   wave: number;
+  waveDir: number;
+  wavePeriod: number;
+  swell: number;
+  swellDir: number;
+  swellPeriod: number;
+  seaTemp: number | null;
+  currentSpeed: number;
+  currentDir: number;
   trend: "Enchente" | "Vazante" | "Estável";
   note: string;
   nextHigh: TidePoint | null;
   nextLow: TidePoint | null;
+  extremes: TideExtreme[];
   series: TidePoint[];
+  waveSeries: number[];
   cursor: number;
+  rangeMin: number;
+  rangeMax: number;
 };
 
 const WEEKDAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
@@ -127,8 +141,24 @@ type MarineJson = {
     time: string[];
     sea_level_height_msl: number[];
     wave_height: number[];
+    wave_direction?: (number | null)[];
+    wave_period?: (number | null)[];
+    swell_wave_height?: (number | null)[];
+    swell_wave_direction?: (number | null)[];
+    swell_wave_period?: (number | null)[];
+    sea_surface_temperature?: (number | null)[];
+    ocean_current_velocity?: (number | null)[];
+    ocean_current_direction?: (number | null)[];
   };
 };
+
+export function compass(deg: number) {
+  return cardinal(deg);
+}
+
+export function bearingArrow(deg: number) {
+  return ((deg % 360) + 360) % 360;
+}
 
 function parseWeather(json: ForecastJson): WeatherNow {
   const code = json.current.weather_code;
@@ -159,6 +189,11 @@ function parseWeather(json: ForecastJson): WeatherNow {
   };
 }
 
+function at<T>(list: (T | null | undefined)[] | undefined, index: number, fallback: T): T {
+  const value = list?.[index];
+  return value == null || Number.isNaN(value as number) ? fallback : (value as T);
+}
+
 function parseTide(json: MarineJson): TideNow | null {
   const times = json.hourly.time;
   const levels = json.hourly.sea_level_height_msl;
@@ -181,16 +216,20 @@ function parseTide(json: MarineJson): TideNow | null {
   const delta = level - previous;
   const trend = delta > 0.03 ? "Enchente" : delta < -0.03 ? "Vazante" : "Estável";
 
-  const highs: TidePoint[] = [];
-  const lows: TidePoint[] = [];
+  const extremes: TideExtreme[] = [];
   for (let index = 1; index < levels.length - 1; index += 1) {
     const point = { time: times[index], label: hourLabel(times[index]), level: levels[index] };
-    if (levels[index] >= levels[index - 1] && levels[index] > levels[index + 1]) highs.push(point);
-    if (levels[index] <= levels[index - 1] && levels[index] < levels[index + 1]) lows.push(point);
+    if (levels[index] >= levels[index - 1] && levels[index] > levels[index + 1]) {
+      extremes.push({ ...point, kind: "high" });
+    }
+    if (levels[index] <= levels[index - 1] && levels[index] < levels[index + 1]) {
+      extremes.push({ ...point, kind: "low" });
+    }
   }
+  extremes.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
 
-  const upcoming = (points: TidePoint[]) =>
-    points.find((point) => new Date(point.time).getTime() > now) ?? null;
+  const upcoming = (kind: "high" | "low") =>
+    extremes.find((point) => point.kind === kind && new Date(point.time).getTime() > now) ?? null;
 
   const end = Math.min(levels.length, cursor + 19);
   const series = times.slice(cursor, end).map((time, index) => ({
@@ -198,6 +237,7 @@ function parseTide(json: MarineJson): TideNow | null {
     label: hourLabel(time),
     level: levels[cursor + index],
   }));
+  const waveSeries = waves.slice(cursor, end);
 
   const wave = waves[cursor] ?? 0;
   const note =
@@ -207,15 +247,31 @@ function parseTide(json: MarineJson): TideNow | null {
         ? "Ondas moderadas. Atenção no raso e nas crianças."
         : "Ondas altas. Prefira a areia se a bandeira apertar.";
 
+  const windowLevels = levels.slice(cursor, Math.min(levels.length, cursor + 24));
+  const rangeMin = Math.min(...windowLevels);
+  const rangeMax = Math.max(...windowLevels);
+
   return {
     level,
     wave,
+    waveDir: at(json.hourly.wave_direction, cursor, 135),
+    wavePeriod: at(json.hourly.wave_period, cursor, 7),
+    swell: at(json.hourly.swell_wave_height, cursor, wave * 0.85),
+    swellDir: at(json.hourly.swell_wave_direction, cursor, 140),
+    swellPeriod: at(json.hourly.swell_wave_period, cursor, 8),
+    seaTemp: json.hourly.sea_surface_temperature?.[cursor] ?? null,
+    currentSpeed: at(json.hourly.ocean_current_velocity, cursor, 0),
+    currentDir: at(json.hourly.ocean_current_direction, cursor, 0),
     trend,
     note,
-    nextHigh: upcoming(highs),
-    nextLow: upcoming(lows),
+    nextHigh: upcoming("high"),
+    nextLow: upcoming("low"),
+    extremes: extremes.filter((point) => new Date(point.time).getTime() > now - 60 * 60 * 1000).slice(0, 6),
     series,
+    waveSeries,
     cursor: 0,
+    rangeMin,
+    rangeMax,
   };
 }
 
@@ -237,7 +293,7 @@ export function loadWeather() {
 
 export function loadTide() {
   tidePromise ??= fetch(
-    `https://marine-api.open-meteo.com/v1/marine?latitude=${LAT}&longitude=${LON}&hourly=sea_level_height_msl,wave_height&timezone=America/Sao_Paulo&forecast_days=2`,
+    `https://marine-api.open-meteo.com/v1/marine?latitude=${LAT}&longitude=${LON}&hourly=sea_level_height_msl,wave_height,wave_direction,wave_period,swell_wave_height,swell_wave_direction,swell_wave_period,sea_surface_temperature,ocean_current_velocity,ocean_current_direction&timezone=America/Sao_Paulo&forecast_days=2`,
   )
     .then((response) => {
       if (!response.ok) throw new Error("mare");
