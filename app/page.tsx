@@ -1328,43 +1328,54 @@ function MapScreen({
           className="@container absolute inset-0 z-[75] flex items-center justify-center bg-black/45 px-5"
         >
           <div className="flex max-h-full w-full max-w-[19.5rem] flex-col items-center">
-            <div className="w-full overflow-hidden rounded-[22px] bg-white text-[#1c120c] shadow-[0_16px_36px_rgba(0,0,0,0.28)]">
-              <div className="relative h-[92px] overflow-hidden">
+            <div className="no-scrollbar max-h-[min(78dvh,34rem)] w-full overflow-y-auto overflow-x-hidden rounded-[22px] bg-white text-[#1c120c] shadow-[0_16px_36px_rgba(0,0,0,0.28)]">
+              <div className="relative h-[88px] overflow-hidden">
                 <img src={landmarkTalk.cover} alt="" className="h-full w-full object-cover" />
-                <span className="absolute inset-0 bg-gradient-to-t from-white via-white/20 to-black/25" />
-                <span
-                  className={`absolute left-3 top-3 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-white ${
-                    landmarkTalk.tone === "pier" ? "bg-cyan-700/90" : "bg-emerald-700/90"
-                  }`}
-                >
-                  {landmarkTalk.tone === "pier" ? "Costão" : "Parque"}
+                <span className="absolute inset-0 bg-gradient-to-t from-white via-white/25 to-black/30" />
+                <span className="absolute left-3 top-3 rounded-full bg-black/55 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-white">
+                  {{
+                    pier: "Costão",
+                    park: "Parque",
+                    banheiro: "Banheiro",
+                    esporte: "Esporte",
+                    praca: "Praça",
+                    acesso: "Acesso",
+                  }[landmarkTalk.tone]}
                 </span>
               </div>
-              <div className="px-3.5 pb-3 pt-2">
+              <div className="px-3.5 pb-3.5 pt-2">
                 <p className="text-[15px] font-semibold leading-snug">{landmarkTalk.name}</p>
                 <p className="mt-0.5 text-[12px] text-neutral-500">{landmarkTalk.detail}</p>
-                <ul className="mt-2 space-y-2">
-                  {landmarkTalk.tips.map((tip) => (
-                    <li key={tip.title}>
-                      <p
-                        className={`text-[12px] font-semibold leading-snug ${
-                          landmarkTalk.tone === "pier" ? "text-[#0e7490]" : "text-[#047857]"
-                        }`}
-                      >
-                        {tip.title}
-                      </p>
-                      <p className="mt-0.5 text-[12px] leading-snug text-neutral-600">{tip.text}</p>
-                    </li>
-                  ))}
+                <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-red-600/90">Alertas</p>
+                <ul className="mt-1.5 space-y-2">
+                  {landmarkTalk.tips
+                    .filter((tip) => tip.kind === "alerta")
+                    .map((tip) => (
+                      <li key={tip.title} className="rounded-xl border border-red-100 bg-red-50/80 px-2.5 py-2">
+                        <p className="text-[12px] font-semibold leading-snug text-red-700">{tip.title}</p>
+                        <p className="mt-0.5 text-[12px] leading-snug text-neutral-700">{tip.text}</p>
+                      </li>
+                    ))}
+                </ul>
+                <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-700/90">
+                  Boa convivência
+                </p>
+                <ul className="mt-1.5 space-y-2">
+                  {landmarkTalk.tips
+                    .filter((tip) => tip.kind === "convivencia")
+                    .map((tip) => (
+                      <li key={tip.title} className="rounded-xl border border-emerald-100 bg-emerald-50/80 px-2.5 py-2">
+                        <p className="text-[12px] font-semibold leading-snug text-emerald-800">{tip.title}</p>
+                        <p className="mt-0.5 text-[12px] leading-snug text-neutral-700">{tip.text}</p>
+                      </li>
+                    ))}
                 </ul>
                 <button
                   type="button"
                   onClick={() => setLandmarkTalkId(null)}
-                  className={`mt-2.5 rounded-full px-3 py-1.5 text-[13px] font-semibold text-white ${
-                    landmarkTalk.tone === "pier" ? "bg-cyan-700" : "bg-emerald-700"
-                  }`}
+                  className="mt-3 w-full rounded-full bg-[#0f766e] px-3 py-2 text-[13px] font-semibold text-white"
                 >
-                  Entendi
+                  Entendi, Guará
                 </button>
               </div>
             </div>
@@ -1373,7 +1384,7 @@ function MapScreen({
               alt="Guará"
               draggable={false}
               decoding="async"
-              className="guara-float-lg h-auto max-h-[min(18rem,42cqh)] w-auto max-w-full object-contain object-bottom drop-shadow-[0_16px_28px_rgba(0,0,0,0.45)]"
+              className="guara-float-lg h-auto max-h-[min(14rem,34cqh)] w-auto max-w-full object-contain object-bottom drop-shadow-[0_16px_28px_rgba(0,0,0,0.45)]"
             />
           </div>
         </motion.div>
