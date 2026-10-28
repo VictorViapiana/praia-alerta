@@ -1340,6 +1340,7 @@ function MapScreen({
                     esporte: "Esporte",
                     praca: "Praça",
                     acesso: "Acesso",
+                    abrigo: "Bancos",
                   }[landmarkTalk.tone]}
                 </span>
               </div>

@@ -20,6 +20,7 @@ import {
   Star,
   Trees,
   Trophy,
+  Umbrella,
   Utensils,
   type LucideIcon,
 } from "lucide-react";
@@ -700,6 +701,15 @@ const LANDMARK_STYLE = {
     label: "text-[#854d0e]",
     iconBg: "from-amber-400 to-yellow-800",
     Icon: Footprints,
+  },
+  abrigo: {
+    border: "border-[#b45309]",
+    ring: "ring-amber-200",
+    bubble: "border-amber-100",
+    title: "text-[#92400e]",
+    label: "text-[#92400e]",
+    iconBg: "from-amber-300 to-orange-700",
+    Icon: Umbrella,
   },
 } as const;
 

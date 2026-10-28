@@ -432,7 +432,7 @@ export const MARLIN_TIPS = [
 export const MARLIN_SPEAK =
   "O Marlin Azul é patrimônio da Praia do Morro. Atenção: a pedra escorrega, então ande com cuidado. Não deixe lixo. E não risque, não suba e não danifique o monumento. Foto, sim. Dano, não.";
 
-export type LandmarkTone = "pier" | "park" | "banheiro" | "esporte" | "praca" | "acesso";
+export type LandmarkTone = "pier" | "park" | "banheiro" | "esporte" | "praca" | "acesso" | "abrigo";
 
 export type LandmarkTip = {
   kind: "alerta" | "convivencia";
@@ -680,6 +680,79 @@ export const QUADRA_AREIA: OrlaLandmark = {
   search: "quadra de areia quadra sul esporte vôlei futevôlei",
 };
 
+function bancos(
+  id: string,
+  short: string,
+  name: string,
+  detail: string,
+  lat: number,
+  lng: number,
+  search: string,
+): OrlaLandmark {
+  return {
+    id,
+    name,
+    short,
+    detail,
+    lat,
+    lng,
+    tone: "abrigo",
+    cover: "/guarapari/praia-orla.jpg",
+    tips: [
+      {
+        kind: "alerta",
+        title: "Telhado e sol",
+        text: "A cobertura esquenta e o piso em volta queima. Não suba no telhado e não deixe criança sozinha.",
+      },
+      {
+        kind: "convivencia",
+        title: "Sombra é de todos",
+        text: "Toalha e bolsa não reservam o banco o dia inteiro. Sentou, usou, liberou para o próximo.",
+      },
+      {
+        kind: "convivencia",
+        title: "Sem lixo na areia",
+        text: "Comida, bituca e sacola não ficam debaixo da cobertura. O que trouxe, leva.",
+      },
+    ],
+    speak: `${name}. A sombra é compartilhada: não reserve o banco o dia todo, não suba na cobertura e não deixe lixo.`,
+    search,
+  };
+}
+
+/** Conjunto de gazebos na areia, ao lado do Marlin (3 cliques + Street View). */
+export const BANCOS_MARLIN = bancos(
+  "bancos-marlin",
+  "Bancos",
+  "Bancos cobertos · Marlin",
+  "Conjunto na areia, ao lado do Marlin",
+  -20.652345,
+  -40.479111,
+  "banco bancos coberto cobertos gazebo sombra marlin areia conjunto",
+);
+
+/** Par de coberturas brancas na areia, junto ao Quiosque 8. */
+export const BANCOS_Q8 = bancos(
+  "bancos-quiosque-8",
+  "Bancos",
+  "Bancos cobertos · Quiosque 8",
+  "Conjunto de coberturas na areia",
+  -20.653436,
+  -40.485284,
+  "banco bancos coberto cobertos gazebo sombra quiosque 8 conjunto",
+);
+
+/** Par de coberturas brancas na areia, junto ao Quiosque 17. */
+export const BANCOS_Q17 = bancos(
+  "bancos-quiosque-17",
+  "Bancos",
+  "Bancos cobertos · Quiosque 17",
+  "Conjunto de coberturas na areia",
+  -20.652869,
+  -40.484136,
+  "banco bancos coberto cobertos gazebo sombra quiosque 17 conjunto",
+);
+
 export const BANHEIRO_II = banheiro("banheiro-ii", "Banheiro II", "Banheiro II · Praia do Morro", -20.65634, -40.490857);
 export const BANHEIRO_III = banheiro("banheiro-iii", "Banheiro III", "Banheiro III · Praia do Morro", -20.654513, -40.487769);
 export const BANHEIRO_V = banheiro("banheiro-v", "Banheiro V", "Banheiro V · Praia do Morro", -20.652247, -40.480678);
@@ -693,6 +766,9 @@ export const ORLA_LANDMARKS: OrlaLandmark[] = [
   BANHEIRO_VI,
   ARENA_03,
   QUADRA_AREIA,
+  BANCOS_MARLIN,
+  BANCOS_Q8,
+  BANCOS_Q17,
   PRACA_PAZ,
   ACESSO_PESCARIA,
   PIER_PESCARIA,
