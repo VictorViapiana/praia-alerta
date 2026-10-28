@@ -301,67 +301,50 @@ body {
 }
 
 
-/* A Maré Recuando — splash GPU-only (transform/opacity). */
+/* Maré Noturna Viapiana — preto absoluto + vermelho profundo. GPU only. */
 .sx-splash {
   position: fixed;
   inset: 0;
   z-index: 200;
   overflow: hidden;
-  background: transparent;
+  background: #000;
   contain: strict;
   touch-action: none;
   user-select: none;
   pointer-events: none;
 }
 
+.sx-night {
+  position: absolute;
+  inset: 0;
+  background: #000;
+}
+
 .sx-ocean {
   position: absolute;
   inset: 0;
-  z-index: 1;
-  will-change: transform;
+  will-change: transform, clip-path;
   transform: translateZ(0);
 }
 
-.sx-ocean-fill {
+.sx-ocean-body {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, #0c4a6e 0%, #0e7490 42%, #155e75 72%, #164e63 100%);
+  background:
+    radial-gradient(ellipse at 50% 18%, rgba(127, 29, 29, 0.35) 0%, transparent 42%),
+    radial-gradient(ellipse at 50% 100%, rgba(8, 47, 73, 0.4) 0%, transparent 48%),
+    linear-gradient(180deg, #1a0707 0%, #0a0404 38%, #000 100%);
+  box-shadow: inset 0 1px 0 rgba(220, 38, 38, 0.18);
 }
 
-.sx-wave {
+.sx-crest {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
-  height: min(18vh, 160px);
-  transform: translate3d(0, -99%, 0);
+  height: min(20vh, 180px);
+  transform: translate3d(0, -98%, 0);
   display: block;
-}
-
-.sx-ripple-slot {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: min(70vw, 280px);
-  height: min(70vw, 280px);
-  transform: translate3d(-50%, -50%, 0);
-  pointer-events: none;
-}
-
-.sx-ripple {
-  position: absolute;
-  inset: 0;
-  border-radius: 999px;
-  border: 1.5px solid rgba(186, 230, 253, 0.55);
-  will-change: transform, opacity;
-}
-
-.sx-ripple-b {
-  border-color: rgba(103, 232, 249, 0.4);
-}
-
-.sx-ripple-c {
-  border-color: rgba(255, 255, 255, 0.28);
 }
 
 .sx-brand-slot {
@@ -380,53 +363,60 @@ body {
   will-change: transform, opacity;
 }
 
-.sx-beacon {
-  position: absolute;
-  top: 42%;
-  left: 50%;
-  width: 160px;
-  height: 160px;
-  border-radius: 999px;
-  background: radial-gradient(circle, rgba(34, 211, 238, 0.45) 0%, rgba(34, 211, 238, 0) 68%);
-  transform: translate3d(-50%, -50%, 0);
-  animation: sx-beacon 2.2s ease-in-out infinite;
-  pointer-events: none;
-}
-
-@keyframes sx-beacon {
-  0%,
-  100% {
-    opacity: 0.45;
-    transform: translate3d(-50%, -50%, 0) scale(0.92);
-  }
-  50% {
-    opacity: 0.9;
-    transform: translate3d(-50%, -50%, 0) scale(1.08);
-  }
-}
-
 .sx-glass {
   position: relative;
+  overflow: hidden;
   display: grid;
   place-items: center;
-  width: 132px;
-  height: 132px;
+  width: 134px;
+  height: 134px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.05));
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
+  border: 1px solid rgba(220, 38, 38, 0.55);
+  background: linear-gradient(160deg, rgba(40, 8, 8, 0.72), rgba(0, 0, 0, 0.55));
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
   box-shadow:
-    0 0 0 1px rgba(103, 232, 249, 0.12),
-    0 18px 40px rgba(2, 20, 40, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 0 28px rgba(220, 38, 38, 0.28),
+    0 18px 40px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
 .sx-glass img {
   width: 86px;
   height: 86px;
   object-fit: contain;
-  filter: drop-shadow(0 6px 14px rgba(0, 20, 40, 0.35));
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.45));
+}
+
+.sx-sweep {
+  position: absolute;
+  inset: -20%;
+  background: linear-gradient(
+    105deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.08) 46%,
+    rgba(103, 232, 249, 0.18) 50%,
+    rgba(220, 38, 38, 0.22) 54%,
+    transparent 65%
+  );
+  transform: translate3d(-120%, 0, 0) rotate(12deg);
+  animation: sx-sweep 2.1s cubic-bezier(0.22, 1, 0.36, 1) 0.9s both;
+  pointer-events: none;
+}
+
+@keyframes sx-sweep {
+  0% {
+    transform: translate3d(-120%, 0, 0) rotate(12deg);
+    opacity: 0;
+  }
+  18% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(120%, 0, 0) rotate(12deg);
+    opacity: 0;
+  }
 }
 
 .sx-wordmark {
@@ -435,9 +425,32 @@ body {
   font-style: italic;
   font-weight: 560;
   font-size: 1.35rem;
-  letter-spacing: 0.02em;
-  color: rgba(240, 249, 255, 0.95);
-  text-shadow: 0 8px 24px rgba(2, 20, 40, 0.4);
+  letter-spacing: 0.04em;
+  color: rgba(254, 226, 226, 0.92);
+  text-shadow: 0 0 24px rgba(220, 38, 38, 0.35);
+}
+
+.sx-ping-slot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(42vw, 160px);
+  height: min(42vw, 160px);
+  transform: translate3d(-50%, -50%, 0);
+  pointer-events: none;
+}
+
+.sx-ping {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  border: 1.5px solid rgba(220, 38, 38, 0.75);
+  box-shadow: 0 0 18px rgba(103, 232, 249, 0.25);
+  will-change: transform, opacity;
+}
+
+.sx-ping-b {
+  border-color: rgba(103, 232, 249, 0.55);
 }
 
 .pa-hold .backdrop-blur-sm,
@@ -449,8 +462,8 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sx-beacon {
+  .sx-sweep {
     animation: none;
-    opacity: 0.7;
+    opacity: 0;
   }
 }
