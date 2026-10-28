@@ -301,26 +301,25 @@ body {
 }
 
 
-/* Portal da Maré: gota que contém o oceano. Zero imagens. Só transform/opacity. */
+/* Nascer do Fundo: sol nasce debaixo do mar. Cinematográfico. Zero imagens. */
 .sx-splash {
   --freeze: 0s;
-  --sx-mid: 50%;
+  --sx-line: 58%;
   position: fixed;
   inset: 0;
   z-index: 200;
   overflow: hidden;
-  background: #01040a;
+  background: #02060d;
   contain: strict;
   touch-action: none;
   user-select: none;
   pointer-events: none;
-  perspective: 1200px;
 }
 
 .sx-splash.is-on .sx-anim {
-  animation-duration: 6.4s;
+  animation-duration: 6.8s;
   animation-fill-mode: both;
-  animation-timing-function: cubic-bezier(0.33, 0, 0.2, 1);
+  animation-timing-function: cubic-bezier(0.37, 0, 0.2, 1);
   animation-delay: var(--freeze);
 }
 
@@ -332,404 +331,364 @@ body {
   position: absolute;
   inset: 0;
   z-index: 0;
-  background: radial-gradient(ellipse at 50% 42%, #0a1a2e 0%, #01040a 62%);
+  background: #02060d;
   animation-name: sx-void;
 }
 
 @keyframes sx-void {
   0%,
-  82% {
+  12% {
     opacity: 1;
+  }
+  28%,
+  84% {
+    opacity: 0;
   }
   100% {
     opacity: 0;
   }
 }
 
-/* Mundo real que aparece quando a gota engole a câmera */
-.sx-world {
+.sx-sky {
   position: absolute;
-  inset: 0;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: var(--sx-line);
   z-index: 1;
-  transform-origin: 50% 50%;
-  animation-name: sx-world;
+  background: linear-gradient(
+    180deg,
+    #02060d 0%,
+    #0b1730 28%,
+    #1a3a68 52%,
+    #6a90c4 74%,
+    #ffb36a 92%,
+    #ffd9a0 100%
+  );
+  transform-origin: 50% 100%;
+  animation-name: sx-sky;
   will-change: transform, opacity;
 }
 
-.sx-world-sky {
-  position: absolute;
-  inset: 0 0 48% 0;
-  background: linear-gradient(180deg, #071428 0%, #1a4f8c 38%, #6eb8ff 72%, #ffc978 100%);
-}
-
-.sx-world-sea {
-  position: absolute;
-  inset: 48% 0 0 0;
-  background: linear-gradient(180deg, #ffe29a 0%, #1ec8c0 22%, #0a6a86 58%, #02131f 100%);
-}
-
-@keyframes sx-world {
+@keyframes sx-sky {
   0%,
-  34% {
-    opacity: 0;
-    transform: scale(0.18) rotate(-8deg);
-  }
-  48% {
-    opacity: 1;
-    transform: scale(1) rotate(0deg);
-  }
-  78% {
-    opacity: 1;
-    transform: scale(1.04) rotate(0deg);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.12) rotate(0deg);
-  }
-}
-
-.sx-stage {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  transform-style: preserve-3d;
-}
-
-/* A gota: paira, gira, e engole o mundo */
-.sx-drop {
-  position: absolute;
-  top: var(--sx-mid);
-  left: 50%;
-  width: min(46vw, 190px);
-  height: min(46vw, 190px);
-  margin: 0;
-  border-radius: 999px;
-  transform-style: preserve-3d;
-  animation-name: sx-drop;
-  will-change: transform, opacity;
-}
-
-.sx-drop-core {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background:
-    radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0) 28%),
-    radial-gradient(circle at 50% 55%, #7ef0e4 0%, #1aa7c4 38%, #0b4d6e 68%, #041526 100%);
-  box-shadow: inset 0 -18px 28px rgba(0, 20, 40, 0.35);
-}
-
-.sx-drop-sun {
-  position: absolute;
-  top: 56%;
-  left: 50%;
-  width: 34%;
-  height: 34%;
-  border-radius: 999px;
-  background: radial-gradient(circle at 40% 35%, #fff8d8 0%, #ffd36a 40%, #ff8a3c 100%);
-  transform: translate3d(-50%, -50%, 0);
-}
-
-.sx-drop-shine {
-  position: absolute;
-  top: 14%;
-  left: 18%;
-  width: 28%;
-  height: 18%;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.55);
-  transform: rotate(-28deg);
-}
-
-@keyframes sx-drop {
-  0% {
-    opacity: 0;
-    transform: translate3d(-50%, 42vh, 0) scale(0.2) rotateX(18deg);
-  }
   10% {
-    opacity: 1;
-    transform: translate3d(-50%, 18vh, 0) scale(0.55) rotateX(8deg);
-  }
-  22% {
-    opacity: 1;
-    transform: translate3d(-50%, -50%, 0) scale(0.92) rotateX(0deg) rotateY(-12deg);
-  }
-  34% {
-    opacity: 1;
-    transform: translate3d(-50%, -50%, 0) scale(1.05) rotateX(0deg) rotateY(18deg);
-  }
-  48% {
-    opacity: 0.35;
-    transform: translate3d(-50%, -50%, 0) scale(4.2) rotateX(-12deg) rotateY(0deg);
-  }
-  58%,
-  100% {
     opacity: 0;
-    transform: translate3d(-50%, -50%, 0) scale(9) rotateX(-18deg);
-  }
-}
-
-/* Girotoscópios: anéis girando em sentidos opostos */
-.sx-gyro {
-  position: absolute;
-  top: var(--sx-mid);
-  left: 50%;
-  width: min(58vw, 240px);
-  height: min(58vw, 240px);
-  border-radius: 999px;
-  border: 1.5px solid transparent;
-  pointer-events: none;
-  will-change: transform, opacity;
-}
-
-.sx-gyro-a {
-  border-top-color: rgba(255, 236, 180, 0.95);
-  border-right-color: rgba(255, 236, 180, 0.25);
-  animation-name: sx-gyro-a;
-}
-
-.sx-gyro-b {
-  width: min(72vw, 300px);
-  height: min(72vw, 300px);
-  border-bottom-color: rgba(90, 230, 220, 0.9);
-  border-left-color: rgba(90, 230, 220, 0.2);
-  animation-name: sx-gyro-b;
-}
-
-.sx-gyro-c {
-  width: min(86vw, 360px);
-  height: min(86vw, 360px);
-  border-top-color: rgba(255, 140, 80, 0.75);
-  border-left-color: rgba(255, 140, 80, 0.15);
-  animation-name: sx-gyro-c;
-}
-
-@keyframes sx-gyro-a {
-  0%,
-  14% {
-    opacity: 0;
-    transform: translate3d(-50%, -50%, 0) rotate(0deg) scale(0.4);
+    transform: translate3d(0, 8%, 0) scaleY(0.92);
   }
   24% {
     opacity: 1;
-    transform: translate3d(-50%, -50%, 0) rotate(40deg) scale(0.85);
+    transform: translate3d(0, 0, 0) scaleY(1);
   }
-  48% {
-    opacity: 0.9;
-    transform: translate3d(-50%, -50%, 0) rotate(220deg) scale(1.15);
+  78% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scaleY(1);
   }
-  68%,
   100% {
     opacity: 0;
-    transform: translate3d(-50%, -50%, 0) rotate(360deg) scale(2.4);
+    transform: translate3d(0, -6%, 0) scaleY(1.04);
   }
 }
 
-@keyframes sx-gyro-b {
+.sx-sea {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: var(--sx-line);
+  bottom: 0;
+  z-index: 2;
+  background: linear-gradient(
+    180deg,
+    #ffe2a8 0%,
+    #2ec4b6 14%,
+    #0e6f8a 42%,
+    #05324a 72%,
+    #021018 100%
+  );
+  transform-origin: 50% 0%;
+  animation-name: sx-sea;
+  will-change: transform, opacity;
+  overflow: hidden;
+}
+
+@keyframes sx-sea {
   0%,
-  18% {
+  10% {
     opacity: 0;
-    transform: translate3d(-50%, -50%, 0) rotate(0deg) scale(0.35);
+    transform: translate3d(0, -4%, 0) scaleY(1.05);
+  }
+  24% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scaleY(1);
+  }
+  /* o sol empurra o mar para baixo */
+  48% {
+    opacity: 1;
+    transform: translate3d(0, 4%, 0) scaleY(0.96);
+  }
+  78% {
+    opacity: 1;
+    transform: translate3d(0, 2%, 0) scaleY(0.98);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, 10%, 0) scaleY(1.02);
+  }
+}
+
+.sx-glow {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: min(90vw, 420px);
+  height: 55%;
+  margin-left: calc(min(90vw, 420px) / -2);
+  background: radial-gradient(ellipse at 50% 0%, rgba(255, 214, 140, 0.55) 0%, rgba(46, 196, 182, 0.18) 42%, transparent 72%);
+  animation-name: sx-glow;
+  will-change: opacity, transform;
+}
+
+@keyframes sx-glow {
+  0%,
+  28% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scale(0.7);
+  }
+  42%,
+  70% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  90%,
+  100% {
+    opacity: 0;
+    transform: translate3d(0, 8%, 0) scale(1.1);
+  }
+}
+
+.sx-sun {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  top: var(--sx-line);
+  width: min(28vw, 118px);
+  height: min(28vw, 118px);
+  margin: 0;
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 32%, #fff9e8 0%, #ffe08a 28%, #ff9d45 62%, #ff6a2a 100%);
+  animation-name: sx-sun;
+  will-change: transform, opacity;
+}
+
+@keyframes sx-sun {
+  /* começa ENTERRADO no mar */
+  0%,
+  16% {
+    opacity: 0;
+    transform: translate3d(-50%, 38vh, 0) scale(0.35);
   }
   28% {
+    opacity: 1;
+    transform: translate3d(-50%, 18vh, 0) scale(0.72);
+  }
+  /* atravessa a superfície */
+  44% {
+    opacity: 1;
+    transform: translate3d(-50%, -50%, 0) scale(1);
+  }
+  /* sobe para o céu */
+  62% {
+    opacity: 1;
+    transform: translate3d(-50%, -118%, 0) scale(1.08);
+  }
+  82% {
     opacity: 0.85;
-    transform: translate3d(-50%, -50%, 0) rotate(-30deg) scale(0.8);
+    transform: translate3d(-50%, -150%, 0) scale(1.12);
   }
-  52% {
-    opacity: 0.75;
-    transform: translate3d(-50%, -50%, 0) rotate(-240deg) scale(1.2);
-  }
-  74%,
   100% {
     opacity: 0;
-    transform: translate3d(-50%, -50%, 0) rotate(-400deg) scale(2.8);
+    transform: translate3d(-50%, -170%, 0) scale(1.18);
   }
 }
 
-@keyframes sx-gyro-c {
-  0%,
-  22% {
-    opacity: 0;
-    transform: translate3d(-50%, -50%, 0) rotateX(66deg) rotate(0deg) scale(0.3);
-  }
-  34% {
-    opacity: 0.7;
-    transform: translate3d(-50%, -50%, 0) rotateX(66deg) rotate(50deg) scale(0.9);
-  }
-  56% {
-    opacity: 0.55;
-    transform: translate3d(-50%, -50%, 0) rotateX(18deg) rotate(200deg) scale(1.35);
-  }
-  78%,
-  100% {
-    opacity: 0;
-    transform: translate3d(-50%, -50%, 0) rotateX(0deg) rotate(320deg) scale(3.2);
-  }
-}
-
-/* Círculo → linha do horizonte (parece quebrar a geometria) */
-.sx-halo {
+.sx-meniscus {
   position: absolute;
-  top: var(--sx-mid);
+  z-index: 5;
   left: 50%;
-  width: min(48vw, 200px);
-  height: min(48vw, 200px);
-  border-radius: 999px;
-  border: 2px solid rgba(255, 244, 210, 0.95);
-  animation-name: sx-halo;
-  will-change: transform, opacity, border-radius;
+  top: var(--sx-line);
+  width: min(70vw, 320px);
+  height: min(18vw, 72px);
+  margin-top: calc(min(18vw, 72px) / -2);
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 236, 200, 0.0);
+  border-top-color: rgba(255, 244, 220, 0.85);
+  animation-name: sx-meniscus;
+  will-change: transform, opacity;
 }
 
-@keyframes sx-halo {
+@keyframes sx-meniscus {
   0%,
-  26% {
+  30% {
     opacity: 0;
-    border-radius: 999px;
-    transform: translate3d(-50%, -50%, 0) scale(0.5);
+    transform: translate3d(-50%, 0, 0) scale(0.4, 0.2);
   }
   38% {
     opacity: 1;
-    border-radius: 999px;
-    transform: translate3d(-50%, -50%, 0) scale(1.05);
+    transform: translate3d(-50%, 0, 0) scale(0.85, 0.7);
   }
-  52% {
+  /* a superfície estica quando o sol passa */
+  46% {
     opacity: 1;
-    border-radius: 40%;
-    transform: translate3d(-50%, -50%, 0) scale(1.6, 0.55);
+    transform: translate3d(-50%, -10%, 0) scale(1.15, 1.35);
   }
-  64% {
-    opacity: 1;
-    border-radius: 0;
-    transform: translate3d(-50%, -50%, 0) scale(4.8, 0.015);
+  58% {
+    opacity: 0.55;
+    transform: translate3d(-50%, 0, 0) scale(1.45, 0.35);
   }
-  78%,
+  70%,
   100% {
     opacity: 0;
-    border-radius: 0;
-    transform: translate3d(-50%, -50%, 0) scale(7, 0.01);
+    transform: translate3d(-50%, 0, 0) scale(1.8, 0.08);
   }
 }
 
-.sx-flash {
+.sx-horizon {
   position: absolute;
-  inset: 0;
   z-index: 5;
-  background: #fff8e8;
-  animation-name: sx-flash;
+  left: 50%;
+  top: var(--sx-line);
+  width: min(100vw, 720px);
+  height: 2px;
+  margin-top: -1px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 236, 190, 0.15) 12%,
+    rgba(255, 248, 220, 0.95) 50%,
+    rgba(255, 236, 190, 0.15) 88%,
+    transparent 100%
+  );
+  animation-name: sx-horizon;
+  will-change: transform, opacity;
+}
+
+@keyframes sx-horizon {
+  0%,
+  18% {
+    opacity: 0;
+    transform: translate3d(-50%, 0, 0) scaleX(0.08);
+  }
+  28%,
+  72% {
+    opacity: 1;
+    transform: translate3d(-50%, 0, 0) scaleX(1);
+  }
+  88%,
+  100% {
+    opacity: 0;
+    transform: translate3d(-50%, 0, 0) scaleX(1.05);
+  }
+}
+
+.sx-path {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: var(--sx-line);
+  width: min(18vw, 72px);
+  height: 42%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 232, 170, 0.7) 0%,
+    rgba(255, 200, 120, 0.28) 38%,
+    transparent 100%
+  );
+  clip-path: polygon(38% 0, 62% 0, 100% 100%, 0 100%);
+  animation-name: sx-path;
+  will-change: transform, opacity;
+}
+
+@keyframes sx-path {
+  0%,
+  36% {
+    opacity: 0;
+    transform: translate3d(-50%, 0, 0) scaleY(0.2);
+  }
+  48%,
+  72% {
+    opacity: 1;
+    transform: translate3d(-50%, 0, 0) scaleY(1);
+  }
+  90%,
+  100% {
+    opacity: 0;
+    transform: translate3d(-50%, 6%, 0) scaleY(1.05);
+  }
+}
+
+.sx-copy {
+  position: absolute;
+  z-index: 7;
+  left: 0;
+  right: 0;
+  top: calc(var(--sx-line) - 7.2rem);
+  display: grid;
+  justify-items: center;
+  gap: 0.55rem;
   pointer-events: none;
 }
 
-@keyframes sx-flash {
-  0%,
-  44% {
-    opacity: 0;
-  }
-  50% {
-    opacity: 0.55;
-  }
-  58%,
-  100% {
-    opacity: 0;
-  }
-}
-
-.sx-mirror,
 .sx-title {
-  position: absolute;
-  z-index: 7;
-  right: 0;
-  left: 0;
   margin: 0;
-  text-align: center;
   font-family: var(--font-fraunces), Georgia, serif;
   font-style: italic;
   font-weight: 560;
-  font-size: clamp(2.5rem, 12vw, 3.8rem);
-  letter-spacing: 0.02em;
+  font-size: clamp(2.6rem, 12vw, 4rem);
+  letter-spacing: 0.01em;
   line-height: 1;
-  color: #fff8e8;
-  pointer-events: none;
-}
-
-.sx-title {
-  top: calc(var(--sx-mid) - 3.6rem);
+  color: #fff8ec;
+  text-shadow: 0 8px 28px rgba(8, 20, 40, 0.35);
   animation-name: sx-title;
 }
 
-/* Reflexo sobe do mar e cola no nome real */
-.sx-mirror {
-  top: calc(var(--sx-mid) + 0.4rem);
-  color: rgba(180, 240, 235, 0.55);
-  animation-name: sx-mirror;
-}
-
 .sx-sub {
-  position: absolute;
-  z-index: 7;
-  top: calc(var(--sx-mid) + 1.35rem);
-  right: 0;
-  left: 0;
   margin: 0;
-  text-align: center;
   font-family: var(--font-outfit), system-ui, sans-serif;
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 560;
-  letter-spacing: 0.34em;
-  text-indent: 0.34em;
+  letter-spacing: 0.36em;
+  text-indent: 0.36em;
   text-transform: uppercase;
-  color: rgba(255, 236, 200, 0.9);
+  color: rgba(255, 236, 210, 0.9);
   animation-name: sx-sub;
-  pointer-events: none;
 }
 
 @keyframes sx-title {
   0%,
-  46% {
+  48% {
     opacity: 0;
-    transform: translate3d(0, 28px, 0) scale(0.9);
+    transform: translate3d(0, 22px, 0);
   }
-  58% {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
-  }
+  60%,
   78% {
     opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
+    transform: translate3d(0, 0, 0);
   }
   92%,
   100% {
     opacity: 0;
-    transform: translate3d(0, -16px, 0) scale(1.05);
-  }
-}
-
-@keyframes sx-mirror {
-  0%,
-  40% {
-    opacity: 0;
-    transform: translate3d(0, 48px, 0) scaleY(-1) scale(0.86);
-  }
-  52% {
-    opacity: 0.7;
-    transform: translate3d(0, 10px, 0) scaleY(-1) scale(0.96);
-  }
-  60% {
-    opacity: 0;
-    transform: translate3d(0, -2.8rem, 0) scaleY(1) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translate3d(0, -2.8rem, 0) scaleY(1) scale(1);
+    transform: translate3d(0, -12px, 0);
   }
 }
 
 @keyframes sx-sub {
   0%,
-  54% {
+  56% {
     opacity: 0;
     transform: translate3d(0, 12px, 0);
   }
-  64%,
+  66%,
   80% {
     opacity: 1;
     transform: translate3d(0, 0, 0);
@@ -738,6 +697,25 @@ body {
   100% {
     opacity: 0;
     transform: translate3d(0, -8px, 0);
+  }
+}
+
+.sx-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  background: #02060d;
+  animation-name: sx-veil;
+  pointer-events: none;
+}
+
+@keyframes sx-veil {
+  0%,
+  82% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
   }
 }
 
@@ -755,12 +733,14 @@ body {
   }
 
   .sx-void,
-  .sx-world,
-  .sx-drop,
-  .sx-gyro,
-  .sx-halo,
-  .sx-flash,
-  .sx-mirror {
+  .sx-sky,
+  .sx-sea,
+  .sx-sun,
+  .sx-meniscus,
+  .sx-horizon,
+  .sx-path,
+  .sx-glow,
+  .sx-veil {
     opacity: 0 !important;
   }
 

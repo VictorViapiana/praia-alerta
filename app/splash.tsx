@@ -3,12 +3,12 @@
 import { useEffect, useRef } from "react";
 
 /**
- * Portal da Maré: a gota que contém o oceano inteiro.
- * Zero imagens / zero canvas. Só transform + opacity no compositor.
+ * Nascer do Fundo — o sol nasce debaixo do mar e empurra o horizonte.
+ * História clara, look cinematográfico. Zero imagens. Só transform/opacity.
  */
 
-const FILM_MS = 6400;
-const WARM_MS = 3400;
+const FILM_MS = 6800;
+const WARM_MS = 3600;
 
 export function SplashScreen({ onWarm, onDone }: { onWarm?: () => void; onDone: () => void }) {
   const doneRef = useRef(false);
@@ -47,7 +47,7 @@ export function SplashScreen({ onWarm, onDone }: { onWarm?: () => void; onDone: 
 
     if (reduce) {
       timers.push(window.setTimeout(warm, 40));
-      timers.push(window.setTimeout(finish, 420));
+      timers.push(window.setTimeout(finish, 480));
     } else {
       timers.push(window.setTimeout(warm, WARM_MS));
       timers.push(window.setTimeout(finish, FILM_MS));
@@ -60,35 +60,27 @@ export function SplashScreen({ onWarm, onDone }: { onWarm?: () => void; onDone: 
     <div className="sx-splash is-on" role="img" aria-label="Abrindo Praia Alerta">
       <div className="sx-void sx-anim" />
 
-      {/* Mundo invertido atrás do portal */}
-      <div className="sx-world sx-anim" aria-hidden>
-        <div className="sx-world-sky" />
-        <div className="sx-world-sea" />
+      <div className="sx-sky sx-anim" aria-hidden />
+      <div className="sx-sea sx-anim" aria-hidden>
+        <span className="sx-glow sx-anim" />
       </div>
 
-      {/* Câmara com perspectiva: a gota engole a tela */}
-      <div className="sx-stage" aria-hidden>
-        <div className="sx-drop sx-anim">
-          <span className="sx-drop-core" />
-          <span className="sx-drop-sun" />
-          <span className="sx-drop-shine" />
-        </div>
+      {/* Sol sobe de DENTRO da água — o impossível */}
+      <span className="sx-sun sx-anim" aria-hidden />
 
-        <span className="sx-gyro sx-gyro-a sx-anim" />
-        <span className="sx-gyro sx-gyro-b sx-anim" />
-        <span className="sx-gyro sx-gyro-c sx-anim" />
+      {/* Menisco: a superfície curva quando o sol atravessa */}
+      <span className="sx-meniscus sx-anim" aria-hidden />
+      <span className="sx-horizon sx-anim" aria-hidden />
 
-        {/* Horizonte circular que vira uma linha — topologia impossível */}
-        <span className="sx-halo sx-anim" />
+      {/* Caminho de luz na água (reflexo vertical) */}
+      <span className="sx-path sx-anim" aria-hidden />
+
+      <div className="sx-copy">
+        <p className="sx-title sx-anim">Guarapari</p>
+        <p className="sx-sub sx-anim">o sol nasce do mar</p>
       </div>
 
-      <span className="sx-flash sx-anim" aria-hidden />
-
-      <p className="sx-mirror sx-anim" aria-hidden>
-        Guarapari
-      </p>
-      <p className="sx-title sx-anim">Guarapari</p>
-      <p className="sx-sub sx-anim">o mar cabe numa gota</p>
+      <span className="sx-veil sx-anim" aria-hidden />
     </div>
   );
 }
