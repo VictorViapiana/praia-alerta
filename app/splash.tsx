@@ -3,14 +3,12 @@
 import { useEffect, useRef } from "react";
 
 /**
- * Abertura fotoreal: placa real da orla + horizonte que se abre.
- * Só transform/opacity no compositor — sem setState no meio da cena.
+ * Abertura surreal: o sol nasce debaixo d'água.
+ * Zero imagens. Só transform/opacity no compositor — não disputa CPU com o mapa.
  */
 
-const FILM_MS = 6800;
-const WARM_MS = 4300;
-/** Altura do horizonte na splash-plate.webp (em vh, bate com a foto). */
-const HORIZON = "45.68vh";
+const FILM_MS = 5400;
+const WARM_MS = 3000;
 
 export function SplashScreen({ onWarm, onDone }: { onWarm?: () => void; onDone: () => void }) {
   const doneRef = useRef(false);
@@ -49,7 +47,7 @@ export function SplashScreen({ onWarm, onDone }: { onWarm?: () => void; onDone: 
 
     if (reduce) {
       timers.push(window.setTimeout(warm, 40));
-      timers.push(window.setTimeout(finish, 520));
+      timers.push(window.setTimeout(finish, 420));
     } else {
       timers.push(window.setTimeout(warm, WARM_MS));
       timers.push(window.setTimeout(finish, FILM_MS));
@@ -59,50 +57,21 @@ export function SplashScreen({ onWarm, onDone }: { onWarm?: () => void; onDone: 
   }, [onDone, onWarm]);
 
   return (
-    <div
-      className="sx-splash is-on"
-      role="img"
-      aria-label="Abrindo Praia Alerta"
-      style={{ ["--horizon" as string]: HORIZON }}
-    >
-      <div className="sx-night sx-anim" />
+    <div className="sx-splash is-on" role="img" aria-label="Abrindo Praia Alerta">
+      <div className="sx-void sx-anim" />
 
-      <div className="sx-half sx-sky sx-anim">
-        <img
-          className="sx-plate sx-plate-sky"
-          src="/splash-plate.webp"
-          alt=""
-          draggable={false}
-          decoding="sync"
-          fetchPriority="high"
-        />
-      </div>
+      <div className="sx-fold sx-fold-sea sx-anim" aria-hidden />
+      <div className="sx-fold sx-fold-sky sx-anim" aria-hidden />
 
-      <div className="sx-half sx-sea sx-anim">
-        <img
-          className="sx-plate sx-plate-sea"
-          src="/splash-plate.webp"
-          alt=""
-          draggable={false}
-          decoding="sync"
-          fetchPriority="high"
-        />
-        <img className="sx-reflect sx-anim" src="/logo-splash.png" alt="" draggable={false} decoding="async" />
-      </div>
+      <span className="sx-orb sx-anim" aria-hidden />
+      <span className="sx-ring sx-r1 sx-anim" aria-hidden />
+      <span className="sx-ring sx-r2 sx-anim" aria-hidden />
+      <span className="sx-ring sx-r3 sx-anim" aria-hidden />
+      <span className="sx-spark sx-anim" aria-hidden />
+      <span className="sx-blade sx-anim" aria-hidden />
 
-      <span className="sx-ring sx-anim" aria-hidden />
-      <span className="sx-ring sx-ring-b sx-anim" aria-hidden />
-
-      <img
-        className="sx-logo sx-anim"
-        src="/logo-splash.png"
-        alt=""
-        draggable={false}
-        decoding="async"
-        fetchPriority="high"
-      />
-
-      <p className="sx-caption sx-anim">GUARAPARI · ES</p>
+      <p className="sx-title sx-anim">Guarapari</p>
+      <p className="sx-sub sx-anim">onde o mar começa</p>
     </div>
   );
 }
