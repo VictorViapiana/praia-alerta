@@ -86,9 +86,9 @@ function cartIcon(heading: number) {
   const flip = east >= 0 ? -1 : 1;
   return L.divIcon({
     className: "orla-pin",
-    iconSize: [32, 32],
-    iconAnchor: [16, 32],
-    html: `<img src="${CARRINHO_SRC}" alt="" class="carrinho-pin" width="32" height="32" draggable="false" style="width:32px;height:32px;transform:scaleX(${flip});transform-origin:center center" />`,
+    iconSize: [24, 24],
+    iconAnchor: [12, 24],
+    html: `<img src="${CARRINHO_SRC}" alt="" class="carrinho-pin" width="24" height="24" draggable="false" style="width:24px;height:24px;transform:scaleX(${flip});transform-origin:center center" />`,
   });
 }
 
@@ -578,7 +578,7 @@ function VendorPin({
   selected: boolean;
 }) {
   return (
-    <div className="pointer-events-none relative h-8 w-8" style={{ opacity: faded ? 0.28 : 1 }}>
+    <div className="pointer-events-none relative h-6 w-6" style={{ opacity: faded ? 0.28 : 1 }}>
       <HeadingBeam heading={heading} />
       {selected && (
         <div className="pointer-events-auto absolute bottom-[calc(100%+8px)] left-1/2 z-30 w-[188px] -translate-x-1/2">
@@ -596,7 +596,7 @@ function VendorPin({
         </div>
       )}
       {!selected && (
-        <span className="absolute bottom-full left-1/2 z-20 mb-1 block w-max max-w-[11rem] -translate-x-1/2 whitespace-nowrap rounded-full border border-white bg-white px-1.5 py-0.5 text-center text-[11px] font-bold leading-none tracking-normal text-[#7c2d12] shadow-[0_3px_10px_rgba(0,0,0,0.55)]">
+        <span className="absolute bottom-full left-1/2 z-20 mb-1 block w-max max-w-[11rem] -translate-x-1/2 whitespace-nowrap rounded-full border border-white bg-white px-1.5 py-0.5 text-center text-[10px] font-bold leading-none tracking-normal text-[#7c2d12] shadow-[0_3px_10px_rgba(0,0,0,0.55)]">
           {vendor.name}
         </span>
       )}
@@ -1093,7 +1093,7 @@ function OrlaMarkers({
           const selected = openId === vendor.id;
           return (
             <Fragment key={vendor.id}>
-              <ReactPin position={[point.lat, point.lng]} zIndexOffset={selected ? 930 : 230} size={32} anchor="tip" interactive={false}>
+              <ReactPin position={[point.lat, point.lng]} zIndexOffset={selected ? 930 : 230} size={24} anchor="tip" interactive={false}>
                 <VendorPin
                   vendor={vendor}
                   heading={vendorHeading(vendor.walks, point.step)}
