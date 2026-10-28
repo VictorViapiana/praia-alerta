@@ -716,7 +716,7 @@ export const BANCOS_NORTE = bancos(
   "Bancos",
   "Bancos cobertos · Norte",
   "Conjunto de 3 bancos no fim da praia",
-  -20.654601,
+  -20.654421,
   -40.473615,
   "banco bancos coberto cobertos gazebo sombra norte pescaria conjunto tres",
 );
