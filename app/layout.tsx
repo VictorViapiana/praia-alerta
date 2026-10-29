@@ -15,13 +15,13 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "Praia Alerta",
+  title: "Alegretto Praia Alerta",
   description: "Guia e alerta da Praia do Morro — Guarapari, ES. Mapa, segurança e o Guará no bolso.",
-  applicationName: "Praia Alerta",
+  applicationName: "Alegretto Praia Alerta",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Praia Alerta",
+    title: "Alegretto Praia Alerta",
   },
   formatDetection: {
     telephone: false,
@@ -44,15 +44,15 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#041018" },
-    { media: "(prefers-color-scheme: dark)", color: "#041018" },
+    { media: "(prefers-color-scheme: light)", color: "#0ea5e9" },
+    { media: "(prefers-color-scheme: dark)", color: "#0ea5e9" },
   ],
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
   viewportFit: "cover",
-  colorScheme: "dark",
+  colorScheme: "light",
 };
 
 export default function RootLayout({
@@ -69,7 +69,7 @@ export default function RootLayout({
         <link rel="stylesheet" href="/vendor/leaflet/leaflet.css" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="Praia Alerta" />
+        <meta name="apple-mobile-web-app-title" content="Alegretto Praia Alerta" />
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
       </head>
       <body className={`${outfit.variable} ${fraunces.variable} antialiased`}>

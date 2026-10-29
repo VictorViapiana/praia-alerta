@@ -249,7 +249,7 @@ export function MarlinScreen({ onClose }: { onClose: () => void }) {
     <motion.div
       {...screenEnter}
       style={{ borderRadius: 0 }}
-      className="absolute inset-0 z-40 overflow-hidden bg-[#061018]"
+      className="absolute inset-0 z-40 overflow-hidden bg-sky-700"
     >
       <CloseButton onClose={onClose} light className={closeTopClass} />
       <div className="no-scrollbar h-full overflow-x-hidden overflow-y-auto">
@@ -348,7 +348,7 @@ export function FotosScreen({ onClose }: { onClose: () => void }) {
     <motion.div
       {...screenEnter}
       style={{ borderRadius: 0 }}
-      className="absolute inset-0 z-40 overflow-hidden bg-[#07131c]"
+      className="absolute inset-0 z-40 overflow-hidden bg-sky-700"
     >
       <CloseButton onClose={onClose} light className={closeTopClass} />
       <div className="no-scrollbar h-full overflow-x-hidden overflow-y-auto">
@@ -417,7 +417,7 @@ export function FotosScreen({ onClose }: { onClose: () => void }) {
 export function FlagsScreen({ onClose }: { onClose: () => void }) {
   return (
     <motion.div
-      className="absolute inset-0 z-40 overflow-hidden bg-[#07140c]"
+      className="absolute inset-0 z-40 overflow-hidden bg-sky-800"
       {...screenEnter}
       role="dialog"
       aria-label="Bandeiras de sinalização"

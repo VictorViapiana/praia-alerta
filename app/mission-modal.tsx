@@ -57,7 +57,7 @@ export function MissionTrigger({
           Nossa Missão
         </span>
         <span className="mt-0.5 block truncate text-[9px] leading-none text-cyan-50/70">
-          Praia Alerta
+          Alegretto
         </span>
       </span>
     </button>
@@ -90,7 +90,7 @@ export function MissionModal({ open, onClose }: { open: boolean; onClose: () => 
             role="dialog"
             aria-modal="true"
             aria-labelledby="mission-title"
-            className="relative flex max-h-[min(92dvh,760px)] w-full flex-col overflow-hidden rounded-t-[1.75rem] border border-cyan-100/20 bg-[#071820]/92 shadow-[0_-24px_80px_-28px_rgba(0,0,0,0.85)] backdrop-blur-2xl sm:max-w-[26rem] sm:rounded-[1.75rem]"
+            className="relative flex max-h-[min(92dvh,760px)] w-full flex-col overflow-hidden rounded-t-[1.75rem] border border-cyan-100/35 bg-sky-700/90 shadow-[0_-24px_80px_-28px_rgba(14,165,233,0.45)] backdrop-blur-2xl sm:max-w-[26rem] sm:rounded-[1.75rem]"
             initial={{ y: "108%", opacity: 0.85 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: "108%", opacity: 0.75 }}
@@ -112,7 +112,7 @@ export function MissionModal({ open, onClose }: { open: boolean; onClose: () => 
             <header className="relative z-10 flex items-start gap-3 px-5 pb-3 pt-2 sm:pt-5">
               <div className="min-w-0 flex-1">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-cyan-100/70">
-                  Praia Alerta Alegretto
+                  Alegretto Praia Alerta
                 </p>
                 <h2
                   id="mission-title"
@@ -146,7 +146,7 @@ export function MissionModal({ open, onClose }: { open: boolean; onClose: () => 
                   chega à nossa querida Guarapari.
                 </p>
                 <p>
-                  O <strong className="font-semibold text-white">Praia Alerta Alegretto</strong> nasceu com
+                  O <strong className="font-semibold text-white">Alegretto Praia Alerta</strong> nasceu com
                   o propósito de prevenir acidentes, orientar visitantes, proteger nossas crianças,
                   valorizar nossos trabalhadores e preservar as belezas naturais e culturais da nossa
                   cidade.
@@ -175,12 +175,12 @@ export function MissionModal({ open, onClose }: { open: boolean; onClose: () => 
               </blockquote>
 
               <p className="mt-6 pb-2 text-[14.5px] leading-relaxed text-white/88">
-                O <strong className="font-semibold text-white">Praia Alerta Alegretto</strong> não é apenas
+                O <strong className="font-semibold text-white">Alegretto Praia Alerta</strong> não é apenas
                 um aplicativo. É um compromisso com a vida, com as pessoas e com o futuro de Guarapari.
               </p>
             </div>
 
-            <div className="relative z-10 border-t border-white/10 bg-[#06141c]/70 px-5 pb-[max(1.1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl">
+            <div className="relative z-10 border-t border-white/10 bg-sky-800/55 px-5 pb-[max(1.1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl">
               <button
                 type="button"
                 onClick={onClose}

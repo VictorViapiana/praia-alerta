@@ -521,7 +521,7 @@ export function MapSearch({
       {open ? (
         <div
           id="orla-search-results"
-          className="mt-2 flex min-h-0 flex-1 flex-col overflow-hidden rounded-[28px] border border-white/15 bg-[#07110d]/88 shadow-[0_24px_50px_-24px_rgba(0,0,0,0.85)] backdrop-blur-xl"
+          className="mt-2 flex min-h-0 flex-1 flex-col overflow-hidden rounded-[28px] border border-white/25 bg-sky-800/85 shadow-[0_24px_50px_-24px_rgba(14,165,233,0.45)] backdrop-blur-xl"
         >
           <div className="flex items-center justify-between px-3.5 pb-1 pt-3">
             <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/55">
