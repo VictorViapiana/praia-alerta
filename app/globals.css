@@ -12,7 +12,7 @@ body {
 
 body {
   margin: 0;
-  background: #2b7fc4;
+  background: #4f97cb;
   color: white;
   font-family: var(--font-sans);
 }
@@ -339,27 +339,59 @@ body {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
+/* Painéis da Maré / sheets — sobem do fundo com sombra real. */
+.glass-panel {
+  position: relative;
+  isolation: isolate;
+  background: linear-gradient(165deg, rgba(28, 94, 146, 0.98) 0%, rgba(5, 28, 56, 0.97) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.52);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.28),
+    0 10px 18px rgba(2, 10, 24, 0.28),
+    0 24px 48px rgba(2, 10, 24, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.36),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.15);
+  backdrop-filter: blur(20px) saturate(1.15);
+}
+
+.glass-panel-sm {
+  position: relative;
+  isolation: isolate;
+  background: linear-gradient(155deg, rgba(30, 98, 150, 0.97) 0%, rgba(6, 32, 62, 0.96) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.48);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.22),
+    0 8px 14px rgba(2, 10, 24, 0.26),
+    0 18px 34px rgba(2, 10, 24, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.32);
+  -webkit-backdrop-filter: blur(18px) saturate(1.12);
+  backdrop-filter: blur(18px) saturate(1.12);
+}
+
 /* Céu polido — azul mais profundo, nuvens em camadas, orla viva embaixo. */
 .sky-base {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(120% 55% at 50% 118%, rgba(6, 55, 98, 0.5) 0%, transparent 58%),
-    linear-gradient(180deg, #8ec8ef 0%, #4ea0d8 22%, #2b7fc4 46%, #1a6aaf 68%, #0d568f 86%, #0a4578 100%);
+    radial-gradient(90% 50% at 78% 12%, rgba(255, 248, 230, 0.35) 0%, transparent 55%),
+    radial-gradient(120% 55% at 50% 118%, rgba(12, 70, 118, 0.28) 0%, transparent 58%),
+    linear-gradient(180deg, #b7daf2 0%, #7eb8e0 24%, #4f97cb 52%, #2f78b4 74%, #1d649c 100%);
 }
 
 .sky-base-stage {
   background:
-    radial-gradient(100% 55% at 50% 110%, rgba(6, 55, 98, 0.42) 0%, transparent 52%),
-    linear-gradient(180deg, #a8d6f4 0%, #5eabd8 26%, #3589c6 50%, #1c6aaf 74%, #0d568f 100%);
+    radial-gradient(80% 45% at 72% 14%, rgba(255, 248, 230, 0.3) 0%, transparent 52%),
+    radial-gradient(100% 55% at 50% 110%, rgba(12, 70, 118, 0.22) 0%, transparent 52%),
+    linear-gradient(180deg, #c5e2f5 0%, #8ec4e4 28%, #5aa0d0 56%, #3480b8 82%, #2269a4 100%);
 }
 
 .sky-haze {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 80% 40% at 20% 30%, rgba(255, 255, 255, 0.18) 0%, transparent 60%),
-    radial-gradient(ellipse 70% 35% at 85% 18%, rgba(255, 248, 220, 0.28) 0%, transparent 55%);
+    radial-gradient(ellipse 90% 42% at 18% 28%, rgba(255, 255, 255, 0.22) 0%, transparent 62%),
+    radial-gradient(ellipse 70% 36% at 86% 16%, rgba(255, 250, 235, 0.2) 0%, transparent 58%);
   z-index: 0;
 }
 
@@ -416,8 +448,8 @@ body {
   top: 6%;
   width: 106%;
   height: 34%;
-  opacity: 0.55;
-  filter: blur(0.4px) drop-shadow(0 10px 20px rgba(8, 40, 72, 0.25));
+  opacity: 0.32;
+  filter: blur(1.2px) drop-shadow(0 10px 20px rgba(8, 40, 72, 0.15));
 }
 
 .sky-coast-sea {
@@ -427,19 +459,16 @@ body {
   bottom: 0;
   height: 82%;
   background:
-    radial-gradient(ellipse 110% 48% at 72% 6%, rgba(255, 248, 220, 0.42) 0%, transparent 52%),
-    radial-gradient(ellipse 70% 40% at 12% 18%, rgba(165, 243, 252, 0.36) 0%, transparent 58%),
-    radial-gradient(ellipse 90% 35% at 50% 42%, rgba(56, 189, 248, 0.28) 0%, transparent 70%),
-    radial-gradient(ellipse 80% 30% at 40% 68%, rgba(14, 116, 180, 0.22) 0%, transparent 65%),
+    radial-gradient(ellipse 110% 48% at 72% 6%, rgba(255, 248, 230, 0.28) 0%, transparent 52%),
+    radial-gradient(ellipse 70% 40% at 12% 18%, rgba(186, 230, 253, 0.22) 0%, transparent 58%),
     linear-gradient(
       180deg,
       transparent 0%,
-      rgba(186, 230, 253, 0.22) 10%,
-      rgba(125, 211, 252, 0.38) 22%,
-      rgba(56, 189, 248, 0.48) 36%,
-      rgba(34, 160, 210, 0.55) 52%,
-      rgba(20, 130, 185, 0.58) 68%,
-      rgba(18, 110, 165, 0.42) 84%,
+      rgba(186, 230, 253, 0.16) 12%,
+      rgba(125, 200, 232, 0.32) 28%,
+      rgba(70, 150, 200, 0.42) 48%,
+      rgba(48, 120, 172, 0.48) 68%,
+      rgba(40, 100, 150, 0.35) 86%,
       transparent 100%
     );
 }
@@ -457,10 +486,10 @@ body {
     rgba(186, 230, 253, 0.1) 62%,
     transparent 100%
   );
-  filter: blur(12px);
-  opacity: 0.8;
+  filter: blur(14px);
   clip-path: polygon(40% 0, 60% 0, 82% 100%, 18% 100%);
-  animation: sky-coast-sheen 8s ease-in-out infinite alternate;
+  opacity: 0.45;
+  animation: sky-coast-sheen 10s ease-in-out infinite alternate;
   will-change: opacity;
 }
 
@@ -537,15 +566,14 @@ body {
   position: absolute;
   left: -10%;
   right: -10%;
-  bottom: 10%;
-  height: 22%;
+  bottom: 12%;
+  height: 18%;
   background:
-    radial-gradient(ellipse 42% 100% at 8% 70%, rgba(255, 255, 255, 0.85) 0%, transparent 68%),
-    radial-gradient(ellipse 38% 95% at 32% 88%, rgba(255, 255, 255, 0.78) 0%, transparent 66%),
-    radial-gradient(ellipse 44% 100% at 62% 72%, rgba(255, 255, 255, 0.72) 0%, transparent 68%),
-    radial-gradient(ellipse 40% 90% at 90% 82%, rgba(255, 255, 255, 0.68) 0%, transparent 70%),
-    linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.2) 40%, rgba(255, 255, 255, 0.45) 100%);
-  animation: sky-coast-foam 5.5s ease-in-out infinite alternate;
+    radial-gradient(ellipse 42% 100% at 10% 70%, rgba(255, 255, 255, 0.42) 0%, transparent 68%),
+    radial-gradient(ellipse 38% 95% at 40% 88%, rgba(255, 255, 255, 0.34) 0%, transparent 66%),
+    radial-gradient(ellipse 44% 100% at 72% 75%, rgba(255, 255, 255, 0.3) 0%, transparent 68%),
+    linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.1) 45%, rgba(255, 255, 255, 0.22) 100%);
+  animation: sky-coast-foam 7s ease-in-out infinite alternate;
   will-change: opacity, transform;
 }
 
@@ -554,23 +582,18 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 20%;
+  height: 18%;
   background:
-    radial-gradient(ellipse 28% 55% at 14% 70%, rgba(255, 255, 255, 0.4) 0%, transparent 70%),
-    radial-gradient(ellipse 24% 50% at 48% 85%, rgba(255, 248, 220, 0.35) 0%, transparent 68%),
-    radial-gradient(ellipse 30% 60% at 82% 75%, rgba(255, 255, 255, 0.32) 0%, transparent 70%),
-    radial-gradient(circle at 22% 40%, rgba(180, 120, 60, 0.12) 0 1px, transparent 2px),
-    radial-gradient(circle at 61% 55%, rgba(160, 100, 50, 0.1) 0 1px, transparent 2px),
-    radial-gradient(circle at 78% 35%, rgba(180, 120, 60, 0.11) 0 1px, transparent 2px),
+    radial-gradient(ellipse 30% 55% at 16% 75%, rgba(255, 255, 255, 0.22) 0%, transparent 70%),
+    radial-gradient(ellipse 26% 50% at 78% 80%, rgba(255, 250, 240, 0.18) 0%, transparent 68%),
     linear-gradient(
       180deg,
       transparent 0%,
-      rgba(254, 243, 199, 0.5) 18%,
-      rgba(253, 230, 168, 0.78) 42%,
-      rgba(252, 211, 140, 0.92) 68%,
-      rgba(251, 191, 110, 0.98) 100%
+      rgba(236, 224, 198, 0.28) 22%,
+      rgba(226, 208, 174, 0.48) 48%,
+      rgba(214, 192, 154, 0.62) 74%,
+      rgba(204, 180, 140, 0.72) 100%
     );
-  background-size: auto, auto, auto, 18px 14px, 22px 16px, 16px 12px, auto;
 }
 
 .sky-coast-ripple {
@@ -650,7 +673,7 @@ body {
   mask-image: radial-gradient(circle, rgba(0, 0, 0, 0.75) 8%, transparent 62%);
   animation: sky-ray-spin 96s linear infinite;
   will-change: transform;
-  opacity: 0.55;
+  opacity: 0.22;
 }
 
 .sky-beam {
@@ -663,12 +686,12 @@ body {
   transform-origin: 50% 0;
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.55) 0%,
-    rgba(255, 251, 235, 0.22) 28%,
+    rgba(255, 255, 255, 0.35) 0%,
+    rgba(255, 251, 235, 0.14) 30%,
     transparent 72%
   );
-  filter: blur(6px);
-  opacity: 0.45;
+  filter: blur(10px);
+  opacity: 0.28;
   will-change: transform, opacity;
   animation: sky-beam-breathe 7s ease-in-out infinite alternate;
 }
@@ -696,14 +719,14 @@ body {
 
 .sky-sun-glow {
   position: absolute;
-  inset: -28%;
+  inset: -36%;
   border-radius: 999px;
   background: radial-gradient(
     circle,
-    rgba(255, 251, 235, 0.95) 0%,
-    rgba(254, 243, 168, 0.5) 34%,
-    rgba(251, 191, 36, 0.16) 58%,
-    transparent 74%
+    rgba(255, 252, 240, 0.85) 0%,
+    rgba(255, 245, 210, 0.32) 38%,
+    rgba(255, 228, 160, 0.1) 58%,
+    transparent 72%
   );
   animation: sky-sun-pulse 5.2s ease-in-out infinite alternate;
   will-change: transform, opacity;
@@ -711,13 +734,13 @@ body {
 
 .sky-sun-core {
   position: absolute;
-  inset: 28%;
+  inset: 32%;
   border-radius: 999px;
-  background: radial-gradient(circle at 36% 30%, #ffffff 0%, #fff7ed 24%, #fde68a 58%, #f59e0b 100%);
+  background: radial-gradient(circle at 38% 32%, #ffffff 0%, #fff8eb 35%, #ffe8b0 72%, #f6d077 100%);
   box-shadow:
-    0 0 16px 5px rgba(255, 255, 255, 0.75),
-    0 0 40px 14px rgba(253, 224, 71, 0.4),
-    0 0 80px 28px rgba(251, 191, 36, 0.18);
+    0 0 18px 6px rgba(255, 255, 255, 0.45),
+    0 0 42px 16px rgba(255, 236, 180, 0.22),
+    0 0 70px 26px rgba(255, 220, 140, 0.1);
 }
 
 @keyframes sky-ray-spin {
@@ -755,17 +778,17 @@ body {
   width: 170px;
   height: auto;
   overflow: visible;
-  filter: drop-shadow(0 10px 16px rgba(15, 70, 120, 0.12));
+  filter: blur(1.5px) drop-shadow(0 8px 18px rgba(15, 70, 120, 0.08));
   will-change: transform;
-  animation: sky-cloud-drift 34s ease-in-out infinite alternate;
-  opacity: 0.92;
+  animation: sky-cloud-drift 42s ease-in-out infinite alternate;
+  opacity: 0.72;
 }
 
 .sky-cloud-soft {
   z-index: 1;
-  filter: blur(10px) drop-shadow(0 0 0 transparent);
-  opacity: 0.35;
-  animation-duration: 48s;
+  filter: blur(14px) drop-shadow(0 0 0 transparent);
+  opacity: 0.28;
+  animation-duration: 56s;
 }
 
 .sky-cloud-far-a {

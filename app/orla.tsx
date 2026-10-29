@@ -643,17 +643,17 @@ function mareTips(data: TideNow) {
 }
 
 function toneClass(tone: string) {
-  if (tone === "bom") return "border-emerald-300/25 bg-emerald-400/10 text-emerald-50";
-  if (tone === "cuidado") return "border-amber-300/30 bg-amber-400/10 text-amber-50";
-  if (tone === "evitar") return "border-rose-300/30 bg-rose-400/10 text-rose-50";
-  return "border-white/15 bg-white/10 text-white";
+  if (tone === "bom") return "!border-emerald-200/40 !bg-gradient-to-br !from-emerald-500/25 !to-[rgba(8,38,72,0.9)] text-emerald-50";
+  if (tone === "cuidado") return "!border-amber-200/40 !bg-gradient-to-br !from-amber-400/25 !to-[rgba(8,38,72,0.9)] text-amber-50";
+  if (tone === "evitar") return "!border-rose-200/40 !bg-gradient-to-br !from-rose-400/25 !to-[rgba(8,38,72,0.9)] text-rose-50";
+  return "text-white";
 }
 
 function CompassDial({ deg, label }: { deg: number; label: string }) {
   const angle = bearingArrow(deg);
   return (
     <div className="flex flex-col items-center gap-1.5">
-      <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-white/20 bg-white/5">
+      <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-white/30 bg-sky-950/40 shadow-[0_8px_18px_-12px_rgba(3,20,40,0.55),inset_0_1px_0_rgba(255,255,255,0.2)]">
         <span className="absolute top-1 z-[1] text-[9px] font-semibold text-white/45">N</span>
         <span
           className="absolute inset-0"
@@ -702,8 +702,8 @@ export function LiveMare() {
         : "Mar estável agora. Mesmo assim, o posto manda mais do que o aspecto da água.";
 
   return (
-    <div className="space-y-4">
-      <div className="rounded-[1.4rem] border border-white/15 bg-white/10 p-4 backdrop-blur-md">
+    <div className="space-y-5">
+      <div className="glass-panel relative z-[1] rounded-[1.4rem] p-4">
         <p className="text-[11px] uppercase tracking-[0.18em] text-cyan-100/70">Nível do mar agora</p>
         <div className="mt-1 flex items-end justify-between">
           <p className="font-serif text-5xl leading-none text-white">{meters(data.level)}</p>
@@ -718,7 +718,7 @@ export function LiveMare() {
       </div>
       <div className="grid grid-cols-2 gap-2.5">
         {turns.map(([label, hour, height]) => (
-          <div key={label} className="rounded-2xl border border-white/15 bg-white/10 p-3 backdrop-blur-md">
+          <div key={label} className="glass-panel-sm relative z-[1] rounded-2xl p-3">
             <p className="text-[11px] text-white/50">{label}</p>
             <p className="mt-1 text-lg font-semibold text-white">{hour}</p>
             <p className="text-xs text-cyan-100/80">{height}</p>
@@ -731,7 +731,7 @@ export function LiveMare() {
       </p>
 
       {/* Régua viva da maré */}
-      <div className="rounded-[1.4rem] border border-white/15 bg-gradient-to-b from-white/12 to-cyan-500/10 p-4 backdrop-blur-md">
+      <div className="glass-panel relative z-[1] rounded-[1.4rem] p-4">
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-[11px] uppercase tracking-[0.18em] text-cyan-100/70">Régua da maré</p>
@@ -758,7 +758,7 @@ export function LiveMare() {
               <span className="text-white/45">Preamar da janela</span>
               <span className="font-semibold text-white">{meters(data.rangeMax)}</span>
             </div>
-            <div className="rounded-xl border border-cyan-200/20 bg-cyan-300/10 px-3 py-2">
+            <div className="rounded-xl border border-cyan-100/35 bg-sky-950/45 px-3 py-2 shadow-[0_10px_22px_-14px_rgba(3,20,40,0.65),inset_0_1px_0_rgba(255,255,255,0.18)]">
               <p className="text-[10px] uppercase tracking-[0.14em] text-cyan-100/70">Agora</p>
               <p className="text-lg font-semibold text-white">
                 {meters(data.level)} · {data.trend}
@@ -802,7 +802,7 @@ export function LiveMare() {
               sub: `rumo ${compass(data.currentDir)}`,
             },
           ].map((stat) => (
-            <div key={stat.label} className="rounded-2xl border border-white/15 bg-white/10 p-3 backdrop-blur-md">
+            <div key={stat.label} className="glass-panel-sm relative z-[1] rounded-2xl p-3">
               <stat.icon className="h-4 w-4 text-cyan-100/80" />
               <p className="mt-2 text-lg font-semibold leading-tight text-white">{stat.value}</p>
               <p className="text-[11px] text-white/55">{stat.label}</p>
@@ -813,7 +813,7 @@ export function LiveMare() {
       </div>
 
       {/* Swell + bússolas */}
-      <div className="rounded-[1.4rem] border border-white/15 bg-white/10 p-4 backdrop-blur-md">
+      <div className="glass-panel relative z-[1] rounded-[1.4rem] p-4">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-[11px] uppercase tracking-[0.18em] text-cyan-100/70">Swell e rumo</p>
@@ -841,7 +841,7 @@ export function LiveMare() {
             {upcoming.map((item) => (
               <div
                 key={`${item.kind}-${item.time}`}
-                className="min-w-[7.4rem] rounded-2xl border border-white/15 bg-white/10 px-3 py-3 backdrop-blur-md"
+                className="glass-panel-sm relative z-[1] min-w-[7.4rem] rounded-2xl px-3 py-3"
               >
                 <p className="text-[10px] uppercase tracking-[0.14em] text-white/45">
                   {item.kind === "high" ? "Preamar" : "Baixa-mar"}
@@ -861,7 +861,7 @@ export function LiveMare() {
           {tips.map((tip) => (
             <div
               key={tip.title}
-              className={`flex items-start gap-3 rounded-2xl border px-3 py-3 backdrop-blur-md ${toneClass(tip.tone)}`}
+              className={`glass-panel-sm relative z-[1] flex items-start gap-3 rounded-2xl px-3 py-3 ${toneClass(tip.tone)}`}
             >
               <tip.icon className="mt-0.5 h-4 w-4 shrink-0 opacity-90" />
               <div className="min-w-0">
@@ -874,7 +874,7 @@ export function LiveMare() {
       </div>
 
       {/* Dica do Guará */}
-      <div className="overflow-hidden rounded-[1.4rem] border border-rose-300/25 bg-gradient-to-br from-rose-500/20 via-white/10 to-cyan-500/10 p-4 backdrop-blur-md">
+      <div className="glass-panel relative z-[1] overflow-hidden rounded-[1.4rem] border-rose-200/35 bg-gradient-to-br from-rose-500/25 via-[rgba(8,38,72,0.88)] to-cyan-500/15 p-4">
         <div className="flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img

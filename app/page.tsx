@@ -208,12 +208,12 @@ function useTypewriter(text: string, speed = 32) {
 function SkyCloud({ className, soft = false }: { className?: string; soft?: boolean }) {
   return (
     <svg className={`sky-cloud ${soft ? "sky-cloud-soft" : ""} ${className ?? ""}`} viewBox="0 0 240 100" aria-hidden>
-      <ellipse cx="78" cy="62" rx="48" ry="28" fill="#ffffff" opacity="0.94" />
-      <ellipse cx="118" cy="48" rx="42" ry="34" fill="#ffffff" opacity="0.97" />
-      <ellipse cx="158" cy="58" rx="46" ry="30" fill="#f8fbff" opacity="0.92" />
-      <ellipse cx="98" cy="68" rx="56" ry="24" fill="#e8f3fc" opacity="0.78" />
-      <ellipse cx="188" cy="66" rx="34" ry="20" fill="#ffffff" opacity="0.88" />
-      <ellipse cx="52" cy="70" rx="30" ry="18" fill="#f1f7fd" opacity="0.85" />
+      <ellipse cx="78" cy="62" rx="52" ry="26" fill="#e8f4fc" opacity="0.55" />
+      <ellipse cx="118" cy="50" rx="44" ry="30" fill="#f2f8fd" opacity="0.62" />
+      <ellipse cx="158" cy="60" rx="48" ry="26" fill="#dceef8" opacity="0.5" />
+      <ellipse cx="98" cy="68" rx="58" ry="22" fill="#cfe6f4" opacity="0.42" />
+      <ellipse cx="188" cy="66" rx="36" ry="18" fill="#eef6fb" opacity="0.48" />
+      <ellipse cx="52" cy="70" rx="32" ry="16" fill="#e4f1f9" opacity="0.4" />
     </svg>
   );
 }
@@ -245,25 +245,22 @@ function SkyCoast({ stage = false }: { stage?: boolean }) {
       <div className="sky-coast-sea">
         <span className="sky-coast-path" />
         <span className="sky-coast-sheen" />
-        <span className="sky-coast-glint sky-coast-glint-a" />
-        <span className="sky-coast-glint sky-coast-glint-b" />
-        <span className="sky-coast-glint sky-coast-glint-c" />
       </div>
       <svg className="sky-coast-swell sky-coast-swell-a" viewBox="0 0 1200 120" preserveAspectRatio="none">
         <path
-          fill="rgba(255,255,255,0.28)"
+          fill="rgba(255,255,255,0.16)"
           d="M0 72C120 48 220 92 360 64C500 36 620 88 760 58C900 28 1040 78 1200 50V120H0Z"
         />
       </svg>
       <svg className="sky-coast-swell sky-coast-swell-b" viewBox="0 0 1200 120" preserveAspectRatio="none">
         <path
-          fill="rgba(186,230,253,0.38)"
+          fill="rgba(186,230,253,0.22)"
           d="M0 78C140 110 260 42 420 70C580 98 700 40 860 68C1000 90 1100 52 1200 66V120H0Z"
         />
       </svg>
       <svg className="sky-coast-swell sky-coast-swell-c" viewBox="0 0 1200 120" preserveAspectRatio="none">
         <path
-          fill="rgba(255,255,255,0.5)"
+          fill="rgba(255,255,255,0.28)"
           d="M0 84C160 60 280 104 440 76C600 48 740 100 900 72C1040 50 1120 88 1200 70V120H0Z"
         />
       </svg>
@@ -285,18 +282,16 @@ function SkyAtmosphere({ urgent = false, stage = false }: { urgent?: boolean; st
         <span className="sky-rays" />
         <span className="sky-beam sky-beam-a" />
         <span className="sky-beam sky-beam-b" />
-        <span className="sky-beam sky-beam-c" />
         <span className="sky-sun-glow" />
         <span className="sky-sun-core" />
       </div>
 
       <SkyCloud soft className={`sky-cloud-far-a ${stage ? "sky-cloud-stage" : ""}`} />
       <SkyCloud soft className={`sky-cloud-far-b ${stage ? "sky-cloud-stage" : ""}`} />
-      <SkyCloud className={`sky-cloud-1 ${stage ? "sky-cloud-stage" : ""}`} />
+      <SkyCloud soft className={`sky-cloud-1 ${stage ? "sky-cloud-stage" : ""}`} />
+      <SkyCloud soft className={`sky-cloud-3 ${stage ? "sky-cloud-stage" : ""}`} />
       <SkyCloud className={`sky-cloud-2 ${stage ? "sky-cloud-stage" : ""}`} />
-      <SkyCloud className={`sky-cloud-3 ${stage ? "sky-cloud-stage" : ""}`} />
-      <SkyCloud className={`sky-cloud-4 ${stage ? "sky-cloud-stage" : ""}`} />
-      <SkyCloud className={`sky-cloud-5 ${stage ? "sky-cloud-stage" : ""}`} />
+      <SkyCloud soft className={`sky-cloud-4 ${stage ? "sky-cloud-stage" : ""}`} />
 
       <SkyCoast stage={stage} />
     </>
@@ -644,22 +639,23 @@ function SheetShell({
     <motion.div
       {...screenEnter}
       style={{ borderRadius: 0 }}
-      className="absolute inset-0 z-40 overflow-hidden border-0 bg-sky-700/88 shadow-2xl backdrop-blur-2xl"
+      className="absolute inset-0 z-40 overflow-hidden border-0 bg-[linear-gradient(180deg,#9ecceb_0%,#6eb0db_28%,#3f8ec4_62%,#246ea8_100%)] shadow-2xl"
     >
       <div
         className="pointer-events-none absolute -right-10 -top-16 h-48 w-48 rounded-full blur-3xl"
         style={{ background: feature.wash }}
       />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_45%_at_50%_0%,rgba(255,255,255,0.18),transparent_60%)]" />
       <div
         className="relative flex items-center gap-3 px-5 pb-1 pr-16"
         style={{ paddingTop: "max(1.1rem, calc(env(safe-area-inset-top, 0px) + 0.35rem))" }}
       >
-        <span className="grid h-12 w-12 place-items-center rounded-2xl border border-white/15 bg-white/10">
+        <span className="grid h-12 w-12 place-items-center rounded-2xl border border-white/35 bg-sky-950/45 shadow-[0_12px_28px_-14px_rgba(2,12,28,0.7),inset_0_1px_0_rgba(255,255,255,0.25)]">
           <FeatureGlyph feature={feature} size="h-7 w-7" />
         </span>
         <div className="min-w-0">
-          <h2 className="truncate text-[1.35rem] font-semibold leading-none text-white">{feature.title}</h2>
-          <p className="mt-1 text-xs text-white/55">{feature.subtitle}</p>
+          <h2 className="truncate text-[1.35rem] font-semibold leading-none text-white drop-shadow-[0_1px_2px_rgba(5,28,52,0.35)]">{feature.title}</h2>
+          <p className="mt-1 text-xs text-white/70">{feature.subtitle}</p>
         </div>
       </div>
       <CloseButton onClose={onClose} className={closeTopClass} />
