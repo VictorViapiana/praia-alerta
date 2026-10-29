@@ -1,13 +1,13 @@
 {
-  "name": "Praia Alerta",
-  "short_name": "Praia Alerta",
+  "name": "Alegretto Praia Alerta",
+  "short_name": "Alegretto",
   "description": "Guia e alerta da Praia do Morro — Guarapari, ES. Mapa, segurança e a orla no bolso.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#041018",
-  "theme_color": "#041018",
+  "background_color": "#38bdf8",
+  "theme_color": "#0ea5e9",
   "lang": "pt-BR",
   "categories": ["travel", "navigation", "lifestyle"],
   "icons": [

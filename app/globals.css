@@ -12,7 +12,7 @@ body {
 
 body {
   margin: 0;
-  background: #041018;
+  background: #38bdf8;
   color: white;
   font-family: var(--font-sans);
 }
@@ -454,9 +454,9 @@ body {
   margin: 0;
   font-family: var(--font-fraunces), ui-serif, Georgia, serif;
   font-weight: 600;
-  font-size: clamp(1.85rem, 7.5vw, 2.6rem);
+  font-size: clamp(1.35rem, 5.8vw, 2.05rem);
   letter-spacing: -0.02em;
-  line-height: 1.05;
+  line-height: 1.1;
   color: #0c4a6e;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
 }

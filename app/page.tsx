@@ -208,7 +208,7 @@ function useTypewriter(text: string, speed = 32) {
 function OceanWash({ urgent = false, paused = false }: { urgent?: boolean; paused?: boolean }) {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(125%_85%_at_50%_115%,#0f5968_0%,#0a3142_38%,#07131d_100%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(125%_85%_at_50%_115%,#7dd3fc_0%,#38bdf8_42%,#0ea5e9_100%)]" />
       {paused ? null : (
       <>
       <motion.div
@@ -259,8 +259,8 @@ function OceanWash({ urgent = false, paused = false }: { urgent?: boolean; pause
           d="M0 96C180 70 300 120 480 98C680 74 760 112 960 92C1160 72 1280 116 1440 90L1440 140L0 140Z"
         />
       </motion.svg>
-      <div className="absolute inset-0 shadow-[inset_0_0_90px_rgba(0,0,0,0.38)]" />
-      <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-white/10 to-transparent" />
+      <div className="absolute inset-0 shadow-[inset_0_0_70px_rgba(12,74,110,0.12)]" />
+      <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-white/35 to-transparent" />
       </>
       )}
     </div>
@@ -270,7 +270,7 @@ function OceanWash({ urgent = false, paused = false }: { urgent?: boolean; pause
 function Stage({ urgent, paused = false }: { urgent: boolean; paused?: boolean }) {
   return (
     <div className="pointer-events-none fixed inset-0">
-      <div className="absolute inset-0 bg-[radial-gradient(90%_70%_at_50%_20%,#16384a_0%,#07141e_46%,#03080d_100%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(90%_70%_at_50%_20%,#bae6fd_0%,#7dd3fc_40%,#38bdf8_100%)]" />
       {paused ? null : (
       <>
       <motion.div
@@ -425,7 +425,7 @@ function GuaraIsland({ onReplay, onMission }: { onReplay: () => void; onMission:
           >
             <div className="flex items-center gap-2">
               <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">
-                Guará · guia da orla
+                Alegretto Praia Alerta
               </p>
               {narrating ? (
                 <Equalizer />
@@ -614,7 +614,7 @@ function SheetShell({
     <motion.div
       {...screenEnter}
       style={{ borderRadius: 0 }}
-      className="absolute inset-0 z-40 overflow-hidden border-0 bg-[#071820]/92 shadow-2xl backdrop-blur-2xl"
+      className="absolute inset-0 z-40 overflow-hidden border-0 bg-sky-700/88 shadow-2xl backdrop-blur-2xl"
     >
       <div
         className="pointer-events-none absolute -right-10 -top-16 h-48 w-48 rounded-full blur-3xl"
@@ -1558,7 +1558,7 @@ function MapHighlight({
       transition={cardSpring}
       onClick={onOpen}
       style={{ borderRadius: 28 }}
-      className="relative h-[158px] w-full overflow-hidden border border-white/20 bg-[#0c141b] text-left shadow-[0_18px_40px_-28px_rgba(0,0,0,0.9)]"
+      className="relative h-[158px] w-full overflow-hidden border border-white/35 bg-sky-600 text-left shadow-[0_18px_40px_-28px_rgba(14,165,233,0.55)]"
     >
       <CoastMap />
       <div className="absolute inset-0 bg-gradient-to-t from-[#061018]/85 via-[#061018]/25 to-[#061018]/10" />
@@ -2017,7 +2017,7 @@ function Phone({
       <span className="absolute -left-[3px] top-56 hidden h-14 w-[3px] rounded-l-sm bg-gray-800 sm:block" />
       <span className="absolute -right-[3px] top-44 hidden h-20 w-[3px] rounded-r-sm bg-gray-800 sm:block" />
 
-      <div ref={shellRef} className={`relative h-full w-full overflow-hidden bg-gray-900 sm:rounded-[3rem] sm:border-8 sm:border-gray-900 sm:shadow-2xl ${splashActive ? "pa-hold" : ""}`}>
+      <div ref={shellRef} className={`relative h-full w-full overflow-hidden bg-sky-500 sm:rounded-[3rem] sm:border-8 sm:border-sky-700 sm:shadow-2xl ${splashActive ? "pa-hold" : ""}`}>
         <OceanWash urgent={sos} paused={splashActive} />
         <div
           className="relative z-10 flex h-full flex-col"
@@ -2138,7 +2138,7 @@ export default function HomePage() {
         />
       </div>
       <footer className="relative z-10 mt-6 hidden text-center sm:block">
-        <p className="font-serif text-lg italic text-white/80">Praia Alerta</p>
+        <p className="font-serif text-lg italic text-sky-950/80">Alegretto Praia Alerta</p>
         <p className="mt-1 text-[11px] uppercase tracking-[0.28em] text-white/40">
           Guarapari · Espírito Santo
         </p>
