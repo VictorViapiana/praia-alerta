@@ -122,7 +122,7 @@ function markerSize(place: Place) {
 
 type MapFilter = "neutro" | PinKind;
 
-type FlyTarget = { id: number; lat: number; lng: number } | null;
+type FlyTarget = { id: number; lat: number; lng: number; zoom?: number } | null;
 
 function pinIcon(host: HTMLElement, size: number, anchor: "tip" | "center") {
   return L.divIcon({
@@ -413,13 +413,15 @@ function FlyTo({ target }: { target: FlyTarget }) {
   const map = useMap();
   useEffect(() => {
     if (!target) return;
+    const zoom = target.zoom ?? 18;
     let shifted = false;
     const shift = () => {
       if (shifted) return;
       shifted = true;
-      map.panBy([0, -155], { animate: true, duration: 0.35 });
+      // overview da orla: sobe menos para caber os quiosques
+      map.panBy([0, zoom <= 16.5 ? -90 : -155], { animate: true, duration: 0.35 });
     };
-    map.flyTo([target.lat, target.lng], 18, { duration: 0.85 });
+    map.flyTo([target.lat, target.lng], zoom, { duration: 1.05 });
     map.once("moveend", shift);
     return () => {
       map.off("moveend", shift);

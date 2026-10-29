@@ -25,13 +25,18 @@ export type GuaraGuide = {
   answer: string;
   filter?: MapFilter;
   query?: string;
-  fly?: { lat: number; lng: number };
+  fly?: { lat: number; lng: number; zoom?: number };
   openId?: string | null;
   sheet?: string | null;
   basemap?: "satellite" | "clean";
   locate?: boolean;
   route?: { id?: string; lat: number; lng: number; name: string };
 };
+
+/** Centro da Praia do Morro — zoom que ainda mostra os quiosques. */
+export const PRAIA_MORRO_VIEW = { lat: -20.6544, lng: -40.4875, zoom: 16.25 } as const;
+/** Longe o bastante para considerar "outra cidade" / fora da orla. */
+export const FAR_FROM_BEACH_M = 12_000;
 
 export type GuaraPrompt = {
   emoji: string;
@@ -49,6 +54,7 @@ export const HOME_PROMPTS: GuaraPrompt[] = [
 ];
 
 export const MAP_PROMPTS: GuaraPrompt[] = [
+  { emoji: "🏖️", label: "Me mostre a praia", ask: "Me mostre a praia" },
   { emoji: "🍹", label: "Quiosques", ask: "Mostra os quiosques" },
   { emoji: "🧺", label: "Ambulantes", ask: "Mostra os ambulantes" },
   { emoji: "🚿", label: "Duchas", ask: "Onde tem ducha?" },
@@ -137,6 +143,29 @@ export function answerGuara(raw: string, live: GuaraLive = { tide: null, weather
   }
   if (has(text, "onde estou", "minha localizacao", "me acha", "centraliza")) {
     return { answer: "Vou centralizar o mapa em você: calçadão embaixo dos pés, areia na frente.", locate: true };
+  }
+  if (
+    has(
+      text,
+      "me mostre a praia",
+      "mostra a praia",
+      "mostrar a praia",
+      "leva pra praia",
+      "leva para a praia",
+      "praia do morro",
+      "volta pra praia",
+      "voltar pra praia",
+      "vai pra orla",
+    )
+  ) {
+    return {
+      answer: "Bora! Te levo até a Praia do Morro, de olho nos quiosques da areia.",
+      filter: "quiosques",
+      query: "",
+      openId: null,
+      sheet: null,
+      fly: { lat: PRAIA_MORRO_VIEW.lat, lng: PRAIA_MORRO_VIEW.lng, zoom: PRAIA_MORRO_VIEW.zoom },
+    };
   }
   if (has(text, "mapa limpo", "estilo limpo", "sem satelite")) {
     return { answer: "Troquei para o mapa limpo: areia, água e ruas, sem a foto de satélite.", basemap: "clean" };

@@ -12,9 +12,15 @@ type Line = { role: "user" | "guara"; text: string };
 export function GuaraMapChat({
   hidden,
   onGuide,
+  beachInvite = false,
+  onAcceptBeach,
+  onDeclineBeach,
 }: {
   hidden: boolean;
   onGuide: (guide: GuaraGuide) => void;
+  beachInvite?: boolean;
+  onAcceptBeach?: () => void;
+  onDeclineBeach?: () => void;
 }) {
   const { data: tide } = useTide();
   const { data: weather } = useWeather();
@@ -38,7 +44,41 @@ export function GuaraMapChat({
 
   return (
     <>
-      {!open && !hidden && (
+      {!open && !hidden && beachInvite && (
+        <motion.div
+          data-map-ui
+          initial={{ opacity: 0, x: -16, y: 8 }}
+          animate={{ opacity: 1, x: 0, y: 0 }}
+          className="absolute bottom-[9.75rem] left-3 z-50 w-[min(17.5rem,calc(100%-1.5rem))] rounded-[22px] border border-white/25 bg-[#102028]/94 p-3 text-white shadow-[0_18px_40px_rgba(0,0,0,0.45)] backdrop-blur-xl"
+        >
+          <div className="flex items-start gap-2.5">
+            <img src="/guara.png?v=3" alt="" className="mt-0.5 h-10 w-auto shrink-0" draggable={false} />
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-cyan-100/75">Guará</p>
+              <p className="mt-1 text-[13px] font-semibold leading-snug">Você quer que eu te mostre a praia?</p>
+              <p className="mt-1 text-[11px] leading-snug text-white/60">Você está longe da Praia do Morro. Posso te levar até a orla.</p>
+            </div>
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => onDeclineBeach?.()}
+              className="rounded-full border border-white/20 bg-white/10 px-3 py-2 text-[12px] font-semibold text-white/90"
+            >
+              Não
+            </button>
+            <button
+              type="button"
+              onClick={() => onAcceptBeach?.()}
+              className="rounded-full bg-[#e11d48] px-3 py-2 text-[12px] font-semibold text-white shadow-[0_10px_22px_-12px_rgba(225,29,72,0.85)]"
+            >
+              Sim
+            </button>
+          </div>
+        </motion.div>
+      )}
+
+      {!open && !hidden && !beachInvite && (
         <button
           type="button"
           data-map-ui

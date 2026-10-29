@@ -42,7 +42,7 @@ import type { PinKind } from "./page-types";
 import { CameraFab, TouristCamera } from "./tourist-camera";
 import { GuaraOnboarding, HOME_STEPS, HOME_TOUR_KEY, MAP_STEPS, MAP_TOUR_KEY } from "./guara-onboarding";
 import { GuaraMapChat } from "./guara-map";
-import { HOME_PROMPTS, answerGuara } from "./guara-guide";
+import { FAR_FROM_BEACH_M, HOME_PROMPTS, PRAIA_MORRO_VIEW, answerGuara } from "./guara-guide";
 import { RouteActionsProvider, RouteChoice } from "./route-choice";
 import { useRampWatch } from "./rampa-sentinel";
 import { RAMPA_RULE, RAMPA_WARN } from "./rampas";
@@ -799,7 +799,9 @@ function MapScreen({
   const [cameraOpen, setCameraOpen] = useState(false);
   const [userPoint, setUserPoint] = useState<{ lat: number; lng: number } | null>(null);
   const heading = useDeviceHeading();
-  const [flyTo, setFlyTo] = useState<{ id: number; lat: number; lng: number } | null>(null);
+  const [flyTo, setFlyTo] = useState<{ id: number; lat: number; lng: number; zoom?: number } | null>(null);
+  const [beachInvite, setBeachInvite] = useState(false);
+  const beachInviteAsked = useRef(false);
   const [locating, setLocating] = useState(false);
   const [locateNote, setLocateNote] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -1063,6 +1065,21 @@ function MapScreen({
     askPlace({ id: "ponto", lat, lng, name: "Ponto no mapa" });
   };
 
+  const showPraiaDoMorro = useCallback(() => {
+    setCoach(false);
+    setBeachInvite(false);
+    setFilter("quiosques");
+    setQuery("");
+    setOpenId(null);
+    setSheetId(null);
+    setFlyTo({
+      id: Date.now(),
+      lat: PRAIA_MORRO_VIEW.lat,
+      lng: PRAIA_MORRO_VIEW.lng,
+      zoom: PRAIA_MORRO_VIEW.zoom,
+    });
+  }, []);
+
   const locate = () => {
     void requestCompass();
     if (!navigator.geolocation) {
@@ -1076,7 +1093,13 @@ function MapScreen({
         const next = { lat: position.coords.latitude, lng: position.coords.longitude };
         setUserPoint(next);
         setLiveFix(true);
+        const far =
+          metersBetween(next, { lat: PRAIA_MORRO_VIEW.lat, lng: PRAIA_MORRO_VIEW.lng }) >= FAR_FROM_BEACH_M;
         if (!routeActive) setFlyTo({ id: Date.now(), lat: next.lat, lng: next.lng });
+        if (far && !beachInviteAsked.current) {
+          beachInviteAsked.current = true;
+          setBeachInvite(true);
+        }
         setLocating(false);
         setCoach(false);
       },
@@ -1493,8 +1516,12 @@ function MapScreen({
       {!driving && (
       <GuaraMapChat
         hidden={cameraOpen || searchOpen}
+        beachInvite={beachInvite && !cameraOpen && !searchOpen}
+        onAcceptBeach={showPraiaDoMorro}
+        onDeclineBeach={() => setBeachInvite(false)}
         onGuide={(guide) => {
           setCoach(false);
+          setBeachInvite(false);
           if (guide.query !== undefined) setQuery(guide.query);
           if (guide.filter) setFilter(guide.filter);
           if (guide.basemap) setBasemap(guide.basemap);
@@ -1511,7 +1538,14 @@ function MapScreen({
             }
           }
           if (guide.sheet !== undefined) setSheetId(guide.sheet);
-          if (guide.fly) setFlyTo({ id: Date.now(), lat: guide.fly.lat, lng: guide.fly.lng });
+          if (guide.fly) {
+            setFlyTo({
+              id: Date.now(),
+              lat: guide.fly.lat,
+              lng: guide.fly.lng,
+              zoom: guide.fly.zoom,
+            });
+          }
           if (guide.locate) locate();
           if (guide.route) {
             setOriginMark(null);
