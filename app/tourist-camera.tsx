@@ -311,7 +311,7 @@ export function TouristCamera({ onClose }: { onClose: () => void }) {
   );
 
   const review = (
-    <div className="fixed inset-0 z-[80] flex flex-col bg-[#061018] text-white">
+    <div className="fixed inset-0 z-[80] flex flex-col bg-sky-800 text-white">
       <header className="flex items-center justify-between px-4 pb-2 pt-[max(0.8rem,env(safe-area-inset-top))]">
         <button
           type="button"
