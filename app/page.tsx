@@ -205,59 +205,78 @@ function useTypewriter(text: string, speed = 32) {
   return typed;
 }
 
-function SkyCloud({ className }: { className?: string }) {
+function SkyCloud({ className, soft = false }: { className?: string; soft?: boolean }) {
   return (
-    <span className={`sky-cloud ${className ?? ""}`} aria-hidden>
-      <span className="sky-cloud-puff sky-cloud-puff-a" />
-      <span className="sky-cloud-puff sky-cloud-puff-b" />
-      <span className="sky-cloud-puff sky-cloud-puff-c" />
-    </span>
+    <svg className={`sky-cloud ${soft ? "sky-cloud-soft" : ""} ${className ?? ""}`} viewBox="0 0 240 100" aria-hidden>
+      <ellipse cx="78" cy="62" rx="48" ry="28" fill="#ffffff" opacity="0.94" />
+      <ellipse cx="118" cy="48" rx="42" ry="34" fill="#ffffff" opacity="0.97" />
+      <ellipse cx="158" cy="58" rx="46" ry="30" fill="#f8fbff" opacity="0.92" />
+      <ellipse cx="98" cy="68" rx="56" ry="24" fill="#e8f3fc" opacity="0.78" />
+      <ellipse cx="188" cy="66" rx="34" ry="20" fill="#ffffff" opacity="0.88" />
+      <ellipse cx="52" cy="70" rx="30" ry="18" fill="#f1f7fd" opacity="0.85" />
+    </svg>
+  );
+}
+
+function SkyAtmosphere({ urgent = false, stage = false }: { urgent?: boolean; stage?: boolean }) {
+  return (
+    <>
+      <div className={`sky-base ${stage ? "sky-base-stage" : ""}`} />
+      <div className="sky-haze" />
+      <div className="sky-horizon" />
+
+      <div className={`sky-sun-wrap ${stage ? "sky-sun-stage" : ""} ${urgent ? "sky-sun-urgent" : ""}`} aria-hidden>
+        <span className="sky-rays" />
+        <span className="sky-beam sky-beam-a" />
+        <span className="sky-beam sky-beam-b" />
+        <span className="sky-beam sky-beam-c" />
+        <span className="sky-sun-glow" />
+        <span className="sky-sun-core" />
+      </div>
+
+      <SkyCloud soft className={`sky-cloud-far-a ${stage ? "sky-cloud-stage" : ""}`} />
+      <SkyCloud soft className={`sky-cloud-far-b ${stage ? "sky-cloud-stage" : ""}`} />
+      <SkyCloud className={`sky-cloud-1 ${stage ? "sky-cloud-stage" : ""}`} />
+      <SkyCloud className={`sky-cloud-2 ${stage ? "sky-cloud-stage" : ""}`} />
+      <SkyCloud className={`sky-cloud-3 ${stage ? "sky-cloud-stage" : ""}`} />
+      <SkyCloud className={`sky-cloud-4 ${stage ? "sky-cloud-stage" : ""}`} />
+      <SkyCloud className={`sky-cloud-5 ${stage ? "sky-cloud-stage" : ""}`} />
+    </>
   );
 }
 
 function OceanWash({ urgent = false, paused = false }: { urgent?: boolean; paused?: boolean }) {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,#e0f2fe_0%,#7dd3fc_28%,#38bdf8_58%,#0ea5e9_100%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(90%_55%_at_78%_12%,rgba(255,251,235,0.95)_0%,rgba(253,224,71,0.35)_28%,transparent_62%)]" />
-
-      <div className={`sky-sun-wrap ${urgent ? "sky-sun-urgent" : ""}`} aria-hidden>
-        <span className="sky-rays" />
-        <span className="sky-sun-glow" />
-        <span className="sky-sun-core" />
-      </div>
-
-      {paused ? null : (
+      {paused ? (
+        <div className="sky-base" />
+      ) : (
         <>
           <motion.div
             className="absolute inset-0"
-            animate={{ opacity: urgent ? 0.35 : 1 }}
+            animate={{ opacity: urgent ? 0.55 : 1 }}
             transition={{ duration: 0.4 }}
           >
-            <SkyCloud className="sky-cloud-1" />
-            <SkyCloud className="sky-cloud-2" />
-            <SkyCloud className="sky-cloud-3" />
-            <SkyCloud className="sky-cloud-4" />
+            <SkyAtmosphere urgent={urgent} />
           </motion.div>
 
           <motion.svg
             aria-hidden
             viewBox="0 0 1440 140"
-            className="absolute -bottom-2 left-0 h-28 w-[210%] opacity-45"
+            className="absolute -bottom-2 left-0 z-[3] h-28 w-[210%] opacity-40"
             animate={{ x: [0, -160, 0] }}
-            transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
+            transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
           >
             <path
-              fill="rgba(255,255,255,0.28)"
+              fill="rgba(255,255,255,0.22)"
               d="M0 78C140 110 250 30 420 62C590 94 690 28 860 64C1030 100 1140 36 1320 70C1420 88 1480 60 1560 72L1560 140L0 140Z"
             />
             <path
-              fill="rgba(186,230,253,0.35)"
+              fill="rgba(14,116,180,0.28)"
               d="M0 96C180 70 300 120 480 98C680 74 760 112 960 92C1160 72 1280 116 1440 90L1440 140L0 140Z"
             />
           </motion.svg>
-          <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-white/50 to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-sky-600/25 to-transparent" />
+          <div className="absolute inset-0 z-[4] shadow-[inset_0_-40px_60px_rgba(12,74,110,0.18)]" />
         </>
       )}
     </div>
@@ -267,22 +286,12 @@ function OceanWash({ urgent = false, paused = false }: { urgent?: boolean; pause
 function Stage({ urgent, paused = false }: { urgent: boolean; paused?: boolean }) {
   return (
     <div className="pointer-events-none fixed inset-0 overflow-hidden">
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,#f0f9ff_0%,#bae6fd_32%,#7dd3fc_62%,#38bdf8_100%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(70%_45%_at_72%_14%,rgba(255,251,235,0.9)_0%,rgba(253,224,71,0.28)_30%,transparent_60%)]" />
-
-      <div className={`sky-sun-wrap sky-sun-stage ${urgent ? "sky-sun-urgent" : ""}`} aria-hidden>
-        <span className="sky-rays" />
-        <span className="sky-sun-glow" />
-        <span className="sky-sun-core" />
-      </div>
-
-      {paused ? null : (
+      {paused ? (
+        <div className="sky-base sky-base-stage" />
+      ) : (
         <>
-          <SkyCloud className="sky-cloud-1 sky-cloud-stage" />
-          <SkyCloud className="sky-cloud-2 sky-cloud-stage" />
-          <SkyCloud className="sky-cloud-3 sky-cloud-stage" />
-          <SkyCloud className="sky-cloud-4 sky-cloud-stage" />
-          <div className="grain absolute inset-0 opacity-[0.12] mix-blend-overlay" />
+          <SkyAtmosphere urgent={urgent} stage />
+          <div className="grain absolute inset-0 z-[5] opacity-[0.1] mix-blend-overlay" />
         </>
       )}
     </div>
@@ -2000,7 +2009,7 @@ function Phone({
       <span className="absolute -left-[3px] top-56 hidden h-14 w-[3px] rounded-l-sm bg-gray-800 sm:block" />
       <span className="absolute -right-[3px] top-44 hidden h-20 w-[3px] rounded-r-sm bg-gray-800 sm:block" />
 
-      <div ref={shellRef} className={`relative h-full w-full overflow-hidden bg-sky-500 sm:rounded-[3rem] sm:border-8 sm:border-sky-700 sm:shadow-2xl ${splashActive ? "pa-hold" : ""}`}>
+      <div ref={shellRef} className={`relative h-full w-full overflow-hidden bg-sky-600 sm:rounded-[3rem] sm:border-8 sm:border-sky-800 sm:shadow-2xl ${splashActive ? "pa-hold" : ""}`}>
         <OceanWash urgent={sos} paused={splashActive} />
         <div
           className="relative z-10 flex h-full flex-col"
