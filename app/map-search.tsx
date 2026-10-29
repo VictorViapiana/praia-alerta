@@ -440,7 +440,10 @@ export function MapSearch({
       animate={{ height: open ? "56%" : 124 }}
       transition={spring}
       className="absolute inset-x-3 z-[55] flex flex-col overflow-hidden"
-      style={{ bottom: "max(0.75rem, env(safe-area-inset-bottom, 0px))" }}
+      style={{
+        bottom: 0,
+        paddingBottom: "max(0.75rem, env(safe-area-inset-bottom, 0px))",
+      }}
     >
       <label
         data-onboard="map-search"
