@@ -218,6 +218,62 @@ function SkyCloud({ className, soft = false }: { className?: string; soft?: bool
   );
 }
 
+function SkyCoast({ stage = false }: { stage?: boolean }) {
+  return (
+    <div className={`sky-coast ${stage ? "sky-coast-stage" : ""}`} aria-hidden>
+      <div className="sky-coast-mist" />
+      <svg className="sky-coast-land" viewBox="0 0 400 100" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="landFar" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="rgba(30, 78, 120, 0.55)" />
+            <stop offset="100%" stopColor="rgba(10, 48, 86, 0.8)" />
+          </linearGradient>
+          <linearGradient id="landNear" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="rgba(22, 90, 130, 0.75)" />
+            <stop offset="100%" stopColor="rgba(8, 52, 92, 0.95)" />
+          </linearGradient>
+        </defs>
+        <path
+          fill="url(#landFar)"
+          d="M0 100V52C34 44 52 22 86 30C118 38 136 10 172 22C208 34 236 6 274 18C312 30 344 8 400 20V100Z"
+        />
+        <path
+          fill="url(#landNear)"
+          d="M0 100V62C40 54 66 40 104 48C142 56 168 36 208 46C248 56 286 34 328 44C360 52 380 40 400 48V100Z"
+        />
+      </svg>
+      <div className="sky-coast-sea">
+        <span className="sky-coast-path" />
+        <span className="sky-coast-sheen" />
+        <span className="sky-coast-glint sky-coast-glint-a" />
+        <span className="sky-coast-glint sky-coast-glint-b" />
+        <span className="sky-coast-glint sky-coast-glint-c" />
+      </div>
+      <svg className="sky-coast-swell sky-coast-swell-a" viewBox="0 0 1200 120" preserveAspectRatio="none">
+        <path
+          fill="rgba(255,255,255,0.28)"
+          d="M0 72C120 48 220 92 360 64C500 36 620 88 760 58C900 28 1040 78 1200 50V120H0Z"
+        />
+      </svg>
+      <svg className="sky-coast-swell sky-coast-swell-b" viewBox="0 0 1200 120" preserveAspectRatio="none">
+        <path
+          fill="rgba(186,230,253,0.38)"
+          d="M0 78C140 110 260 42 420 70C580 98 700 40 860 68C1000 90 1100 52 1200 66V120H0Z"
+        />
+      </svg>
+      <svg className="sky-coast-swell sky-coast-swell-c" viewBox="0 0 1200 120" preserveAspectRatio="none">
+        <path
+          fill="rgba(255,255,255,0.5)"
+          d="M0 84C160 60 280 104 440 76C600 48 740 100 900 72C1040 50 1120 88 1200 70V120H0Z"
+        />
+      </svg>
+      <span className="sky-coast-foam" />
+      <span className="sky-coast-ripple" />
+      <span className="sky-coast-sand" />
+    </div>
+  );
+}
+
 function SkyAtmosphere({ urgent = false, stage = false }: { urgent?: boolean; stage?: boolean }) {
   return (
     <>
@@ -241,6 +297,8 @@ function SkyAtmosphere({ urgent = false, stage = false }: { urgent?: boolean; st
       <SkyCloud className={`sky-cloud-3 ${stage ? "sky-cloud-stage" : ""}`} />
       <SkyCloud className={`sky-cloud-4 ${stage ? "sky-cloud-stage" : ""}`} />
       <SkyCloud className={`sky-cloud-5 ${stage ? "sky-cloud-stage" : ""}`} />
+
+      <SkyCoast stage={stage} />
     </>
   );
 }
@@ -251,33 +309,13 @@ function OceanWash({ urgent = false, paused = false }: { urgent?: boolean; pause
       {paused ? (
         <div className="sky-base" />
       ) : (
-        <>
-          <motion.div
-            className="absolute inset-0"
-            animate={{ opacity: urgent ? 0.55 : 1 }}
-            transition={{ duration: 0.4 }}
-          >
-            <SkyAtmosphere urgent={urgent} />
-          </motion.div>
-
-          <motion.svg
-            aria-hidden
-            viewBox="0 0 1440 140"
-            className="absolute -bottom-2 left-0 z-[3] h-28 w-[210%] opacity-40"
-            animate={{ x: [0, -160, 0] }}
-            transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-          >
-            <path
-              fill="rgba(255,255,255,0.22)"
-              d="M0 78C140 110 250 30 420 62C590 94 690 28 860 64C1030 100 1140 36 1320 70C1420 88 1480 60 1560 72L1560 140L0 140Z"
-            />
-            <path
-              fill="rgba(14,116,180,0.28)"
-              d="M0 96C180 70 300 120 480 98C680 74 760 112 960 92C1160 72 1280 116 1440 90L1440 140L0 140Z"
-            />
-          </motion.svg>
-          <div className="absolute inset-0 z-[4] shadow-[inset_0_-40px_60px_rgba(12,74,110,0.18)]" />
-        </>
+        <motion.div
+          className="absolute inset-0"
+          animate={{ opacity: urgent ? 0.55 : 1 }}
+          transition={{ duration: 0.4 }}
+        >
+          <SkyAtmosphere urgent={urgent} />
+        </motion.div>
       )}
     </div>
   );
@@ -1727,7 +1765,7 @@ function SosSlider({ onTrigger }: { onTrigger: () => void }) {
   };
 
   return (
-    <div className="absolute bottom-[max(1.1rem,env(safe-area-inset-bottom))] left-4 right-4 z-30">
+    <div className="absolute inset-x-4 bottom-0 z-30 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1">
       <div
         ref={trackRef}
         className="relative h-16 overflow-hidden rounded-full border border-white/15 bg-black/45 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-md"
@@ -2009,7 +2047,7 @@ function Phone({
       <span className="absolute -left-[3px] top-56 hidden h-14 w-[3px] rounded-l-sm bg-gray-800 sm:block" />
       <span className="absolute -right-[3px] top-44 hidden h-20 w-[3px] rounded-r-sm bg-gray-800 sm:block" />
 
-      <div ref={shellRef} className={`relative h-full w-full overflow-hidden bg-sky-600 sm:rounded-[3rem] sm:border-8 sm:border-sky-800 sm:shadow-2xl ${splashActive ? "pa-hold" : ""}`}>
+      <div ref={shellRef} className={`relative h-full w-full overflow-hidden bg-[#0c4a7a] sm:rounded-[3rem] sm:border-8 sm:border-sky-800 sm:shadow-2xl ${splashActive ? "pa-hold" : ""}`}>
         <OceanWash urgent={sos} paused={splashActive} />
         <div
           className="relative z-10 flex h-full flex-col"
@@ -2031,7 +2069,7 @@ function Phone({
             }}
           />
 
-          <div className={`no-scrollbar min-h-0 flex-1 overflow-y-auto px-4 pb-28 pt-2.5 ${splashActive ? "content-visibility-auto" : ""}`}>
+          <div className={`no-scrollbar min-h-0 flex-1 overflow-y-auto px-4 pb-[7.5rem] pt-2.5 ${splashActive ? "content-visibility-auto" : ""}`}>
             <BeachHome
               mapOpen={mapOpen}
               activeId={activeId}
