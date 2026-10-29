@@ -6,7 +6,7 @@
 }
 
 :root {
-  --app-height: 100dvh;
+  /* Fundo contínuo da orla — se algo vazar, é o céu, não branco/preto chapado */
   --pa-sky-bottom: #1d649c;
   --pa-sky-fill: linear-gradient(180deg, #b7daf2 0%, #7eb8e0 24%, #4f97cb 52%, #2f78b4 74%, #1d649c 100%);
 }
@@ -15,7 +15,6 @@ html {
   height: 100%;
   height: -webkit-fill-available;
   overscroll-behavior: none;
-  /* Nunca transparente: no iPhone isso vira faixa BRANCA */
   background-color: var(--pa-sky-bottom);
   background-image: var(--pa-sky-fill);
 }
@@ -28,10 +27,11 @@ body {
 body {
   margin: 0;
   position: fixed;
-  top: 0;
-  left: 0;
+  inset: 0; /* quatro bordas — sem vão sob o app */
   width: 100%;
-  height: var(--app-height, 100%);
+  height: 100%;
+  min-height: 100%;
+  min-height: -webkit-fill-available;
   overflow: hidden;
   background-color: var(--pa-sky-bottom);
   background-image: var(--pa-sky-fill);
@@ -55,13 +55,12 @@ body[data-pa-surface="sheet"] {
   background-image: var(--pa-sky-fill);
 }
 
-/* Stage full-bleed: se o phone falhar 1px, o céu continua — sem branco */
+/* Stage cola nas 4 bordas — backup visual atrás do phone */
 .pa-stage {
   position: fixed;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 100%;
-  height: var(--app-height, 100dvh);
+  height: 100%;
   min-height: -webkit-fill-available;
   overflow: hidden;
   pointer-events: none;
@@ -70,17 +69,16 @@ body[data-pa-surface="sheet"] {
   background-image: var(--pa-sky-fill);
 }
 
-/* Altura = visualViewport (iOS PWA) — mata o vão branco sob o app */
+/* Phone full-bleed: inset 0 = mapa e home até a borda física */
 .pa-phone {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+  inset: 0;
   z-index: 10;
   width: 100%;
   max-width: 480px;
   margin-inline: auto;
-  height: var(--app-height, 100dvh);
+  height: 100%;
+  min-height: 100%;
   min-height: -webkit-fill-available;
   background-color: var(--pa-sky-bottom);
   background-image: var(--pa-sky-fill);
@@ -89,9 +87,7 @@ body[data-pa-surface="sheet"] {
 @media (min-width: 640px) {
   .pa-phone {
     position: relative;
-    top: auto;
-    left: auto;
-    right: auto;
+    inset: auto;
     height: 850px;
     width: 400px;
     max-width: none;
@@ -108,6 +104,19 @@ body[data-pa-surface="sheet"] {
   background-image: var(--pa-sky-fill);
   height: 100%;
   min-height: 100%;
+  overflow: hidden;
+}
+
+/* OceanWash / mapa esticam até a base, inclusive safe-area */
+.pa-fill-bleed {
+  position: absolute !important;
+  top: 0 !important;
+  right: 0 !important;
+  left: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
 }
 
 .pa-scroll {
@@ -175,6 +184,11 @@ body[data-pa-surface="sheet"] {
 
 .orla-map.leaflet-container {
   z-index: 0;
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
   background: #2c3832;
   font-family: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
 }
@@ -532,12 +546,13 @@ body[data-pa-surface="sheet"] {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 52%;
+  /* cobre a base inteira inclusive safe-area — sem faixa azul sólida */
+  height: 58%;
   z-index: 4;
   overflow: hidden;
   pointer-events: none;
-  -webkit-mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.45) 18%, #000 42%, #000 100%);
-  mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.45) 18%, #000 42%, #000 100%);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.45) 14%, #000 36%, #000 100%);
+  mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.45) 14%, #000 36%, #000 100%);
 }
 
 .sky-coast-stage {
@@ -694,13 +709,13 @@ body[data-pa-surface="sheet"] {
   will-change: opacity, transform;
 }
 
-/* Orla suave sob o SOS — paisagem contínua, sem bloco/dock chapado */
+/* Orla suave sob o SOS — paisagem contínua até a borda física */
 .sky-coast-sand {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  height: 26%;
+  height: 34%;
   background:
     radial-gradient(ellipse 28% 55% at 14% 70%, rgba(255, 255, 255, 0.35) 0%, transparent 70%),
     radial-gradient(ellipse 24% 50% at 48% 85%, rgba(255, 248, 220, 0.3) 0%, transparent 68%),
@@ -708,10 +723,10 @@ body[data-pa-surface="sheet"] {
     linear-gradient(
       180deg,
       transparent 0%,
-      rgba(254, 243, 199, 0.42) 22%,
-      rgba(245, 220, 170, 0.62) 48%,
-      rgba(232, 205, 155, 0.78) 72%,
-      rgba(220, 190, 140, 0.88) 100%
+      rgba(254, 243, 199, 0.38) 18%,
+      rgba(245, 220, 170, 0.58) 42%,
+      rgba(232, 205, 155, 0.78) 68%,
+      rgba(214, 192, 154, 0.92) 100%
     );
 }
 
@@ -1016,10 +1031,10 @@ body[data-pa-surface="sheet"] {
 /* Splash simples — horizonte + Guará + marca. Só transform/opacity. */
 .sx-splash {
   position: fixed;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 100%;
-  height: var(--app-height, 100dvh);
+  height: 100%;
+  min-height: -webkit-fill-available;
   z-index: 200;
   overflow: hidden;
   display: grid;

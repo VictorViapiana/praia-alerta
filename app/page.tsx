@@ -300,7 +300,7 @@ function SkyAtmosphere({ urgent = false, stage = false }: { urgent?: boolean; st
 
 function OceanWash({ urgent = false, paused = false }: { urgent?: boolean; paused?: boolean }) {
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden">
+    <div className="pa-fill-bleed pointer-events-none overflow-hidden" aria-hidden>
       {paused ? (
         <div className="sky-base" />
       ) : (
@@ -1175,9 +1175,9 @@ function MapScreen({
       ref={mapRef}
       {...screenEnter}
       style={{ borderRadius: 0 }}
-      className="absolute inset-0 z-40 overflow-hidden bg-[#2c3832]"
+      className="pa-fill-bleed z-40 overflow-hidden bg-[#2c3832]"
     >
-      <div className="absolute inset-0 z-0 bg-[#2c3832]">
+      <div className="pa-fill-bleed z-0 bg-[#2c3832]">
         {mapReady ? (
           <BeachMap
             filter={filter}
@@ -1253,7 +1253,8 @@ function MapScreen({
       </AnimatePresence>
 
       {!driving && <div className="pointer-events-none absolute inset-x-0 top-0 z-40 h-28 bg-gradient-to-b from-black/45 to-transparent" />}
-      {!driving && <div className="pointer-events-none absolute inset-x-0 bottom-0 z-40 h-40 bg-gradient-to-t from-black/50 to-transparent" />}
+      {/* vignette leve — sem bloco sólido na base que pareça faixa */}
+      {!driving && <div className="pointer-events-none absolute inset-x-0 bottom-0 z-40 h-28 bg-gradient-to-t from-black/25 to-transparent" />}
 
       {!driving && (
         <div
@@ -2189,27 +2190,6 @@ function Phone({
   );
 }
 
-function useAppViewportHeight() {
-  useEffect(() => {
-    const sync = () => {
-      const vv = window.visualViewport;
-      const h = Math.max(1, Math.round(vv?.height ?? window.innerHeight));
-      document.documentElement.style.setProperty("--app-height", `${h}px`);
-    };
-    sync();
-    window.visualViewport?.addEventListener("resize", sync);
-    window.visualViewport?.addEventListener("scroll", sync);
-    window.addEventListener("resize", sync);
-    window.addEventListener("orientationchange", sync);
-    return () => {
-      window.visualViewport?.removeEventListener("resize", sync);
-      window.visualViewport?.removeEventListener("scroll", sync);
-      window.removeEventListener("resize", sync);
-      window.removeEventListener("orientationchange", sync);
-    };
-  }, []);
-}
-
 export default function HomePage() {
   const [sos, setSos] = useState(false);
   const [splash, setSplash] = useState(true);
@@ -2217,10 +2197,9 @@ export default function HomePage() {
   const [warm, setWarm] = useState(false);
   const warmHome = useCallback(() => setWarm(true), []);
   const dismissSplash = useCallback(() => setSplash(false), []);
-  useAppViewportHeight();
 
   return (
-    <main className="relative flex min-h-[var(--app-height,100dvh)] flex-col items-center justify-start overflow-hidden overscroll-none sm:justify-center sm:px-3 sm:py-8">
+    <main className="relative flex min-h-full flex-col items-center justify-start overflow-hidden overscroll-none sm:justify-center sm:px-3 sm:py-8">
       {splash && <SplashScreen onWarm={warmHome} onDone={dismissSplash} />}
       <Stage urgent={sos} paused={splash} />
       <Phone
