@@ -184,19 +184,19 @@ export function OrlaCards({
           whileTap={{ scale: 0.98 }}
           onClick={() => onOpen("marlin")}
           style={{ borderRadius: 26 }}
-          className="relative h-[176px] overflow-hidden border border-white/25 text-left shadow-[0_18px_40px_-28px_rgba(0,0,0,0.9)]"
+          className="relative h-[176px] overflow-hidden border border-white/45 text-left shadow-[0_18px_40px_-18px_rgba(5,28,52,0.65)]"
         >
           <img
             src={PHOTOS[0].src}
             alt=""
             className="absolute inset-0 h-full w-full object-cover"
           />
-          <span className="absolute inset-0 bg-gradient-to-t from-[#041018] via-[#041018]/25 to-transparent" />
+          <span className="absolute inset-0 bg-gradient-to-t from-[#041018]/95 via-[#041018]/40 to-transparent" />
           <span className="relative flex h-full flex-col justify-end p-3">
-            <span className="block text-[10px] uppercase tracking-[0.16em] text-white/70">
+            <span className="block text-[10px] font-semibold uppercase tracking-[0.16em] text-white/85">
               Símbolo da orla
             </span>
-            <span className="mt-1 block font-serif text-[1.35rem] leading-none text-white">
+            <span className="mt-1 block font-serif text-[1.35rem] leading-none text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.45)]">
               Marlin Azul
             </span>
           </span>
@@ -214,27 +214,27 @@ export function OrlaCards({
           whileTap={{ scale: 0.98 }}
           onClick={() => onOpen("fotos")}
           style={{ borderRadius: 26 }}
-          className="relative h-[176px] overflow-hidden border border-white/25 text-left shadow-[0_18px_40px_-28px_rgba(0,0,0,0.9)]"
+          className="relative h-[176px] overflow-hidden border border-white/45 text-left shadow-[0_18px_40px_-18px_rgba(5,28,52,0.65)]"
         >
           <img
             src={BEACH[0].src}
             alt=""
             className="absolute inset-0 h-full w-full object-cover object-[center_60%]"
           />
-          <span className="absolute inset-0 bg-gradient-to-t from-[#102033] via-[#102033]/15 to-transparent" />
+          <span className="absolute inset-0 bg-gradient-to-t from-[#0b2740]/95 via-[#102033]/45 to-transparent" />
           <span className="absolute right-2 top-2 flex -space-x-2">
             {BEACH.slice(1, 4).map((photo) => (
               <img
                 key={photo.src}
                 src={photo.src}
                 alt=""
-                className="h-8 w-8 rounded-full border border-white/80 object-cover"
+                className="h-8 w-8 rounded-full border-2 border-white object-cover shadow-[0_4px_10px_rgba(0,0,0,0.35)]"
               />
             ))}
           </span>
           <span className="relative flex h-full items-end justify-between gap-2 p-3">
-            <span className="font-serif text-[1.35rem] leading-[1.05] text-white">Praia do Morro</span>
-            <span className="shrink-0 -translate-x-2 text-[10px] uppercase tracking-[0.16em] text-sky-50/80">
+            <span className="font-serif text-[1.35rem] leading-[1.05] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.45)]">Praia do Morro</span>
+            <span className="shrink-0 -translate-x-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-sky-50">
               Galeria
             </span>
           </span>
