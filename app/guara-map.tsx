@@ -40,6 +40,11 @@ export function GuaraMapChat({
     onGuide(guide);
   };
 
+  const showBeach = () => {
+    ask("Me mostre a praia");
+    setOpen(false);
+  };
+
   if (hidden && !open) return null;
 
   return (
@@ -102,6 +107,7 @@ export function GuaraMapChat({
             exit={{ opacity: 0, y: 20 }}
             transition={{ type: "spring", stiffness: 420, damping: 34 }}
             className="absolute inset-x-3 bottom-3 z-[58] flex max-h-[68%] flex-col overflow-hidden rounded-[28px] border border-white/20 bg-[#102028]/92 text-white shadow-[0_24px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl"
+            style={{ bottom: "max(0.75rem, env(safe-area-inset-bottom, 0px))" }}
           >
             <div className="flex items-center gap-2 border-b border-white/10 px-3 py-2.5">
               <img src="/guara.png?v=3" alt="" className="h-9 w-auto" draggable={false} />
@@ -119,6 +125,17 @@ export function GuaraMapChat({
                 className="grid h-8 w-8 place-items-center rounded-full bg-white/10"
               >
                 <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="border-b border-white/10 px-3 py-2.5">
+              <button
+                type="button"
+                onClick={showBeach}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl border border-cyan-200/35 bg-gradient-to-r from-cyan-500/30 via-sky-950/50 to-amber-300/25 px-3 py-2.5 text-[13px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]"
+              >
+                <span aria-hidden>🏖️</span>
+                Me mostre a praia
               </button>
             </div>
 

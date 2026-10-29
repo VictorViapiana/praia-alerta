@@ -13,7 +13,8 @@ body {
 
 body {
   margin: 0;
-  background: #4f97cb;
+  /* mesma areia do dock — evita faixa azul no home indicator do iPhone */
+  background: #c9b48a;
   color: white;
   font-family: var(--font-sans);
   overscroll-behavior: none;
@@ -24,6 +25,8 @@ body {
   overscroll-behavior: none;
   touch-action: manipulation;
   background: #c9b48a;
+  min-height: 100dvh;
+  height: 100dvh;
 }
 
 .pa-scroll {
@@ -38,17 +41,21 @@ body {
   inset-inline: 0;
   bottom: 0;
   z-index: 30;
-  padding: 0.55rem 1rem max(0.55rem, env(safe-area-inset-bottom, 0px));
-  background:
-    linear-gradient(
-      180deg,
-      transparent 0%,
-      rgba(214, 192, 154, 0.55) 28%,
-      rgba(214, 192, 154, 0.92) 58%,
-      #c9b48a 100%
-    );
+  padding: 0.55rem 1rem max(0.65rem, env(safe-area-inset-bottom, 0px));
+  background: #c9b48a;
+  box-shadow: 0 -18px 28px rgba(201, 180, 138, 0.95);
   touch-action: none;
   pointer-events: auto;
+}
+
+.pa-map-safe {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 54;
+  height: max(0.85rem, env(safe-area-inset-bottom, 0px));
+  background: #071018;
+  pointer-events: none;
 }
 
 ::selection {
