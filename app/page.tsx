@@ -1561,7 +1561,7 @@ function MapHighlight({
       className="relative h-[158px] w-full overflow-hidden border border-white/35 bg-sky-600 text-left shadow-[0_18px_40px_-28px_rgba(14,165,233,0.55)]"
     >
       <CoastMap />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#061018]/85 via-[#061018]/25 to-[#061018]/10" />
+      <div className="absolute inset-0 bg-gradient-to-t from-sky-900/70 via-sky-800/25 to-sky-700/10" />
       <span className="pointer-events-none absolute -right-2 top-0 h-24 w-24 rounded-full bg-cyan-400/25 blur-2xl" />
       <span className="relative flex h-full flex-col justify-between p-4">
         <span className="flex items-center justify-between">
