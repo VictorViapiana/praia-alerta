@@ -2190,6 +2190,44 @@ function Phone({
   );
 }
 
+/**
+ * App instalado no iPhone: innerHeight/100dvh ficam ~59px abaixo de screen.height
+ * (o inset do Dynamic Island). position:fixed cortava ali e sobrava a faixa.
+ * Aqui a raiz fica na altura real da tela. Não usa visualViewport — ele é o valor curto.
+ */
+function useFillScreen() {
+  useEffect(() => {
+    const nav = window.navigator as Navigator & { standalone?: boolean };
+    if (nav.standalone !== true) return;
+
+    const apply = () => {
+      const screenH = Math.round(window.screen?.height || 0);
+      const h = screenH >= 480 && screenH <= 1600 ? `${screenH}px` : "100vh";
+      let tag = document.getElementById("pa-fill") as HTMLStyleElement | null;
+      if (!tag) {
+        tag = document.createElement("style");
+        tag.id = "pa-fill";
+        document.head.appendChild(tag);
+      }
+      tag.textContent = `html,body,.pa-root,.pa-phone,.pa-stage{height:${h}!important;min-height:${h}!important}`;
+      document.documentElement.style.setProperty("--app-h", h);
+      const vv = window.visualViewport;
+      const keyboardOpen = Boolean(vv && window.innerHeight - vv.height > 140);
+      if (!keyboardOpen && (window.scrollX || window.scrollY)) window.scrollTo(0, 0);
+    };
+
+    apply();
+    const timers = [0, 60, 240, 800].map((ms) => window.setTimeout(apply, ms));
+    window.addEventListener("orientationchange", apply);
+    window.addEventListener("resize", apply);
+    return () => {
+      timers.forEach((id) => window.clearTimeout(id));
+      window.removeEventListener("orientationchange", apply);
+      window.removeEventListener("resize", apply);
+    };
+  }, []);
+}
+
 export default function HomePage() {
   const [sos, setSos] = useState(false);
   const [splash, setSplash] = useState(true);
@@ -2197,9 +2235,10 @@ export default function HomePage() {
   const [warm, setWarm] = useState(false);
   const warmHome = useCallback(() => setWarm(true), []);
   const dismissSplash = useCallback(() => setSplash(false), []);
+  useFillScreen();
 
   return (
-    <main className="relative flex min-h-full flex-col items-center justify-start overflow-hidden overscroll-none sm:justify-center sm:px-3 sm:py-8">
+    <main className="pa-root">
       {splash && <SplashScreen onWarm={warmHome} onDone={dismissSplash} />}
       <Stage urgent={sos} paused={splash} />
       <Phone

@@ -238,7 +238,7 @@ export function TouristCamera({ onClose }: { onClose: () => void }) {
   };
 
   const live = (
-    <div className="fixed inset-0 z-[80] bg-black">
+    <div className="absolute inset-0 z-[80] bg-black">
       <div ref={stageRef} className="relative h-full w-full overflow-hidden">
         <video
           ref={videoRef}
@@ -311,7 +311,7 @@ export function TouristCamera({ onClose }: { onClose: () => void }) {
   );
 
   const review = (
-    <div className="fixed inset-0 z-[80] flex flex-col bg-sky-800 text-white">
+    <div className="absolute inset-0 z-[80] flex flex-col bg-sky-800 text-white">
       <header className="flex items-center justify-between px-4 pb-2 pt-[max(0.8rem,env(safe-area-inset-top))]">
         <button
           type="button"

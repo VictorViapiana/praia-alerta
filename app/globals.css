@@ -11,27 +11,29 @@
   --pa-sky-fill: linear-gradient(180deg, #b7daf2 0%, #7eb8e0 24%, #4f97cb 52%, #2f78b4 74%, #1d649c 100%);
 }
 
+/*
+ * iOS PWA: position:fixed na raiz corta na viewport mentirosa (tela − ~59px do
+ * Dynamic Island) e o sistema pinta a sobra com theme-color. Raiz no fluxo normal.
+ * 100lvh / 100vh = tela física no app instalado. 100dvh e -webkit-fill-available mentem.
+ */
 html {
-  height: 100%;
-  height: -webkit-fill-available;
+  height: var(--app-h, 100lvh);
+  min-height: var(--app-h, 100lvh);
+  width: 100%;
+  overflow: hidden;
   overscroll-behavior: none;
   background-color: var(--pa-sky-bottom);
   background-image: var(--pa-sky-fill);
-}
-
-html,
-body {
-  overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
   margin: 0;
-  position: fixed;
-  inset: 0; /* quatro bordas — sem vão sob o app */
+  position: relative;
   width: 100%;
-  height: 100%;
-  min-height: 100%;
-  min-height: -webkit-fill-available;
+  height: var(--app-h, 100lvh);
+  min-height: var(--app-h, 100lvh);
   overflow: hidden;
   background-color: var(--pa-sky-bottom);
   background-image: var(--pa-sky-fill);
@@ -55,13 +57,21 @@ body[data-pa-surface="sheet"] {
   background-image: var(--pa-sky-fill);
 }
 
-/* Stage cola nas 4 bordas — backup visual atrás do phone */
+.pa-root {
+  position: relative;
+  width: 100%;
+  height: var(--app-h, 100lvh);
+  min-height: var(--app-h, 100lvh);
+  overflow: hidden;
+}
+
+/* Céu atrás do phone. Absolute, não fixed: fixed no iOS também corta nos 59px. */
 .pa-stage {
-  position: fixed;
+  position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  min-height: -webkit-fill-available;
+  min-height: 100%;
   overflow: hidden;
   pointer-events: none;
   z-index: 0;
@@ -69,25 +79,30 @@ body[data-pa-surface="sheet"] {
   background-image: var(--pa-sky-fill);
 }
 
-/* Phone full-bleed: inset 0 = mapa e home até a borda física */
 .pa-phone {
-  position: fixed;
-  inset: 0;
+  position: relative;
   z-index: 10;
   width: 100%;
   max-width: 480px;
   margin-inline: auto;
-  height: 100%;
-  min-height: 100%;
-  min-height: -webkit-fill-available;
+  height: var(--app-h, 100lvh);
+  min-height: var(--app-h, 100lvh);
   background-color: var(--pa-sky-bottom);
   background-image: var(--pa-sky-fill);
 }
 
 @media (min-width: 640px) {
+  .pa-root {
+    height: auto;
+    min-height: 100lvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 0.75rem;
+  }
+
   .pa-phone {
-    position: relative;
-    inset: auto;
     height: 850px;
     width: 400px;
     max-width: none;
@@ -546,13 +561,13 @@ body[data-pa-surface="sheet"] {
   left: 0;
   right: 0;
   bottom: 0;
-  /* cobre a base inteira inclusive safe-area — sem faixa azul sólida */
-  height: 58%;
+  /* passa da safe-area: a orla, não um azul chapado, chega na borda física */
+  height: calc(64% + env(safe-area-inset-bottom, 0px));
   z-index: 4;
   overflow: hidden;
   pointer-events: none;
-  -webkit-mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.45) 14%, #000 36%, #000 100%);
-  mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.45) 14%, #000 36%, #000 100%);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.45) 12%, #000 32%, #000 100%);
+  mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.45) 12%, #000 32%, #000 100%);
 }
 
 .sky-coast-stage {
@@ -709,13 +724,13 @@ body[data-pa-surface="sheet"] {
   will-change: opacity, transform;
 }
 
-/* Orla suave sob o SOS — paisagem contínua até a borda física */
+/* Orla opaca na base — o último pixel é areia, não #1d649c */
 .sky-coast-sand {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  height: 34%;
+  height: calc(42% + env(safe-area-inset-bottom, 0px));
   background:
     radial-gradient(ellipse 28% 55% at 14% 70%, rgba(255, 255, 255, 0.35) 0%, transparent 70%),
     radial-gradient(ellipse 24% 50% at 48% 85%, rgba(255, 248, 220, 0.3) 0%, transparent 68%),
@@ -723,10 +738,10 @@ body[data-pa-surface="sheet"] {
     linear-gradient(
       180deg,
       transparent 0%,
-      rgba(254, 243, 199, 0.38) 18%,
-      rgba(245, 220, 170, 0.58) 42%,
-      rgba(232, 205, 155, 0.78) 68%,
-      rgba(214, 192, 154, 0.92) 100%
+      rgba(254, 243, 199, 0.45) 16%,
+      rgba(232, 205, 155, 0.82) 48%,
+      #d6c09a 78%,
+      #d6c09a 100%
     );
 }
 
@@ -1030,11 +1045,11 @@ body[data-pa-surface="sheet"] {
 
 /* Splash simples — horizonte + Guará + marca. Só transform/opacity. */
 .sx-splash {
-  position: fixed;
+  position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  min-height: -webkit-fill-available;
+  min-height: 100%;
   z-index: 200;
   overflow: hidden;
   display: grid;
