@@ -2070,6 +2070,18 @@ function Phone({
     return () => window.removeEventListener("keydown", onKey);
   }, [missionOpen, onCloseSos, sos]);
 
+  // theme-color acompanha o fundo visível — se o iOS pintar a borda, não vira faixa contrastante
+  useEffect(() => {
+    const color = mapOpen
+      ? "#2c3832"
+      : sheet || story || childOpen || sos || missionOpen
+        ? "#246ea8"
+        : "#5aa0d0";
+    document.querySelectorAll('meta[name="theme-color"]').forEach((node) => {
+      node.setAttribute("content", color);
+    });
+  }, [mapOpen, sheet, story, childOpen, sos, missionOpen]);
+
   return (
     <div className="pa-phone">
       <span className="absolute -left-[3px] top-28 hidden h-8 w-[3px] rounded-l-sm bg-gray-800 sm:block" />
