@@ -5,28 +5,62 @@
   --font-serif: var(--font-fraunces), ui-serif, Georgia, serif;
 }
 
+html {
+  height: 100%;
+  height: -webkit-fill-available;
+  overscroll-behavior: none;
+}
+
 html,
 body {
-  height: 100%;
   overscroll-behavior: none;
 }
 
 body {
   margin: 0;
-  /* mesmo azul do céu — sem faixa/dock artificial sob a Emergência */
-  background: #2b7fc4;
+  min-height: 100%;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
+  /* base do céu/orla — se algo vazar no iOS, não vira faixa chapada diferente */
+  background: #1d649c;
   color: white;
   font-family: var(--font-sans);
   overscroll-behavior: none;
   touch-action: manipulation;
 }
 
+/* Shell full-bleed no telefone: cobre safe-area e mata a faixa azul sob o SOS/mapa */
+.pa-phone {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  width: 100%;
+  max-width: 480px;
+  margin-inline: auto;
+  height: 100%;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
+}
+
+@media (min-width: 640px) {
+  .pa-phone {
+    position: relative;
+    inset: auto;
+    height: 850px;
+    width: 400px;
+    max-width: none;
+    min-height: 0;
+  }
+}
+
 .pa-shell {
+  position: absolute;
+  inset: 0;
   overscroll-behavior: none;
   touch-action: manipulation;
   background: transparent;
-  min-height: 100dvh;
-  height: 100dvh;
+  height: 100%;
+  min-height: 100%;
 }
 
 .pa-scroll {
@@ -36,13 +70,13 @@ body {
   touch-action: pan-y;
 }
 
-/* Dock transparente: só posiciona o SOS e trava overscroll — sem cobrir o fundo */
+/* Dock transparente: SOS encostado na base, paisagem continua atrás */
 .pa-sos-dock {
   position: absolute;
   inset-inline: 1rem;
   bottom: 0;
   z-index: 30;
-  padding: 0.25rem 0 max(0.35rem, env(safe-area-inset-bottom, 0px));
+  padding: 0.35rem 0 max(0.45rem, env(safe-area-inset-bottom, 0px));
   background: transparent;
   touch-action: none;
   pointer-events: auto;
@@ -479,8 +513,8 @@ body {
   top: 6%;
   width: 106%;
   height: 34%;
-  opacity: 0.32;
-  filter: blur(1.2px) drop-shadow(0 10px 20px rgba(8, 40, 72, 0.15));
+  opacity: 0.5;
+  filter: blur(0.5px) drop-shadow(0 10px 20px rgba(8, 40, 72, 0.22));
 }
 
 .sky-coast-sea {
@@ -488,19 +522,20 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 82%;
+  height: 88%;
   background:
-    radial-gradient(ellipse 110% 48% at 72% 6%, rgba(255, 248, 230, 0.28) 0%, transparent 52%),
-    radial-gradient(ellipse 70% 40% at 12% 18%, rgba(186, 230, 253, 0.22) 0%, transparent 58%),
+    radial-gradient(ellipse 110% 48% at 72% 6%, rgba(255, 248, 220, 0.38) 0%, transparent 52%),
+    radial-gradient(ellipse 70% 40% at 12% 18%, rgba(165, 243, 252, 0.32) 0%, transparent 58%),
+    radial-gradient(ellipse 90% 35% at 50% 42%, rgba(56, 189, 248, 0.26) 0%, transparent 70%),
     linear-gradient(
       180deg,
       transparent 0%,
-      rgba(186, 230, 253, 0.16) 12%,
-      rgba(125, 200, 232, 0.32) 28%,
-      rgba(70, 150, 200, 0.42) 48%,
-      rgba(48, 120, 172, 0.48) 68%,
-      rgba(40, 100, 150, 0.35) 86%,
-      transparent 100%
+      rgba(186, 230, 253, 0.2) 10%,
+      rgba(125, 211, 252, 0.36) 22%,
+      rgba(56, 189, 248, 0.46) 38%,
+      rgba(34, 150, 200, 0.55) 56%,
+      rgba(22, 118, 175, 0.62) 74%,
+      rgba(18, 100, 155, 0.7) 100%
     );
 }
 
@@ -517,10 +552,10 @@ body {
     rgba(186, 230, 253, 0.1) 62%,
     transparent 100%
   );
-  filter: blur(14px);
+  filter: blur(12px);
   clip-path: polygon(40% 0, 60% 0, 82% 100%, 18% 100%);
-  opacity: 0.45;
-  animation: sky-coast-sheen 10s ease-in-out infinite alternate;
+  opacity: 0.72;
+  animation: sky-coast-sheen 8s ease-in-out infinite alternate;
   will-change: opacity;
 }
 
@@ -597,33 +632,36 @@ body {
   position: absolute;
   left: -10%;
   right: -10%;
-  bottom: 12%;
-  height: 18%;
+  bottom: 8%;
+  height: 24%;
   background:
-    radial-gradient(ellipse 42% 100% at 10% 70%, rgba(255, 255, 255, 0.42) 0%, transparent 68%),
-    radial-gradient(ellipse 38% 95% at 40% 88%, rgba(255, 255, 255, 0.34) 0%, transparent 66%),
-    radial-gradient(ellipse 44% 100% at 72% 75%, rgba(255, 255, 255, 0.3) 0%, transparent 68%),
-    linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.1) 45%, rgba(255, 255, 255, 0.22) 100%);
-  animation: sky-coast-foam 7s ease-in-out infinite alternate;
+    radial-gradient(ellipse 42% 100% at 8% 70%, rgba(255, 255, 255, 0.78) 0%, transparent 68%),
+    radial-gradient(ellipse 38% 95% at 32% 88%, rgba(255, 255, 255, 0.7) 0%, transparent 66%),
+    radial-gradient(ellipse 44% 100% at 62% 72%, rgba(255, 255, 255, 0.64) 0%, transparent 68%),
+    radial-gradient(ellipse 40% 90% at 90% 82%, rgba(255, 255, 255, 0.58) 0%, transparent 70%),
+    linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.18) 40%, rgba(255, 255, 255, 0.4) 100%);
+  animation: sky-coast-foam 5.5s ease-in-out infinite alternate;
   will-change: opacity, transform;
 }
 
+/* Orla suave sob o SOS — paisagem contínua, sem bloco/dock chapado */
 .sky-coast-sand {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  height: 18%;
+  height: 26%;
   background:
-    radial-gradient(ellipse 30% 55% at 16% 75%, rgba(255, 255, 255, 0.22) 0%, transparent 70%),
-    radial-gradient(ellipse 26% 50% at 78% 80%, rgba(255, 250, 240, 0.18) 0%, transparent 68%),
+    radial-gradient(ellipse 28% 55% at 14% 70%, rgba(255, 255, 255, 0.35) 0%, transparent 70%),
+    radial-gradient(ellipse 24% 50% at 48% 85%, rgba(255, 248, 220, 0.3) 0%, transparent 68%),
+    radial-gradient(ellipse 30% 60% at 82% 75%, rgba(255, 255, 255, 0.28) 0%, transparent 70%),
     linear-gradient(
       180deg,
       transparent 0%,
-      rgba(236, 224, 198, 0.28) 22%,
-      rgba(226, 208, 174, 0.48) 48%,
-      rgba(214, 192, 154, 0.62) 74%,
-      rgba(204, 180, 140, 0.72) 100%
+      rgba(254, 243, 199, 0.42) 22%,
+      rgba(245, 220, 170, 0.62) 48%,
+      rgba(232, 205, 155, 0.78) 72%,
+      rgba(220, 190, 140, 0.88) 100%
     );
 }
 

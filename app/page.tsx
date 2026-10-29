@@ -2071,13 +2071,13 @@ function Phone({
   }, [missionOpen, onCloseSos, sos]);
 
   return (
-    <div className="relative h-dvh w-full max-w-[480px] sm:h-[850px] sm:w-[400px] sm:max-w-none">
+    <div className="pa-phone">
       <span className="absolute -left-[3px] top-28 hidden h-8 w-[3px] rounded-l-sm bg-gray-800 sm:block" />
       <span className="absolute -left-[3px] top-40 hidden h-14 w-[3px] rounded-l-sm bg-gray-800 sm:block" />
       <span className="absolute -left-[3px] top-56 hidden h-14 w-[3px] rounded-l-sm bg-gray-800 sm:block" />
       <span className="absolute -right-[3px] top-44 hidden h-20 w-[3px] rounded-r-sm bg-gray-800 sm:block" />
 
-      <div ref={shellRef} className={`pa-shell relative h-full w-full overflow-hidden sm:rounded-[3rem] sm:border-8 sm:border-sky-800 sm:shadow-2xl ${splashActive ? "pa-hold" : ""}`}>
+      <div ref={shellRef} className={`pa-shell overflow-hidden sm:rounded-[3rem] sm:border-8 sm:border-sky-800 sm:shadow-2xl ${splashActive ? "pa-hold" : ""}`}>
         <OceanWash urgent={sos} paused={splashActive} />
         <div
           className="relative z-10 flex h-full min-h-0 flex-col overflow-hidden"
@@ -2188,15 +2188,13 @@ export default function HomePage() {
     <main className="relative flex min-h-dvh flex-col items-center justify-start overflow-x-hidden overscroll-none sm:justify-center sm:px-3 sm:py-8">
       {splash && <SplashScreen onWarm={warmHome} onDone={dismissSplash} />}
       <Stage urgent={sos} paused={splash} />
-      <div className="relative z-10">
-        <Phone
-          sos={sos}
-          onSos={() => setSos(true)}
-          onCloseSos={() => setSos(false)}
-          splashDone={warm}
-          splashActive={splash}
-        />
-      </div>
+      <Phone
+        sos={sos}
+        onSos={() => setSos(true)}
+        onCloseSos={() => setSos(false)}
+        splashDone={warm}
+        splashActive={splash}
+      />
       <footer className="relative z-10 mt-6 hidden text-center sm:block">
         <p className="font-serif text-lg italic text-sky-950/80">Praia Alerta Alegretto</p>
         <p className="mt-1 text-[11px] uppercase tracking-[0.28em] text-white/40">
