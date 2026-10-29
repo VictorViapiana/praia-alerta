@@ -318,7 +318,7 @@ function OceanWash({ urgent = false, paused = false }: { urgent?: boolean; pause
 
 function Stage({ urgent, paused = false }: { urgent: boolean; paused?: boolean }) {
   return (
-    <div className="pa-stage pointer-events-none fixed inset-0 overflow-hidden">
+    <div className="pa-stage" aria-hidden>
       {paused ? (
         <div className="sky-base sky-base-stage" />
       ) : (
@@ -2070,16 +2070,17 @@ function Phone({
     return () => window.removeEventListener("keydown", onKey);
   }, [missionOpen, onCloseSos, sos]);
 
-  // theme-color acompanha o fundo visível — se o iOS pintar a borda, não vira faixa contrastante
+  // theme-color + body surface acompanham a tela — sem faixa contrastante na borda do iOS
   useEffect(() => {
-    const color = mapOpen
-      ? "#2c3832"
-      : sheet || story || childOpen || sos || missionOpen
-        ? "#246ea8"
-        : "#5aa0d0";
+    const surface = mapOpen ? "map" : sheet || story || childOpen || sos || missionOpen ? "sheet" : "home";
+    const color = surface === "map" ? "#2c3832" : surface === "sheet" ? "#246ea8" : "#1d649c";
+    document.body.dataset.paSurface = surface;
     document.querySelectorAll('meta[name="theme-color"]').forEach((node) => {
       node.setAttribute("content", color);
     });
+    return () => {
+      delete document.body.dataset.paSurface;
+    };
   }, [mapOpen, sheet, story, childOpen, sos, missionOpen]);
 
   return (
@@ -2188,6 +2189,27 @@ function Phone({
   );
 }
 
+function useAppViewportHeight() {
+  useEffect(() => {
+    const sync = () => {
+      const vv = window.visualViewport;
+      const h = Math.max(1, Math.round(vv?.height ?? window.innerHeight));
+      document.documentElement.style.setProperty("--app-height", `${h}px`);
+    };
+    sync();
+    window.visualViewport?.addEventListener("resize", sync);
+    window.visualViewport?.addEventListener("scroll", sync);
+    window.addEventListener("resize", sync);
+    window.addEventListener("orientationchange", sync);
+    return () => {
+      window.visualViewport?.removeEventListener("resize", sync);
+      window.visualViewport?.removeEventListener("scroll", sync);
+      window.removeEventListener("resize", sync);
+      window.removeEventListener("orientationchange", sync);
+    };
+  }, []);
+}
+
 export default function HomePage() {
   const [sos, setSos] = useState(false);
   const [splash, setSplash] = useState(true);
@@ -2195,9 +2217,10 @@ export default function HomePage() {
   const [warm, setWarm] = useState(false);
   const warmHome = useCallback(() => setWarm(true), []);
   const dismissSplash = useCallback(() => setSplash(false), []);
+  useAppViewportHeight();
 
   return (
-    <main className="relative flex min-h-dvh flex-col items-center justify-start overflow-x-hidden overscroll-none sm:justify-center sm:px-3 sm:py-8">
+    <main className="relative flex min-h-[var(--app-height,100dvh)] flex-col items-center justify-start overflow-hidden overscroll-none sm:justify-center sm:px-3 sm:py-8">
       {splash && <SplashScreen onWarm={warmHome} onDone={dismissSplash} />}
       <Stage urgent={sos} paused={splash} />
       <Phone
