@@ -450,7 +450,7 @@ function GuaraIsland({ onReplay, onMission }: { onReplay: () => void; onMission:
           >
             <div className="flex items-center gap-2">
               <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-cyan-50/85">
-                Alegretto Praia Alerta
+                Praia Alerta Alegretto
               </p>
               {narrating ? (
                 <Equalizer />
@@ -1254,6 +1254,7 @@ function MapScreen({
 
       {!driving && <div className="pointer-events-none absolute inset-x-0 top-0 z-40 h-28 bg-gradient-to-b from-black/45 to-transparent" />}
       {!driving && <div className="pointer-events-none absolute inset-x-0 bottom-0 z-40 h-40 bg-gradient-to-t from-black/50 to-transparent" />}
+      {!driving && <div className="pa-map-safe" aria-hidden />}
 
       {!driving && (
         <div
@@ -2198,7 +2199,7 @@ export default function HomePage() {
         />
       </div>
       <footer className="relative z-10 mt-6 hidden text-center sm:block">
-        <p className="font-serif text-lg italic text-sky-950/80">Alegretto Praia Alerta</p>
+        <p className="font-serif text-lg italic text-sky-950/80">Praia Alerta Alegretto</p>
         <p className="mt-1 text-[11px] uppercase tracking-[0.28em] text-white/40">
           Guarapari · Espírito Santo
         </p>

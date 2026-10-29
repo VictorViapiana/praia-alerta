@@ -418,8 +418,7 @@ function FlyTo({ target }: { target: FlyTarget }) {
     const shift = () => {
       if (shifted) return;
       shifted = true;
-      // overview da orla: sobe menos para caber os quiosques
-      map.panBy([0, zoom <= 16.5 ? -90 : -155], { animate: true, duration: 0.35 });
+      map.panBy([0, zoom >= 17.5 ? -120 : -155], { animate: true, duration: 0.35 });
     };
     map.flyTo([target.lat, target.lng], zoom, { duration: 1.05 });
     map.once("moveend", shift);

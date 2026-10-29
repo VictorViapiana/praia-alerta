@@ -57,7 +57,7 @@ export function SplashScreen({ onWarm, onDone }: { onWarm?: () => void; onDone: 
 
   if (reduce) {
     return (
-      <div className="sx-splash" role="img" aria-label="Abrindo Alegretto Praia Alerta">
+      <div className="sx-splash" role="img" aria-label="Abrindo Praia Alerta Alegretto">
         <div className="sx-wash" />
       </div>
     );
@@ -67,7 +67,7 @@ export function SplashScreen({ onWarm, onDone }: { onWarm?: () => void; onDone: 
     <motion.div
       className="sx-splash"
       role="img"
-      aria-label="Abrindo Alegretto Praia Alerta"
+      aria-label="Abrindo Praia Alerta Alegretto"
       initial={{ opacity: 1 }}
       animate={{ opacity: [1, 1, 0] }}
       transition={{ duration: 3.2, times: [0, 0.78, 1], ease: "linear" }}
@@ -105,7 +105,7 @@ export function SplashScreen({ onWarm, onDone }: { onWarm?: () => void; onDone: 
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.55, ease: EASE }}
         >
-          <p className="sx-name">Alegretto Praia Alerta</p>
+          <p className="sx-name">Praia Alerta Alegretto</p>
           <p className="sx-tag">Praia do Morro</p>
         </motion.div>
       </div>

@@ -15,13 +15,13 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "Alegretto Praia Alerta",
+  title: "Praia Alerta Alegretto",
   description: "Guia e alerta da Praia do Morro — Guarapari, ES. Mapa, segurança e o Guará no bolso.",
-  applicationName: "Alegretto Praia Alerta",
+  applicationName: "Praia Alerta Alegretto",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Alegretto Praia Alerta",
+    title: "Praia Alerta Alegretto",
   },
   formatDetection: {
     telephone: false,
@@ -69,7 +69,7 @@ export default function RootLayout({
         <link rel="stylesheet" href="/vendor/leaflet/leaflet.css" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="Alegretto Praia Alerta" />
+        <meta name="apple-mobile-web-app-title" content="Praia Alerta Alegretto" />
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
       </head>
       <body className={`${outfit.variable} ${fraunces.variable} antialiased`}>

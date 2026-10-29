@@ -34,7 +34,7 @@ export type GuaraGuide = {
 };
 
 /** Centro da Praia do Morro — zoom que ainda mostra os quiosques. */
-export const PRAIA_MORRO_VIEW = { lat: -20.6544, lng: -40.4875, zoom: 16.25 } as const;
+export const PRAIA_MORRO_VIEW = { lat: -20.6544, lng: -40.4875, zoom: 17.75 } as const;
 /** Longe o bastante para considerar "outra cidade" / fora da orla. */
 export const FAR_FROM_BEACH_M = 12_000;
 
