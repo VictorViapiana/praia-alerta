@@ -211,15 +211,20 @@ function MapReady({ onClear, onHold }: { onClear: () => void; onHold: (lat: numb
       if (scheduled) return;
       scheduled = window.requestAnimationFrame(() => {
         scheduled = 0;
-        map.invalidateSize({ animate: false });
+        map.invalidateSize({ animate: false, pan: false });
       });
     };
     const observer = new ResizeObserver(paint);
     observer.observe(node);
-    const timerId = window.setTimeout(paint, 120);
+    // iOS PWA: reaplica tamanho depois do layout / safe-area
+    const timers = [0, 60, 180, 400].map((ms) => window.setTimeout(paint, ms));
+    window.visualViewport?.addEventListener("resize", paint);
+    window.addEventListener("orientationchange", paint);
     return () => {
       observer.disconnect();
-      window.clearTimeout(timerId);
+      timers.forEach((id) => window.clearTimeout(id));
+      window.visualViewport?.removeEventListener("resize", paint);
+      window.removeEventListener("orientationchange", paint);
       window.clearTimeout(timer.current);
       if (scheduled) cancelAnimationFrame(scheduled);
     };
@@ -1263,7 +1268,7 @@ export function BeachMap({
       markerZoomAnimation={false}
       inertiaDeceleration={2800}
       wheelPxPerZoomLevel={100}
-      className="orla-map absolute inset-0 z-0 h-full w-full"
+      className="orla-map pa-fill-bleed z-0"
       style={{ background: driving ? "#eceff1" : clean ? "#f3f6f4" : "#2c3832", zIndex: 0 }}
     >
       {driving ? (

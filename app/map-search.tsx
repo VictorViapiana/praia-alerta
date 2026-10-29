@@ -439,9 +439,8 @@ export function MapSearch({
       initial={false}
       animate={{ height: open ? "56%" : 124 }}
       transition={spring}
-      className="absolute inset-x-3 z-[55] flex flex-col overflow-hidden"
+      className="absolute inset-x-3 bottom-0 z-[55] flex flex-col overflow-hidden bg-transparent"
       style={{
-        bottom: 0,
         paddingBottom: "max(0.75rem, env(safe-area-inset-bottom, 0px))",
       }}
     >
