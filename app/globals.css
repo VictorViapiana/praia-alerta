@@ -8,6 +8,7 @@
 html,
 body {
   height: 100%;
+  overscroll-behavior: none;
 }
 
 body {
@@ -15,6 +16,39 @@ body {
   background: #4f97cb;
   color: white;
   font-family: var(--font-sans);
+  overscroll-behavior: none;
+  touch-action: manipulation;
+}
+
+.pa-shell {
+  overscroll-behavior: none;
+  touch-action: manipulation;
+  background: #c9b48a;
+}
+
+.pa-scroll {
+  overscroll-behavior-y: none;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+
+.pa-sos-dock {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 30;
+  padding: 0.55rem 1rem max(0.55rem, env(safe-area-inset-bottom, 0px));
+  background:
+    linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(214, 192, 154, 0.55) 28%,
+      rgba(214, 192, 154, 0.92) 58%,
+      #c9b48a 100%
+    );
+  touch-action: none;
+  pointer-events: auto;
 }
 
 ::selection {
@@ -582,17 +616,17 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 18%;
+  height: 22%;
   background:
-    radial-gradient(ellipse 30% 55% at 16% 75%, rgba(255, 255, 255, 0.22) 0%, transparent 70%),
-    radial-gradient(ellipse 26% 50% at 78% 80%, rgba(255, 250, 240, 0.18) 0%, transparent 68%),
+    radial-gradient(ellipse 30% 55% at 16% 75%, rgba(255, 255, 255, 0.2) 0%, transparent 70%),
+    radial-gradient(ellipse 26% 50% at 78% 80%, rgba(255, 250, 240, 0.16) 0%, transparent 68%),
     linear-gradient(
       180deg,
       transparent 0%,
-      rgba(236, 224, 198, 0.28) 22%,
-      rgba(226, 208, 174, 0.48) 48%,
-      rgba(214, 192, 154, 0.62) 74%,
-      rgba(204, 180, 140, 0.72) 100%
+      rgba(226, 208, 174, 0.35) 18%,
+      rgba(214, 192, 154, 0.72) 48%,
+      #c9b48a 78%,
+      #c9b48a 100%
     );
 }
 

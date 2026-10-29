@@ -1761,7 +1761,7 @@ function SosSlider({ onTrigger }: { onTrigger: () => void }) {
   };
 
   return (
-    <div className="absolute inset-x-4 bottom-0 z-30 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1">
+    <div className="pa-sos-dock">
       <div
         ref={trackRef}
         className="relative h-16 overflow-hidden rounded-full border border-white/15 bg-black/45 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-md"
@@ -2043,10 +2043,10 @@ function Phone({
       <span className="absolute -left-[3px] top-56 hidden h-14 w-[3px] rounded-l-sm bg-gray-800 sm:block" />
       <span className="absolute -right-[3px] top-44 hidden h-20 w-[3px] rounded-r-sm bg-gray-800 sm:block" />
 
-      <div ref={shellRef} className={`relative h-full w-full overflow-hidden bg-[#0c4a7a] sm:rounded-[3rem] sm:border-8 sm:border-sky-800 sm:shadow-2xl ${splashActive ? "pa-hold" : ""}`}>
+      <div ref={shellRef} className={`pa-shell relative h-full w-full overflow-hidden sm:rounded-[3rem] sm:border-8 sm:border-sky-800 sm:shadow-2xl ${splashActive ? "pa-hold" : ""}`}>
         <OceanWash urgent={sos} paused={splashActive} />
         <div
-          className="relative z-10 flex h-full flex-col"
+          className="relative z-10 flex h-full min-h-0 flex-col overflow-hidden"
           style={{ paddingTop: "max(0.35rem, env(safe-area-inset-top, 0px))" }}
         >
           <GuaraIsland
@@ -2065,7 +2065,7 @@ function Phone({
             }}
           />
 
-          <div className={`no-scrollbar min-h-0 flex-1 overflow-y-auto px-4 pb-[7.5rem] pt-2.5 ${splashActive ? "content-visibility-auto" : ""}`}>
+          <div className={`pa-scroll no-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-none px-4 pb-[7.75rem] pt-2.5 ${splashActive ? "content-visibility-auto" : ""}`}>
             <BeachHome
               mapOpen={mapOpen}
               activeId={activeId}
@@ -2151,7 +2151,7 @@ export default function HomePage() {
   const dismissSplash = useCallback(() => setSplash(false), []);
 
   return (
-    <main className="relative flex min-h-dvh flex-col items-center justify-start overflow-x-hidden sm:justify-center sm:px-3 sm:py-8">
+    <main className="relative flex min-h-dvh flex-col items-center justify-start overflow-x-hidden overscroll-none sm:justify-center sm:px-3 sm:py-8">
       {splash && <SplashScreen onWarm={warmHome} onDone={dismissSplash} />}
       <Stage urgent={sos} paused={splash} />
       <div className="relative z-10">
