@@ -12,7 +12,7 @@ body {
 
 body {
   margin: 0;
-  background: #38bdf8;
+  background: #7dd3fc;
   color: white;
   font-family: var(--font-sans);
 }
@@ -300,6 +300,206 @@ body {
   }
 }
 
+
+/* Céu vivo — nuvens brancas + raios de sol (só transform/opacity). */
+.sky-sun-wrap {
+  position: absolute;
+  top: 8%;
+  right: 6%;
+  width: min(42vw, 168px);
+  height: min(42vw, 168px);
+  transform: translateZ(0);
+  z-index: 1;
+}
+
+.sky-sun-stage {
+  top: 10%;
+  right: 12%;
+  width: min(28vw, 220px);
+  height: min(28vw, 220px);
+}
+
+.sky-sun-urgent .sky-sun-core,
+.sky-sun-urgent .sky-sun-glow {
+  filter: hue-rotate(-25deg) saturate(1.2);
+}
+
+.sky-rays {
+  position: absolute;
+  inset: -70%;
+  border-radius: 999px;
+  background: repeating-conic-gradient(
+    from 0deg,
+    rgba(255, 255, 255, 0.42) 0deg 7deg,
+    transparent 7deg 28deg
+  );
+  -webkit-mask-image: radial-gradient(circle, rgba(0, 0, 0, 0.85) 12%, transparent 58%);
+  mask-image: radial-gradient(circle, rgba(0, 0, 0, 0.85) 12%, transparent 58%);
+  animation: sky-ray-spin 72s linear infinite;
+  will-change: transform;
+  opacity: 0.7;
+}
+
+.sky-sun-glow {
+  position: absolute;
+  inset: -18%;
+  border-radius: 999px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 251, 235, 0.95) 0%,
+    rgba(254, 240, 138, 0.55) 38%,
+    rgba(251, 191, 36, 0.18) 62%,
+    transparent 78%
+  );
+  animation: sky-sun-pulse 4.8s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+
+.sky-sun-core {
+  position: absolute;
+  inset: 26%;
+  border-radius: 999px;
+  background: radial-gradient(circle at 38% 32%, #ffffff 0%, #fffbeb 22%, #fde68a 55%, #fbbf24 100%);
+  box-shadow:
+    0 0 18px 6px rgba(255, 255, 255, 0.85),
+    0 0 48px 18px rgba(253, 224, 71, 0.45);
+}
+
+@keyframes sky-ray-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes sky-sun-pulse {
+  from {
+    opacity: 0.82;
+    transform: scale(1);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+.sky-cloud {
+  position: absolute;
+  z-index: 2;
+  width: 140px;
+  height: 56px;
+  opacity: 0.9;
+  filter: drop-shadow(0 8px 14px rgba(255, 255, 255, 0.25));
+  will-change: transform;
+  animation: sky-cloud-drift 28s ease-in-out infinite alternate;
+}
+
+.sky-cloud-puff {
+  position: absolute;
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, rgba(255, 255, 255, 0.92) 48%, rgba(240, 249, 255, 0.55) 100%);
+}
+
+.sky-cloud-puff-a {
+  left: 18%;
+  top: 18%;
+  width: 58%;
+  height: 70%;
+}
+
+.sky-cloud-puff-b {
+  left: 0;
+  top: 28%;
+  width: 42%;
+  height: 58%;
+}
+
+.sky-cloud-puff-c {
+  right: 4%;
+  top: 22%;
+  width: 46%;
+  height: 62%;
+}
+
+.sky-cloud-1 {
+  top: 12%;
+  left: -8%;
+  width: 160px;
+  height: 62px;
+  animation-duration: 32s;
+  opacity: 0.95;
+}
+
+.sky-cloud-2 {
+  top: 22%;
+  left: 42%;
+  width: 120px;
+  height: 48px;
+  animation-duration: 26s;
+  animation-delay: -6s;
+  opacity: 0.82;
+  transform: scale(0.9);
+}
+
+.sky-cloud-3 {
+  top: 36%;
+  left: 8%;
+  width: 180px;
+  height: 70px;
+  animation-duration: 36s;
+  animation-delay: -12s;
+  opacity: 0.88;
+}
+
+.sky-cloud-4 {
+  top: 48%;
+  right: -10%;
+  left: auto;
+  width: 150px;
+  height: 58px;
+  animation-duration: 30s;
+  animation-delay: -4s;
+  opacity: 0.75;
+}
+
+.sky-cloud-stage.sky-cloud-1 {
+  width: min(28vw, 280px);
+  height: min(10vw, 100px);
+}
+
+.sky-cloud-stage.sky-cloud-2 {
+  width: min(20vw, 200px);
+  height: min(8vw, 78px);
+}
+
+.sky-cloud-stage.sky-cloud-3 {
+  width: min(32vw, 320px);
+  height: min(12vw, 110px);
+}
+
+.sky-cloud-stage.sky-cloud-4 {
+  width: min(24vw, 240px);
+  height: min(9vw, 88px);
+}
+
+@keyframes sky-cloud-drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(28px, -10px, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sky-rays,
+  .sky-sun-glow,
+  .sky-cloud {
+    animation: none !important;
+  }
+}
 
 /* Splash simples — horizonte + Guará + marca. Só transform/opacity. */
 .sx-splash {

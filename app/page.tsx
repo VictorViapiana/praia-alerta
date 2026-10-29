@@ -205,63 +205,60 @@ function useTypewriter(text: string, speed = 32) {
   return typed;
 }
 
+function SkyCloud({ className }: { className?: string }) {
+  return (
+    <span className={`sky-cloud ${className ?? ""}`} aria-hidden>
+      <span className="sky-cloud-puff sky-cloud-puff-a" />
+      <span className="sky-cloud-puff sky-cloud-puff-b" />
+      <span className="sky-cloud-puff sky-cloud-puff-c" />
+    </span>
+  );
+}
+
 function OceanWash({ urgent = false, paused = false }: { urgent?: boolean; paused?: boolean }) {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(125%_85%_at_50%_115%,#7dd3fc_0%,#38bdf8_42%,#0ea5e9_100%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,#e0f2fe_0%,#7dd3fc_28%,#38bdf8_58%,#0ea5e9_100%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(90%_55%_at_78%_12%,rgba(255,251,235,0.95)_0%,rgba(253,224,71,0.35)_28%,transparent_62%)]" />
+
+      <div className={`sky-sun-wrap ${urgent ? "sky-sun-urgent" : ""}`} aria-hidden>
+        <span className="sky-rays" />
+        <span className="sky-sun-glow" />
+        <span className="sky-sun-core" />
+      </div>
+
       {paused ? null : (
-      <>
-      <motion.div
-        className="absolute -right-10 -top-8 h-64 w-64 rounded-full blur-3xl"
-        animate={
-          paused
-            ? { backgroundColor: urgent ? "rgba(239,68,68,0.38)" : "rgba(251,191,36,0.28)" }
-            : {
-                backgroundColor: urgent ? "rgba(239,68,68,0.38)" : "rgba(251,191,36,0.28)",
-                x: [0, -18, 8, 0],
-                y: [0, 16, -6, 0],
-                scale: [1, 1.08, 0.96, 1],
-              }
-        }
-        transition={{
-          backgroundColor: { duration: 0.45 },
-          x: { duration: 16, repeat: Infinity, ease: "easeInOut" },
-          y: { duration: 16, repeat: Infinity, ease: "easeInOut" },
-          scale: { duration: 16, repeat: Infinity, ease: "easeInOut" },
-        }}
-      />
-      <motion.div
-        className="absolute -left-16 top-1/3 h-72 w-72 rounded-full bg-cyan-400/20 blur-3xl"
-        animate={paused ? undefined : { x: [0, 26, -8, 0], y: [0, -20, 10, 0] }}
-        transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="absolute bottom-[-12%] left-1/4 h-56 w-56 rounded-full bg-blue-500/25 blur-3xl"
-        animate={paused ? { opacity: urgent ? 0.25 : 0.8 } : { y: [0, -18, 0], opacity: urgent ? 0.25 : 0.8 }}
-        transition={{
-          y: { duration: 9, repeat: Infinity, ease: "easeInOut" },
-          opacity: { duration: 0.4 },
-        }}
-      />
-      <motion.svg
-        aria-hidden
-        viewBox="0 0 1440 140"
-        className="absolute -bottom-2 left-0 h-28 w-[210%] opacity-40"
-        animate={paused ? undefined : { x: [0, -160, 0] }}
-        transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
-      >
-        <path
-          fill="rgba(125,211,252,0.28)"
-          d="M0 78C140 110 250 30 420 62C590 94 690 28 860 64C1030 100 1140 36 1320 70C1420 88 1480 60 1560 72L1560 140L0 140Z"
-        />
-        <path
-          fill="rgba(255,214,140,0.12)"
-          d="M0 96C180 70 300 120 480 98C680 74 760 112 960 92C1160 72 1280 116 1440 90L1440 140L0 140Z"
-        />
-      </motion.svg>
-      <div className="absolute inset-0 shadow-[inset_0_0_70px_rgba(12,74,110,0.12)]" />
-      <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-white/35 to-transparent" />
-      </>
+        <>
+          <motion.div
+            className="absolute inset-0"
+            animate={{ opacity: urgent ? 0.35 : 1 }}
+            transition={{ duration: 0.4 }}
+          >
+            <SkyCloud className="sky-cloud-1" />
+            <SkyCloud className="sky-cloud-2" />
+            <SkyCloud className="sky-cloud-3" />
+            <SkyCloud className="sky-cloud-4" />
+          </motion.div>
+
+          <motion.svg
+            aria-hidden
+            viewBox="0 0 1440 140"
+            className="absolute -bottom-2 left-0 h-28 w-[210%] opacity-45"
+            animate={{ x: [0, -160, 0] }}
+            transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <path
+              fill="rgba(255,255,255,0.28)"
+              d="M0 78C140 110 250 30 420 62C590 94 690 28 860 64C1030 100 1140 36 1320 70C1420 88 1480 60 1560 72L1560 140L0 140Z"
+            />
+            <path
+              fill="rgba(186,230,253,0.35)"
+              d="M0 96C180 70 300 120 480 98C680 74 760 112 960 92C1160 72 1280 116 1440 90L1440 140L0 140Z"
+            />
+          </motion.svg>
+          <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-white/50 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-sky-600/25 to-transparent" />
+        </>
       )}
     </div>
   );
@@ -269,38 +266,24 @@ function OceanWash({ urgent = false, paused = false }: { urgent?: boolean; pause
 
 function Stage({ urgent, paused = false }: { urgent: boolean; paused?: boolean }) {
   return (
-    <div className="pointer-events-none fixed inset-0">
-      <div className="absolute inset-0 bg-[radial-gradient(90%_70%_at_50%_20%,#bae6fd_0%,#7dd3fc_40%,#38bdf8_100%)]" />
+    <div className="pointer-events-none fixed inset-0 overflow-hidden">
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,#f0f9ff_0%,#bae6fd_32%,#7dd3fc_62%,#38bdf8_100%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(70%_45%_at_72%_14%,rgba(255,251,235,0.9)_0%,rgba(253,224,71,0.28)_30%,transparent_60%)]" />
+
+      <div className={`sky-sun-wrap sky-sun-stage ${urgent ? "sky-sun-urgent" : ""}`} aria-hidden>
+        <span className="sky-rays" />
+        <span className="sky-sun-glow" />
+        <span className="sky-sun-core" />
+      </div>
+
       {paused ? null : (
-      <>
-      <motion.div
-        className="absolute right-[8%] top-[14%] h-48 w-48 rounded-full blur-2xl"
-        animate={
-          paused
-            ? { backgroundColor: urgent ? "rgba(248,113,113,0.55)" : "rgba(253,224,171,0.78)" }
-            : {
-                backgroundColor: urgent ? "rgba(248,113,113,0.55)" : "rgba(253,224,171,0.78)",
-                scale: [1, 1.06, 1],
-              }
-        }
-        transition={{
-          backgroundColor: { duration: 0.5 },
-          scale: { duration: 8, repeat: Infinity, ease: "easeInOut" },
-        }}
-        style={{ boxShadow: "0 0 90px 46px rgba(251,191,36,0.18)" }}
-      />
-      <motion.div
-        className="absolute -left-24 bottom-[8%] h-[28rem] w-[28rem] rounded-full bg-cyan-500/15 blur-3xl"
-        animate={paused ? undefined : { x: [0, 40, 0], y: [0, -24, 0] }}
-        transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="absolute right-[-6rem] top-1/2 h-[22rem] w-[22rem] rounded-full bg-amber-400/10 blur-3xl"
-        animate={paused ? undefined : { y: [0, 30, 0] }}
-        transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <div className="grain absolute inset-0 opacity-[0.18] mix-blend-overlay" />
-      </>
+        <>
+          <SkyCloud className="sky-cloud-1 sky-cloud-stage" />
+          <SkyCloud className="sky-cloud-2 sky-cloud-stage" />
+          <SkyCloud className="sky-cloud-3 sky-cloud-stage" />
+          <SkyCloud className="sky-cloud-4 sky-cloud-stage" />
+          <div className="grain absolute inset-0 opacity-[0.12] mix-blend-overlay" />
+        </>
       )}
     </div>
   );
