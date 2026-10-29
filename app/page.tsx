@@ -1068,7 +1068,7 @@ function MapScreen({
   const showPraiaDoMorro = useCallback(() => {
     setCoach(false);
     setBeachInvite(false);
-    setFilter("quiosques");
+    setFilter("neutro");
     setQuery("");
     setOpenId(null);
     setSheetId(null);
@@ -1254,7 +1254,6 @@ function MapScreen({
 
       {!driving && <div className="pointer-events-none absolute inset-x-0 top-0 z-40 h-28 bg-gradient-to-b from-black/45 to-transparent" />}
       {!driving && <div className="pointer-events-none absolute inset-x-0 bottom-0 z-40 h-40 bg-gradient-to-t from-black/50 to-transparent" />}
-      {!driving && <div className="pa-map-safe" aria-hidden />}
 
       {!driving && (
         <div

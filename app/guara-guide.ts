@@ -159,8 +159,8 @@ export function answerGuara(raw: string, live: GuaraLive = { tide: null, weather
     )
   ) {
     return {
-      answer: "Bora! Te levo até a Praia do Morro, de olho nos quiosques da areia.",
-      filter: "quiosques",
+      answer: "Bora! Te levo até a Praia do Morro, com a vista geral da orla.",
+      filter: "neutro",
       query: "",
       openId: null,
       sheet: null,
