@@ -318,7 +318,7 @@ function OceanWash({ urgent = false, paused = false }: { urgent?: boolean; pause
 
 function Stage({ urgent, paused = false }: { urgent: boolean; paused?: boolean }) {
   return (
-    <div className="pointer-events-none fixed inset-0 overflow-hidden">
+    <div className="pa-stage pointer-events-none fixed inset-0 overflow-hidden">
       {paused ? (
         <div className="sky-base sky-base-stage" />
       ) : (
