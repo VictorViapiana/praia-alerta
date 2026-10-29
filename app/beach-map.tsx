@@ -217,7 +217,7 @@ function MapReady({ onClear, onHold }: { onClear: () => void; onHold: (lat: numb
     const observer = new ResizeObserver(paint);
     observer.observe(node);
     // iOS PWA: reaplica tamanho depois do layout / safe-area
-    const timers = [0, 60, 180, 400].map((ms) => window.setTimeout(paint, ms));
+    const timers = [0, 60, 180, 400, 900].map((ms) => window.setTimeout(paint, ms));
     window.visualViewport?.addEventListener("resize", paint);
     window.addEventListener("orientationchange", paint);
     return () => {
