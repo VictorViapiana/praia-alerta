@@ -1504,7 +1504,10 @@ function MapScreen({
         query={query}
         onQuery={setQuery}
         filter={filter}
-        onFilter={setFilter}
+        onFilter={(next) => {
+          setCoach(false);
+          setFilter(next);
+        }}
         filters={MAP_FILTERS}
         hint={mapHint}
         user={userPoint}

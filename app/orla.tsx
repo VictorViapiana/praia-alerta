@@ -507,8 +507,8 @@ export function LiveClima() {
   ];
 
   return (
-    <div className="space-y-4">
-      <div className="rounded-[1.4rem] border border-white/15 bg-white/10 p-4 text-center backdrop-blur-md">
+    <div className="space-y-5">
+      <div className="glass-panel relative z-[1] rounded-[1.4rem] p-4 text-center">
         <p className="text-3xl" aria-hidden>
           {weatherMark(data.code)}
         </p>
@@ -525,16 +525,16 @@ export function LiveClima() {
       </div>
       <div className="grid grid-cols-2 gap-2.5">
         {stats.map((stat) => (
-          <div key={stat.label} className="rounded-2xl border border-white/15 bg-white/10 p-3 backdrop-blur-md">
-            <stat.icon className="h-4 w-4 text-yellow-100/80" />
+          <div key={stat.label} className="glass-panel-sm relative z-[1] rounded-2xl p-3">
+            <stat.icon className="h-4 w-4 text-cyan-100/80" />
             <p className="mt-2 text-lg font-semibold leading-tight text-white">{stat.value}</p>
-            <p className="text-[11px] text-white/50">{stat.label}</p>
+            <p className="text-[11px] text-white/55">{stat.label}</p>
           </div>
         ))}
       </div>
       <div>
         <p className="mb-2 text-[11px] uppercase tracking-[0.16em] text-white/45">Sete dias · toque para abrir</p>
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           {data.days.map((day, index) => {
             const selected = index === picked;
             return (
@@ -545,17 +545,17 @@ export function LiveClima() {
                 onClick={() => setPicked(index)}
                 className={
                   selected
-                    ? "w-full rounded-2xl border border-white/30 bg-white/15 px-3 py-2.5 text-left"
-                    : "flex w-full items-center gap-3 rounded-2xl border border-transparent px-3 py-2.5 text-left"
+                    ? "glass-panel relative z-[1] w-full rounded-[1.4rem] px-3 py-3 text-left"
+                    : "glass-panel-sm relative z-[1] flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left"
                 }
               >
-                <span className="flex items-center gap-3">
+                <span className="flex w-full items-center gap-3">
                   <span className="w-14 shrink-0 text-[13px] text-white/70">{day.label}</span>
                   <span className="w-6 text-center text-base" aria-hidden>
                     {day.mark}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[13px] text-white/80">{day.summary}</span>
+                    <span className="block text-[13px] text-white/85">{day.summary}</span>
                     <span className="mt-1 block h-1 overflow-hidden rounded-full bg-white/10">
                       <span
                         className="block h-full rounded-full bg-cyan-200/80"
@@ -569,20 +569,20 @@ export function LiveClima() {
                   </span>
                 </span>
                 {selected && (
-                  <span className="mt-3 grid grid-cols-3 gap-2 border-t border-white/10 pt-3">
+                  <span className="mt-3 grid grid-cols-2 gap-2 border-t border-white/15 pt-3 sm:grid-cols-3">
                     {[
                       ["Mínima", `${Math.round(day.min)}°`],
+                      ["Máxima", `${Math.round(day.max)}°`],
                       ["Chuva", `${Math.round(day.rain)}%`],
                       ["Vento", `${Math.round(day.wind)} km/h`],
                       ["UV", `${day.uv.toFixed(1).replace(".", ",")} ${uvLabel(day.uv)}`],
-                      ["Máxima", `${Math.round(day.max)}°`],
                       ["Céu", day.summary],
                     ].map(([label, value]) => (
                       <span key={label} className="min-w-0">
-                        <span className="block truncate text-[10px] uppercase tracking-[0.12em] text-white/40">
+                        <span className="block text-[10px] uppercase tracking-[0.12em] text-white/40">
                           {label}
                         </span>
-                        <span className="block truncate text-[13px] font-medium text-white">{value}</span>
+                        <span className="block text-[13px] font-medium leading-snug text-white">{value}</span>
                       </span>
                     ))}
                   </span>
