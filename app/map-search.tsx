@@ -437,11 +437,11 @@ export function MapSearch({
     <motion.div
       data-map-ui
       initial={false}
-      animate={{ height: open ? "56%" : 124 }}
+      animate={{ height: open ? "56%" : "auto" }}
       transition={spring}
       className="absolute inset-x-3 bottom-0 z-[55] flex flex-col overflow-hidden bg-transparent"
       style={{
-        paddingBottom: "max(0.75rem, env(safe-area-inset-bottom, 0px))",
+        paddingBottom: "max(1rem, calc(env(safe-area-inset-bottom, 0px) + 0.35rem))",
       }}
     >
       <label
@@ -564,7 +564,9 @@ export function MapSearch({
           </div>
         </div>
       ) : (
-        <p className="mb-0 mt-1.5 truncate px-2 text-center text-[10px] text-white/90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">{hint}</p>
+        <p className="mb-0 mt-1.5 px-2 pb-0.5 text-center text-[10px] leading-snug text-white/90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
+          {hint}
+        </p>
       )}
     </motion.div>
   );
