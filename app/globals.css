@@ -13,8 +13,8 @@ body {
 
 body {
   margin: 0;
-  /* mesma areia do dock — evita faixa azul no home indicator do iPhone */
-  background: #c9b48a;
+  /* mesmo azul do céu — sem faixa/dock artificial sob a Emergência */
+  background: #2b7fc4;
   color: white;
   font-family: var(--font-sans);
   overscroll-behavior: none;
@@ -24,7 +24,7 @@ body {
 .pa-shell {
   overscroll-behavior: none;
   touch-action: manipulation;
-  background: #c9b48a;
+  background: transparent;
   min-height: 100dvh;
   height: 100dvh;
 }
@@ -36,26 +36,16 @@ body {
   touch-action: pan-y;
 }
 
+/* Dock transparente: só posiciona o SOS e trava overscroll — sem cobrir o fundo */
 .pa-sos-dock {
   position: absolute;
-  inset-inline: 0;
+  inset-inline: 1rem;
   bottom: 0;
   z-index: 30;
-  padding: 0.55rem 1rem max(0.65rem, env(safe-area-inset-bottom, 0px));
-  background: #c9b48a;
-  box-shadow: 0 -18px 28px rgba(201, 180, 138, 0.95);
+  padding: 0.25rem 0 max(0.35rem, env(safe-area-inset-bottom, 0px));
+  background: transparent;
   touch-action: none;
   pointer-events: auto;
-}
-
-.pa-map-safe {
-  position: absolute;
-  inset-inline: 0;
-  bottom: 0;
-  z-index: 54;
-  height: max(0.85rem, env(safe-area-inset-bottom, 0px));
-  background: #071018;
-  pointer-events: none;
 }
 
 ::selection {
@@ -623,17 +613,17 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 22%;
+  height: 18%;
   background:
-    radial-gradient(ellipse 30% 55% at 16% 75%, rgba(255, 255, 255, 0.2) 0%, transparent 70%),
-    radial-gradient(ellipse 26% 50% at 78% 80%, rgba(255, 250, 240, 0.16) 0%, transparent 68%),
+    radial-gradient(ellipse 30% 55% at 16% 75%, rgba(255, 255, 255, 0.22) 0%, transparent 70%),
+    radial-gradient(ellipse 26% 50% at 78% 80%, rgba(255, 250, 240, 0.18) 0%, transparent 68%),
     linear-gradient(
       180deg,
       transparent 0%,
-      rgba(226, 208, 174, 0.35) 18%,
-      rgba(214, 192, 154, 0.72) 48%,
-      #c9b48a 78%,
-      #c9b48a 100%
+      rgba(236, 224, 198, 0.28) 22%,
+      rgba(226, 208, 174, 0.48) 48%,
+      rgba(214, 192, 154, 0.62) 74%,
+      rgba(204, 180, 140, 0.72) 100%
     );
 }
 
