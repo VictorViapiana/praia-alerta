@@ -435,12 +435,11 @@ body {
 .sky-cloud-2 {
   top: 22%;
   left: 42%;
-  width: 120px;
-  height: 48px;
+  width: 110px;
+  height: 44px;
   animation-duration: 26s;
   animation-delay: -6s;
   opacity: 0.82;
-  transform: scale(0.9);
 }
 
 .sky-cloud-3 {
