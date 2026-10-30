@@ -1,10 +1,9 @@
-const CACHE = "praia-alerta-v43";
+const CACHE = "praia-alerta-v44";
 const PRECACHE = [
   "/",
   "/logo.png",
   "/logo-splash.png",
   "/favicon.ico",
-  "/manifest.webmanifest",
   "/icons/icon-192.png",
   "/icons/icon-512.png",
   "/icons/apple-touch-icon.png",
@@ -43,6 +42,8 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+  // O manifesto muda conforme o Android do aparelho. Não pode ir para o cache.
+  if (url.pathname === "/manifest.webmanifest") return;
 
   // Network-first for navigations so demos always get the latest build.
   if (request.mode === "navigate") {
