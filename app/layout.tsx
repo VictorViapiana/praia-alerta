@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Outfit } from "next/font/google";
+import { HomeScreenHint } from "./home-screen-hint";
 import { PwaRegister } from "./pwa-register";
 import "./globals.css";
 
@@ -74,6 +75,7 @@ export default function RootLayout({
       </head>
       <body className={`${outfit.variable} ${fraunces.variable} antialiased`}>
         {children}
+        <HomeScreenHint />
         <PwaRegister />
       </body>
     </html>
