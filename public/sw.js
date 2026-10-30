@@ -1,12 +1,12 @@
-const CACHE = "praia-alerta-v44";
+const CACHE = "praia-alerta-v45";
 const PRECACHE = [
   "/",
   "/logo.png",
   "/logo-splash.png",
-  "/favicon.ico",
-  "/icons/icon-192.png",
-  "/icons/icon-512.png",
-  "/icons/apple-touch-icon.png",
+  "/favicon.ico?v=2",
+  "/icons/icon-192.png?v=2",
+  "/icons/icon-512.png?v=2",
+  "/icons/apple-touch-icon.png?v=2",
   "/guara.png",
   "/guara-inteiro.png",
   "/vendor/leaflet/leaflet.css",

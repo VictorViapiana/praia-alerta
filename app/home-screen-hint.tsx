@@ -5,7 +5,7 @@ import { isInAppBrowser, webApkWouldBeBlocked } from "./webapk-policy";
 
 const DISMISS_KEY = "pa-home-hint-v1";
 
-type Hint = "chrome" | "inapp";
+type Hint = "chrome" | "samsung" | "inapp";
 
 function chromeIntent(pageUrl: string) {
   const url = new URL(pageUrl);
@@ -48,7 +48,9 @@ export function HomeScreenHint() {
       if (!/Android/i.test(ua)) return;
       const version = await platformVersion();
       if (cancelled || !webApkWouldBeBlocked(ua, version)) return;
-      setHint(isInAppBrowser(ua) ? "inapp" : "chrome");
+      if (isInAppBrowser(ua)) setHint("inapp");
+      else if (/SamsungBrowser/i.test(ua)) setHint("samsung");
+      else setHint("chrome");
     };
     void detect();
     return () => {
@@ -79,7 +81,9 @@ export function HomeScreenHint() {
           <span className="font-semibold">Ícone na tela inicial. </span>
           {hint === "inapp"
             ? "Abra no Chrome. Depois toque em ⋮ e escolha Adicionar à tela inicial."
-            : "Toque em ⋮ no navegador e escolha Adicionar à tela inicial."}
+            : hint === "samsung"
+              ? "No Internet Samsung o atalho vira um globo. Apague esse ícone, abra no Chrome e toque em ⋮ → Adicionar à tela inicial."
+              : "Toque em ⋮ no navegador e escolha Adicionar à tela inicial. Se aparecer um globo azul, apague e adicione de novo pelo Chrome."}
         </p>
         <button
           type="button"
@@ -90,7 +94,7 @@ export function HomeScreenHint() {
           ×
         </button>
       </div>
-      {hint === "inapp" && (
+      {(hint === "inapp" || hint === "samsung") && (
         <a
           href={chromeIntent(window.location.href)}
           className="mt-2 inline-flex rounded-full bg-white px-3 py-1.5 text-[12px] font-semibold text-[#0b3a66]"
