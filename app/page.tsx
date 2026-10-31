@@ -24,8 +24,10 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { CriancaModal } from "./crianca-perdida";
 import { fold, useTide, useWeather } from "./coast";
+import { type DayLayer } from "./day-layers";
 import { requestCompass, useDeviceHeading } from "./heading-beam";
 import { MapSearch, type MapMark } from "./map-search";
+import { useSkyPhase } from "./sky-phase";
 import { AmbulanteSheet, EscunaSheet, SponsorSheet } from "./marker-popup";
 import { FlagsLink, FotosScreen, LiveClima, LiveMare, MarlinScreen, OrlaCards, FlagsScreen, type StoryId } from "./orla";
 import {
@@ -458,7 +460,7 @@ function GuaraIsland({ onReplay, onMission }: { onReplay: () => void; onMission:
             aria-expanded={open}
           >
             <div className="flex items-center gap-2">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-cyan-50/85">
+              <p className="pa-brand text-[13px] text-cyan-50 drop-shadow-[0_1px_2px_rgba(5,28,52,0.4)]">
                 Praia Alerta Alegretto
               </p>
               {narrating ? (
@@ -859,6 +861,7 @@ function MapScreen({
   const [landmarkTalkId, setLandmarkTalkId] = useState<string | null>(null);
   const [tipTour, setTipTour] = useState<TipTourState | null>(null);
   const [arrivalBanner, setArrivalBanner] = useState<string | null>(null);
+  const [dayLayer, setDayLayer] = useState<DayLayer>("off");
   const landmarkTalk = landmarkById(landmarkTalkId);
   const [basemap, setBasemap] = useState<"satellite" | "clean">("satellite");
   const onSearchActive = useCallback((active: boolean) => setSearchOpen(active), []);
@@ -886,9 +889,13 @@ function MapScreen({
     ? hits === 0
       ? "Nenhum estabelecimento com esse nome."
       : `${hits} estabelecimento${hits === 1 ? "" : "s"} na orla.`
-    : coach
-      ? "Arraste a orla. Segure o mapa para marcar um ponto."
-      : activeFilter.hint;
+    : dayLayer === "sol"
+      ? "Camada Sol: a areia quente em destaque. Pins e quiosques intactos."
+      : dayLayer === "mare"
+        ? "Camada Maré: a água sobe na areia conforme a carta do dia."
+        : coach
+          ? "Arraste a orla. Segure o mapa para marcar um ponto."
+          : activeFilter.hint;
   const [mode, setMode] = useState<TravelMode | null>(null);
   const [destination, setDestination] = useState<WalkPoint | null>(null);
   const [stops, setStops] = useState<WalkPoint[]>([]);
@@ -1398,6 +1405,8 @@ function MapScreen({
             followTick={Math.round((progress?.traveledMeters ?? 0) / 40)}
             traveledLine={progress?.traveledLine ?? null}
             remainingLine={progress?.remainingLine ?? null}
+            dayLayer={dayLayer}
+            rampAlert={rampAlert}
           />
         ) : (
           <div className="h-full w-full bg-[#2c3832]" aria-hidden />
@@ -1605,6 +1614,11 @@ function MapScreen({
         user={userPoint}
         onMark={markOnMap}
         onActiveChange={onSearchActive}
+        dayLayer={dayLayer}
+        onDayLayer={(next) => {
+          setCoach(false);
+          setDayLayer(next);
+        }}
       />
       )}
 
@@ -1729,7 +1743,9 @@ function MapHighlight({
         </span>
         <span>
           <span className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-50/90">Praia do Morro</span>
-          <span className="mt-1 block text-[1.35rem] font-semibold leading-none text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.35)]">Mapa & Localização</span>
+          <span className="pa-brand mt-1 block text-[1.45rem] leading-none text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.35)]">
+            Mapa &amp; Localização
+          </span>
           <span className="mt-1.5 block text-xs font-medium text-white/85">Você no calçadão · areia na frente, comércio atrás</span>
         </span>
       </span>
@@ -1795,6 +1811,33 @@ function FeatureBody({ id, onFlags }: { id: FeatureId; onFlags: () => void }) {
   }
 }
 
+function SkyHomeChips({
+  weatherSummary,
+  onFlags,
+}: {
+  weatherSummary: string | null;
+  onFlags: () => void;
+}) {
+  const sky = useSkyPhase();
+  return (
+    <div className="mt-3 flex flex-wrap gap-2">
+      <span className="glass-chip rounded-full px-3 py-1.5 text-xs font-medium text-white">
+        {weatherSummary ?? "Lendo o clima"}
+      </span>
+      <span className="rounded-full border border-white/35 bg-white/15 px-3 py-1.5 text-xs font-medium text-white/95 backdrop-blur-md">
+        {sky.label}
+      </span>
+      <button
+        type="button"
+        onClick={onFlags}
+        className="rounded-full border border-amber-200/55 bg-amber-500/35 px-3 py-1.5 text-xs font-semibold text-amber-50 shadow-[0_8px_18px_-12px_rgba(245,158,11,0.7),inset_0_1px_0_rgba(255,255,255,0.25)] backdrop-blur-md"
+      >
+        Bandeira amarela
+      </button>
+    </div>
+  );
+}
+
 function BeachHome({
   mapOpen,
   activeId,
@@ -1815,21 +1858,15 @@ function BeachHome({
   return (
     <div className="pt-4">
       {mapOpen ? <div className="h-[158px]" /> : <MapHighlight onOpen={onOpenMap} />}
-      <div className="mt-3 flex flex-wrap gap-2">
-        <span className="glass-chip rounded-full px-3 py-1.5 text-xs font-medium text-white">
-          {weather ? `${Math.round(weather.temp)}° · ${weather.summary.toLowerCase()}` : "Lendo o clima"}
-        </span>
-        <button
-          type="button"
-          onClick={() => onOpenStory("bandeiras")}
-          className="rounded-full border border-amber-200/55 bg-amber-500/35 px-3 py-1.5 text-xs font-semibold text-amber-50 shadow-[0_8px_18px_-12px_rgba(245,158,11,0.7),inset_0_1px_0_rgba(255,255,255,0.25)] backdrop-blur-md"
-        >
-          Bandeira amarela
-        </button>
-      </div>
+      <SkyHomeChips
+        onFlags={() => onOpenStory("bandeiras")}
+        weatherSummary={weather ? `${Math.round(weather.temp)}° · ${weather.summary.toLowerCase()}` : null}
+      />
       <OrlaCards hidden={story} onOpen={onOpenStory} />
       <div className="mb-2.5 mt-4 flex items-end justify-between px-0.5">
-        <p className="text-sm font-semibold text-white drop-shadow-[0_1px_2px_rgba(5,28,52,0.35)]">Serviços da praia</p>
+        <p className="pa-brand-tight text-[1.05rem] text-white drop-shadow-[0_1px_2px_rgba(5,28,52,0.35)]">
+          Serviços da praia
+        </p>
         <p className="text-[11px] font-medium text-cyan-50/85">ao vivo</p>
       </div>
       <div className="grid grid-cols-2 gap-3">
@@ -2222,10 +2259,12 @@ function Phone({
     return () => window.removeEventListener("keydown", onKey);
   }, [missionOpen, onCloseSos, sos]);
 
-  // theme-color + body surface acompanham a tela — sem faixa contrastante na borda do iOS
+  const sky = useSkyPhase();
+
+  // theme-color + body surface acompanham a tela — céu do horário na home; mapa verde-orla
   useEffect(() => {
     const surface = mapOpen ? "map" : sheet || story || childOpen || sos || missionOpen ? "sheet" : "home";
-    const color = surface === "map" ? "#2c3832" : surface === "sheet" ? "#246ea8" : "#1d649c";
+    const color = surface === "map" ? "#2c3832" : surface === "sheet" ? sky.themeColor : sky.themeColor;
     document.body.dataset.paSurface = surface;
     document.querySelectorAll('meta[name="theme-color"]').forEach((node) => {
       node.setAttribute("content", color);
@@ -2233,7 +2272,7 @@ function Phone({
     return () => {
       delete document.body.dataset.paSurface;
     };
-  }, [mapOpen, sheet, story, childOpen, sos, missionOpen]);
+  }, [mapOpen, sheet, story, childOpen, sos, missionOpen, sky.themeColor]);
 
   return (
     <div className="pa-phone">
@@ -2403,7 +2442,7 @@ export default function HomePage() {
         splashActive={splash}
       />
       <footer className="relative z-10 mt-6 hidden text-center sm:block">
-        <p className="font-serif text-lg italic text-sky-950/80">Praia Alerta Alegretto</p>
+        <p className="pa-brand text-lg text-sky-950/80">Praia Alerta Alegretto</p>
         <p className="mt-1 text-[11px] uppercase tracking-[0.28em] text-white/40">
           Guarapari · Espírito Santo
         </p>

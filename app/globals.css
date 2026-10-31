@@ -8,7 +8,89 @@
 :root {
   /* Fundo contínuo da orla — se algo vazar, é o céu, não branco/preto chapado */
   --pa-sky-bottom: #1d649c;
+  --pa-sky-theme: #1d649c;
   --pa-sky-fill: linear-gradient(180deg, #b7daf2 0%, #7eb8e0 24%, #4f97cb 52%, #2f78b4 74%, #1d649c 100%);
+  --pa-sky-top: #b7daf2;
+  --pa-sky-mid: #4f97cb;
+  --pa-sun-x: 78%;
+  --pa-sun-y: 12%;
+  --pa-sun-glow: rgba(255, 248, 230, 0.42);
+  --pa-sun-core: #fff4d6;
+  --pa-horizon-warm: rgba(255, 250, 230, 0.18);
+  transition: background-color 1.6s ease, background-image 1.6s ease;
+}
+
+/* Tipografia de marca — só atmosfera / nome / frases do Guará */
+.pa-brand {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+
+.pa-brand-tight {
+  font-family: var(--font-serif);
+  font-weight: 650;
+  letter-spacing: -0.025em;
+  line-height: 1.08;
+}
+
+/* —— Céu por horário (Guarapari) —— */
+html[data-sky="dawn"],
+body[data-sky="dawn"] {
+  --pa-sky-bottom: #c9785a;
+  --pa-sky-theme: #c9785a;
+  --pa-sky-top: #f7c9a8;
+  --pa-sky-mid: #e08968;
+  --pa-sky-fill: linear-gradient(180deg, #f7c9a8 0%, #f0a882 22%, #e08968 48%, #d06a52 72%, #c9785a 100%);
+  --pa-sun-x: 82%;
+  --pa-sun-y: 28%;
+  --pa-sun-glow: rgba(255, 200, 140, 0.55);
+  --pa-sun-core: #ffe0b0;
+  --pa-horizon-warm: rgba(255, 180, 120, 0.32);
+}
+
+html[data-sky="day"],
+body[data-sky="day"] {
+  --pa-sky-bottom: #1d649c;
+  --pa-sky-theme: #1d649c;
+  --pa-sky-top: #b7daf2;
+  --pa-sky-mid: #4f97cb;
+  --pa-sky-fill: linear-gradient(180deg, #b7daf2 0%, #7eb8e0 24%, #4f97cb 52%, #2f78b4 74%, #1d649c 100%);
+  --pa-sun-x: 78%;
+  --pa-sun-y: 12%;
+  --pa-sun-glow: rgba(255, 248, 230, 0.42);
+  --pa-sun-core: #fff4d6;
+  --pa-horizon-warm: rgba(255, 250, 230, 0.18);
+}
+
+html[data-sky="dusk"],
+body[data-sky="dusk"] {
+  --pa-sky-bottom: #8a3d4a;
+  --pa-sky-theme: #b45a3c;
+  --pa-sky-top: #f2b48a;
+  --pa-sky-mid: #d66a5a;
+  --pa-sky-fill: linear-gradient(180deg, #f2b48a 0%, #e8906e 20%, #c96a62 48%, #9a4a58 74%, #8a3d4a 100%);
+  --pa-sun-x: 18%;
+  --pa-sun-y: 32%;
+  --pa-sun-glow: rgba(255, 160, 100, 0.5);
+  --pa-sun-core: #ffd0a0;
+  --pa-horizon-warm: rgba(255, 140, 100, 0.35);
+}
+
+html[data-sky="night"],
+body[data-sky="night"] {
+  --pa-sky-bottom: #071828;
+  --pa-sky-theme: #0b2a48;
+  --pa-sky-top: #1a3a5c;
+  --pa-sky-mid: #0e2a48;
+  --pa-sky-fill: linear-gradient(180deg, #1a3a5c 0%, #123050 28%, #0c243e 55%, #091c32 78%, #071828 100%);
+  --pa-sun-x: 72%;
+  --pa-sun-y: 16%;
+  --pa-sun-glow: rgba(200, 220, 255, 0.18);
+  --pa-sun-core: #e8f0ff;
+  --pa-horizon-warm: rgba(120, 160, 210, 0.12);
 }
 
 /*
@@ -253,6 +335,57 @@ body[data-pa-surface="sheet"] {
   will-change: transform, opacity;
 }
 
+@keyframes pin-focus-pop {
+  0% {
+    transform: scale(0.82);
+  }
+  55% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes pin-ring-flash {
+  0% {
+    opacity: 0.95;
+    transform: scale(0.65);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+
+@keyframes pin-alert-breathe {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(244, 63, 94, 0);
+  }
+}
+
+.pin-focus {
+  animation: pin-focus-pop 0.58s cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: transform;
+}
+
+.pin-focus-ring {
+  position: absolute;
+  inset: -5px;
+  border-radius: 999px;
+  border: 2px solid rgba(125, 211, 252, 0.9);
+  pointer-events: none;
+  animation: pin-ring-flash 0.9s ease-out both;
+}
+
+.pin-alert {
+  animation: pin-alert-breathe 2.1s ease-in-out infinite;
+}
+
 @keyframes guara-float {
   0%,
   100% {
@@ -276,7 +409,10 @@ body[data-pa-surface="sheet"] {
 @media (prefers-reduced-motion: reduce) {
   .guara-float,
   .guara-float-lg,
-  .pin-pulse {
+  .pin-pulse,
+  .pin-focus,
+  .pin-focus-ring,
+  .pin-alert {
     animation: none;
   }
 }
@@ -518,16 +654,55 @@ body[data-pa-surface="sheet"] {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(90% 50% at 78% 12%, rgba(255, 248, 230, 0.35) 0%, transparent 55%),
+    radial-gradient(90% 50% at var(--pa-sun-x) var(--pa-sun-y), var(--pa-sun-glow) 0%, transparent 55%),
     radial-gradient(120% 55% at 50% 118%, rgba(12, 70, 118, 0.28) 0%, transparent 58%),
-    linear-gradient(180deg, #b7daf2 0%, #7eb8e0 24%, #4f97cb 52%, #2f78b4 74%, #1d649c 100%);
+    var(--pa-sky-fill);
+  transition: background 1.8s ease;
 }
 
 .sky-base-stage {
   background:
-    radial-gradient(80% 45% at 72% 14%, rgba(255, 248, 230, 0.3) 0%, transparent 52%),
+    radial-gradient(80% 45% at var(--pa-sun-x) var(--pa-sun-y), var(--pa-sun-glow) 0%, transparent 52%),
     radial-gradient(100% 55% at 50% 110%, rgba(12, 70, 118, 0.22) 0%, transparent 52%),
-    linear-gradient(180deg, #c5e2f5 0%, #8ec4e4 28%, #5aa0d0 56%, #3480b8 82%, #2269a4 100%);
+    var(--pa-sky-fill);
+  transition: background 1.8s ease;
+}
+
+html[data-sky="night"] .sky-base,
+html[data-sky="night"] .sky-base-stage {
+  background:
+    radial-gradient(60% 40% at var(--pa-sun-x) var(--pa-sun-y), rgba(220, 230, 255, 0.22) 0%, transparent 50%),
+    radial-gradient(90% 50% at 20% 30%, rgba(40, 70, 120, 0.35) 0%, transparent 60%),
+    var(--pa-sky-fill);
+}
+
+html[data-sky="night"] .sky-sun-core {
+  background: radial-gradient(circle, #f0f4ff 0%, #c8d4f0 55%, transparent 70%);
+  box-shadow: 0 0 24px rgba(200, 220, 255, 0.55);
+}
+
+html[data-sky="night"] .sky-rays,
+html[data-sky="night"] .sky-beam {
+  opacity: 0.15;
+}
+
+html[data-sky="dawn"] .sky-sun-wrap {
+  top: 22%;
+  right: 6%;
+}
+
+html[data-sky="dusk"] .sky-sun-wrap {
+  top: 24%;
+  right: auto;
+  left: 6%;
+}
+
+html[data-sky="night"] .sky-sun-wrap {
+  top: 10%;
+  right: 12%;
+  width: min(22vw, 88px);
+  height: min(22vw, 88px);
+  opacity: 0.9;
 }
 
 .sky-haze {
