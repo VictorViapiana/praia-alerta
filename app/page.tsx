@@ -890,9 +890,9 @@ function MapScreen({
       ? "Nenhum estabelecimento com esse nome."
       : `${hits} estabelecimento${hits === 1 ? "" : "s"} na orla.`
     : dayLayer === "sol"
-      ? "Camada Sol: a areia quente em destaque. Pins e quiosques intactos."
+      ? "Camada Sol: faixa quente só na areia — quiosques intactos."
       : dayLayer === "mare"
-        ? "Camada Maré: a água sobe na areia conforme a carta do dia."
+        ? "Camada Maré: linha da água na areia (não sobe na avenida)."
         : coach
           ? "Arraste a orla. Segure o mapa para marcar um ponto."
           : activeFilter.hint;

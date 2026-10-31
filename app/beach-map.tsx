@@ -25,7 +25,14 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { fold, useTide } from "./coast";
-import { sunBand, tideBand, tideRatio, type DayLayer } from "./day-layers";
+import {
+  sunBand,
+  tideEdgeLine,
+  tideRatio,
+  tideWaterBand,
+  tideWetSandBand,
+  type DayLayer,
+} from "./day-layers";
 import { MarkerPopup } from "./marker-popup";
 import { RouteChoice } from "./route-choice";
 import {
@@ -996,21 +1003,19 @@ function RampaPin({ selected, onSelect, alert = false }: { selected: boolean; on
 function DayLayerOverlay({ layer }: { layer: DayLayer }) {
   const { data: tide } = useTide();
   const ratio = tide ? tideRatio(tide.level, tide.rangeMin, tide.rangeMax) : 0.45;
+  const edge = tideEdgeLine(ratio);
 
   if (layer === "off") return null;
 
   if (layer === "sol") {
     return (
       <Polygon
-        key={`sol-${layer}`}
+        key="sol-band"
         positions={sunBand()}
         pathOptions={{
-          stroke: true,
-          color: "#fbbf24",
-          weight: 1,
-          opacity: 0.55,
-          fillColor: "#f59e0b",
-          fillOpacity: 0.34,
+          stroke: false,
+          fillColor: "#fbbf24",
+          fillOpacity: 0.2,
           className: "day-layer-sol",
         }}
         interactive={false}
@@ -1018,21 +1023,57 @@ function DayLayerOverlay({ layer }: { layer: DayLayer }) {
     );
   }
 
+  // Maré: água no mar + areia molhada + linha de espuma (sem subir na avenida)
   return (
-    <Polygon
-      key={`mare-${ratio.toFixed(2)}`}
-      positions={tideBand(ratio)}
-      pathOptions={{
-        stroke: true,
-        color: "#7dd3fc",
-        weight: 1.5,
-        opacity: 0.7,
-        fillColor: "#38bdf8",
-        fillOpacity: 0.36,
-        className: "day-layer-mare",
-      }}
-      interactive={false}
-    />
+    <>
+      <Polygon
+        key={`mare-water-${ratio.toFixed(2)}`}
+        positions={tideWaterBand(ratio)}
+        pathOptions={{
+          stroke: false,
+          fillColor: "#38bdf8",
+          fillOpacity: 0.2,
+          className: "day-layer-mare-water",
+        }}
+        interactive={false}
+      />
+      <Polygon
+        key={`mare-wet-${ratio.toFixed(2)}`}
+        positions={tideWetSandBand(ratio)}
+        pathOptions={{
+          stroke: false,
+          fillColor: "#7dd3fc",
+          fillOpacity: 0.16,
+          className: "day-layer-mare-wet",
+        }}
+        interactive={false}
+      />
+      <Polyline
+        key={`mare-foam-${ratio.toFixed(2)}`}
+        positions={edge}
+        pathOptions={{
+          color: "#ffffff",
+          weight: 2.2,
+          opacity: 0.72,
+          dashArray: "5 7",
+          lineCap: "round",
+          className: "day-layer-mare-foam",
+        }}
+        interactive={false}
+      />
+      <Polyline
+        key={`mare-edge-${ratio.toFixed(2)}`}
+        positions={edge}
+        pathOptions={{
+          color: "#bae6fd",
+          weight: 1.1,
+          opacity: 0.85,
+          lineCap: "round",
+          className: "day-layer-mare-edge",
+        }}
+        interactive={false}
+      />
+    </>
   );
 }
 
