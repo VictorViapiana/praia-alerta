@@ -16,9 +16,12 @@ export function CameraFab({ onOpen }: { onOpen: () => void }) {
       data-onboard="map-camera"
       onClick={onOpen}
       aria-label="Eu amo Guarapari. Abrir a câmera."
-      className="group absolute bottom-[9.75rem] right-4 z-50 flex flex-col items-center gap-2 rounded-[28px]"
+      className="group absolute right-3 z-[80] flex flex-col items-center gap-1.5 overflow-visible rounded-[28px] pb-1"
+      style={{
+        bottom: "max(14.5rem, calc(env(safe-area-inset-bottom, 0px) + 13.25rem))",
+      }}
     >
-      <span className="relative grid h-[76px] w-[76px] place-items-center">
+      <span className="relative grid h-[76px] w-[76px] shrink-0 place-items-center">
         <span className="absolute inset-1 rounded-[28px] bg-gradient-to-br from-rose-300 via-fuchsia-500 to-sky-400 opacity-70 blur-lg" />
         <span className="relative grid h-[68px] w-[68px] place-items-center rounded-[24px] border border-white/45 bg-white/15 shadow-[0_18px_40px_-16px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur-xl transition-transform duration-200 group-active:scale-95">
           <span className="grid h-12 w-12 place-items-center rounded-[16px] bg-gradient-to-br from-[#fb7185] via-[#e11d48] to-[#6d28d9] shadow-[inset_0_1px_0_rgba(255,255,255,0.45)]">
@@ -26,8 +29,8 @@ export function CameraFab({ onOpen }: { onOpen: () => void }) {
           </span>
         </span>
       </span>
-      <span className="inline-flex items-center gap-1 rounded-full border border-white/25 bg-black/50 px-2.5 py-1 text-[10px] font-semibold tracking-wide text-white shadow-[0_8px_18px_rgba(0,0,0,0.35)] backdrop-blur-md">
-        <Heart className="h-2.5 w-2.5 fill-rose-400 text-rose-300" strokeWidth={2.4} />
+      <span className="inline-flex max-w-[7.5rem] shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full border border-white/25 bg-black/55 px-2.5 py-1.5 text-[10px] font-semibold leading-none tracking-wide text-white shadow-[0_8px_18px_rgba(0,0,0,0.35)] backdrop-blur-md">
+        <Heart className="h-2.5 w-2.5 shrink-0 fill-rose-400 text-rose-300" strokeWidth={2.4} />
         Eu amo Guarapari
       </span>
     </button>

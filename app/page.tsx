@@ -892,7 +892,7 @@ function MapScreen({
     : dayLayer === "sol"
       ? "Camada Sol: faixa quente só na areia — quiosques intactos."
       : dayLayer === "mare"
-        ? "Camada Maré: oceano até a areia · orgânica, sem avenida."
+        ? "Camada Maré: oceano aberto → areia · feather suave, sem avenida."
         : coach
           ? "Arraste a orla. Segure o mapa para marcar um ponto."
           : activeFilter.hint;

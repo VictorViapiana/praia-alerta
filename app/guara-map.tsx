@@ -54,7 +54,10 @@ export function GuaraMapChat({
           data-map-ui
           initial={{ opacity: 0, x: -16, y: 8 }}
           animate={{ opacity: 1, x: 0, y: 0 }}
-          className="absolute bottom-[9.75rem] left-3 z-50 w-[min(17.5rem,calc(100%-1.5rem))] rounded-[22px] border border-white/25 bg-[#102028]/94 p-3 text-white shadow-[0_18px_40px_rgba(0,0,0,0.45)] backdrop-blur-xl"
+          className="absolute left-3 z-[80] w-[min(17.5rem,calc(100%-6.5rem))] rounded-[22px] border border-white/25 bg-[#102028]/94 p-3 text-white shadow-[0_18px_40px_rgba(0,0,0,0.45)] backdrop-blur-xl"
+          style={{
+            bottom: "max(14.5rem, calc(env(safe-area-inset-bottom, 0px) + 13.25rem))",
+          }}
         >
           <div className="flex items-start gap-2.5">
             <img src="/guara.png?v=3" alt="" className="mt-0.5 h-10 w-auto shrink-0" draggable={false} />
@@ -89,7 +92,10 @@ export function GuaraMapChat({
           data-map-ui
           onClick={() => setOpen(true)}
           aria-label="Falar com o Guará"
-          className="absolute bottom-[9.75rem] left-4 z-50 flex items-center gap-1.5 rounded-full border border-white/30 bg-black/55 py-1 pl-1 pr-3 text-white shadow-[0_12px_28px_rgba(0,0,0,0.35)] backdrop-blur-md"
+          className="absolute left-4 z-[80] flex items-center gap-1.5 rounded-full border border-white/30 bg-black/55 py-1 pl-1 pr-3 text-white shadow-[0_12px_28px_rgba(0,0,0,0.35)] backdrop-blur-md"
+          style={{
+            bottom: "max(14.5rem, calc(env(safe-area-inset-bottom, 0px) + 13.25rem))",
+          }}
         >
           <img src="/guara.png?v=3" alt="" className="h-8 w-auto" draggable={false} />
           <span className="text-[11px] font-semibold">Guará</span>
