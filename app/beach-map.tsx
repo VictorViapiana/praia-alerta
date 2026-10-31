@@ -3,7 +3,7 @@
 import "./leaflet-rotate-setup";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { MapContainer, Marker, Polygon, Polyline, TileLayer, useMap, useMapEvents } from "react-leaflet";
+import { MapContainer, Marker, Pane, Polygon, Polyline, TileLayer, useMap, useMapEvents } from "react-leaflet";
 import type { DivIcon, LatLngExpression } from "leaflet";
 import L from "leaflet";
 import {
@@ -24,7 +24,8 @@ import {
   Utensils,
   type LucideIcon,
 } from "lucide-react";
-import { fold } from "./coast";
+import { fold, useTide } from "./coast";
+import { sunBand, tideBand, tideRatio, type DayLayer } from "./day-layers";
 import { MarkerPopup } from "./marker-popup";
 import { RouteChoice } from "./route-choice";
 import {
@@ -500,7 +501,8 @@ function CommercePin({
   const box = kiosk ? "h-10 w-10" : premium ? "h-8 w-8" : "h-6 w-6";
 
   return (
-    <div className={`relative ${box}`} style={{ opacity: faded ? 0.28 : 1 }}>
+    <div className={`relative ${box} ${selected ? "pin-focus" : ""}`} style={{ opacity: faded ? 0.28 : 1 }}>
+      {selected && <span className="pin-focus-ring" aria-hidden />}
       {selected && <MarkerPopup place={place} onOpen={onOpen} />}
       {!selected && !kiosk && (
         <span
@@ -618,11 +620,12 @@ function VendorPin({
 
 function MarlinPin({ selected, onSelect }: { selected: boolean; onSelect: () => void }) {
   return (
-    <div className="relative h-12 w-12">
+    <div className={`relative h-12 w-12 ${selected ? "pin-focus" : ""}`}>
+      {selected && <span className="pin-focus-ring" aria-hidden />}
       {selected && (
         <div className="absolute bottom-[calc(100%+4px)] left-1/2 z-30 w-[188px] -translate-x-1/2">
           <div className="rounded-2xl border border-sky-100 bg-white px-2.5 py-2 text-left shadow-[0_12px_24px_rgba(15,23,42,0.2)]">
-            <p className="text-[12px] font-semibold leading-tight text-[#082E84]">{MARLIN.name}</p>
+            <p className="pa-brand-tight text-[13px] leading-tight text-[#082E84]">{MARLIN.name}</p>
             <p className="mt-0.5 text-[11px] text-neutral-500">{MARLIN.detail}</p>
             <RouteChoice place={{ id: MARLIN.id, lat: MARLIN.lat, lng: MARLIN.lng, name: MARLIN.name }} tone="light" />
           </div>
@@ -844,11 +847,12 @@ function LandmarkPin({
   const label = box <= 28 ? "text-[9px]" : "text-[11px]";
   const ring = box <= 28 ? "border" : "border-2";
   return (
-    <div className={`relative ${frame}`}>
+    <div className={`relative ${frame} ${selected ? "pin-focus" : ""}`}>
+      {selected && <span className="pin-focus-ring" aria-hidden />}
       {selected && (
         <div className="absolute bottom-[calc(100%+4px)] left-1/2 z-30 w-[200px] -translate-x-1/2">
           <div className={`rounded-2xl border bg-white px-2.5 py-2 text-left shadow-[0_12px_24px_rgba(15,23,42,0.22)] ${style.bubble}`}>
-            <p className={`text-[12px] font-semibold leading-tight ${style.title}`}>{landmark.name}</p>
+            <p className={`pa-brand-tight text-[13px] leading-tight ${style.title}`}>{landmark.name}</p>
             <p className="mt-0.5 text-[11px] text-neutral-500">{landmark.detail}</p>
             <RouteChoice
               place={{ id: landmark.id, lat: landmark.lat, lng: landmark.lng, name: landmark.name }}
@@ -891,11 +895,12 @@ function GolfinhoPin({
   onSelect: () => void;
 }) {
   return (
-    <div className="relative h-12 w-12">
+    <div className={`relative h-12 w-12 ${selected ? "pin-focus" : ""}`}>
+      {selected && <span className="pin-focus-ring" aria-hidden />}
       {selected && (
         <div className="absolute bottom-[calc(100%+4px)] left-1/2 z-30 w-[200px] -translate-x-1/2">
           <div className="rounded-2xl border border-sky-100 bg-white px-2.5 py-2 text-left shadow-[0_12px_24px_rgba(15,23,42,0.2)]">
-            <p className="text-[12px] font-semibold leading-tight text-[#082E84]">{landmark.name}</p>
+            <p className="pa-brand-tight text-[13px] leading-tight text-[#082E84]">{landmark.name}</p>
             <p className="mt-0.5 text-[11px] text-neutral-500">{landmark.detail}</p>
             <RouteChoice place={{ id: landmark.id, lat: landmark.lat, lng: landmark.lng, name: landmark.name }} tone="light" />
           </div>
@@ -946,13 +951,14 @@ function UserDot({ heading, driving }: { heading: number; driving?: boolean }) {
   );
 }
 
-function RampaPin({ selected, onSelect }: { selected: boolean; onSelect: () => void }) {
+function RampaPin({ selected, onSelect, alert = false }: { selected: boolean; onSelect: () => void; alert?: boolean }) {
   return (
-    <div className="relative h-7 w-7">
+    <div className={`relative h-7 w-7 ${selected ? "pin-focus" : ""} ${alert ? "pin-alert rounded-full" : ""}`}>
+      {selected && <span className="pin-focus-ring" aria-hidden />}
       {selected && (
         <div className="absolute bottom-[calc(100%+4px)] left-1/2 z-30 w-[220px] -translate-x-1/2">
           <div className="rounded-2xl border border-sky-100 bg-white px-2.5 py-2 text-left shadow-[0_12px_24px_rgba(15,23,42,0.2)]">
-            <p className="text-[12px] font-semibold leading-tight text-[#0c4a6e]">{RAMPA_PRINCIPAL.name}</p>
+            <p className="pa-brand-tight text-[13px] leading-tight text-[#0c4a6e]">{RAMPA_PRINCIPAL.name}</p>
             <p className="mt-0.5 text-[11px] text-neutral-500">{RAMPA_PRINCIPAL.detail}</p>
             <p className="mt-1 text-[12px] leading-snug text-neutral-700">{RAMPA_NOTE}</p>
             <RouteChoice place={{ id: RAMPA_PRINCIPAL.id, lat: RAMPA_PRINCIPAL.lat, lng: RAMPA_PRINCIPAL.lng, name: RAMPA_PRINCIPAL.name }} tone="light" />
@@ -969,7 +975,7 @@ function RampaPin({ selected, onSelect }: { selected: boolean; onSelect: () => v
           event.stopPropagation();
           onSelect();
         }}
-        className={`grid h-7 w-7 place-items-center overflow-hidden rounded-full border border-white bg-white shadow-[0_4px_8px_rgba(0,0,0,0.4)] ${selected ? "ring-2 ring-sky-200" : ""}`}
+        className={`grid h-7 w-7 place-items-center overflow-hidden rounded-full border border-white bg-white shadow-[0_4px_8px_rgba(0,0,0,0.4)] ${selected ? "ring-2 ring-sky-200" : ""} ${alert ? "ring-2 ring-rose-300" : ""}`}
       >
         <svg viewBox="0 0 32 32" className="h-[22px] w-[22px]" aria-hidden>
           <ellipse cx="16" cy="25.2" rx="11" ry="3" fill="#e4c07a" />
@@ -987,6 +993,49 @@ function RampaPin({ selected, onSelect }: { selected: boolean; onSelect: () => v
   );
 }
 
+function DayLayerOverlay({ layer }: { layer: DayLayer }) {
+  const { data: tide } = useTide();
+  const ratio = tide ? tideRatio(tide.level, tide.rangeMin, tide.rangeMax) : 0.45;
+
+  if (layer === "off") return null;
+
+  if (layer === "sol") {
+    return (
+      <Polygon
+        key={`sol-${layer}`}
+        positions={sunBand()}
+        pathOptions={{
+          stroke: true,
+          color: "#fbbf24",
+          weight: 1,
+          opacity: 0.55,
+          fillColor: "#f59e0b",
+          fillOpacity: 0.34,
+          className: "day-layer-sol",
+        }}
+        interactive={false}
+      />
+    );
+  }
+
+  return (
+    <Polygon
+      key={`mare-${ratio.toFixed(2)}`}
+      positions={tideBand(ratio)}
+      pathOptions={{
+        stroke: true,
+        color: "#7dd3fc",
+        weight: 1.5,
+        opacity: 0.7,
+        fillColor: "#38bdf8",
+        fillOpacity: 0.36,
+        className: "day-layer-mare",
+      }}
+      interactive={false}
+    />
+  );
+}
+
 function OrlaMarkers({
   filter,
   query,
@@ -999,6 +1048,7 @@ function OrlaMarkers({
   user,
   heading,
   driving = false,
+  rampAlert = false,
 }: {
   filter: MapFilter;
   query: string;
@@ -1011,6 +1061,7 @@ function OrlaMarkers({
   user: { lat: number; lng: number } | null;
   heading: number;
   driving?: boolean;
+  rampAlert?: boolean;
 }) {
   const map = useMap();
   const [zoom, setZoom] = useState(() => map.getZoom());
@@ -1187,7 +1238,11 @@ function OrlaMarkers({
             interactive={false}
           />
           <ReactPin position={[RAMPA_PRINCIPAL.lat, RAMPA_PRINCIPAL.lng]} zIndexOffset={openId === RAMPA_PRINCIPAL.id ? 970 : 280} size={28} anchor="center">
-            <RampaPin selected={openId === RAMPA_PRINCIPAL.id} onSelect={() => onSelect(RAMPA_PRINCIPAL.id)} />
+            <RampaPin
+              selected={openId === RAMPA_PRINCIPAL.id}
+              alert={rampAlert}
+              onSelect={() => onSelect(RAMPA_PRINCIPAL.id)}
+            />
           </ReactPin>
         </>
       )}
@@ -1225,6 +1280,8 @@ export function BeachMap({
   followTick = 0,
   traveledLine = null,
   remainingLine = null,
+  dayLayer = "off",
+  rampAlert = false,
 }: {
   filter: MapFilter;
   query: string;
@@ -1250,6 +1307,8 @@ export function BeachMap({
   followTick?: number;
   traveledLine?: [number, number][] | null;
   remainingLine?: [number, number][] | null;
+  dayLayer?: DayLayer;
+  rampAlert?: boolean;
 }) {
   const clean = basemap === "clean";
   const guideLine = remainingLine && remainingLine.length > 1 ? remainingLine : routeLine;
@@ -1359,6 +1418,11 @@ export function BeachMap({
       {!driving && <FlyTo target={flyTo} />}
       <FollowNav active={track} line={guideLine} tick={followTick} />
       <FitRoute line={routeLine} active={!track} />
+      {!driving && (
+        <Pane name="pa-day-layers" style={{ zIndex: 450 }}>
+          <DayLayerOverlay layer={dayLayer} />
+        </Pane>
+      )}
       {driving && traveledLine && traveledLine.length > 1 && (
         <Polyline positions={traveledLine} pathOptions={{ color: "#94a3b8", weight: 10, opacity: 0.55 }} />
       )}
@@ -1392,6 +1456,7 @@ export function BeachMap({
           user={user}
           heading={heading}
           driving={driving}
+          rampAlert={rampAlert}
         />
       )}
     </MapContainer>

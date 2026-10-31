@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { MapPin, Search, Star, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { fold } from "./coast";
+import { DAY_LAYER_CHIPS, type DayLayer } from "./day-layers";
 import {
   AMBULANTES,
   CARRINHO_SRC,
@@ -396,6 +397,8 @@ export function MapSearch({
   user,
   onMark,
   onActiveChange,
+  dayLayer = "off",
+  onDayLayer,
 }: {
   query: string;
   onQuery: (value: string) => void;
@@ -406,6 +409,8 @@ export function MapSearch({
   user: { lat: number; lng: number } | null;
   onMark: (mark: MapMark) => void;
   onActiveChange: (active: boolean) => void;
+  dayLayer?: DayLayer;
+  onDayLayer?: (value: DayLayer) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [focused, setFocused] = useState(false);
@@ -520,6 +525,33 @@ export function MapSearch({
           );
         })}
       </div>
+
+      {onDayLayer && !open && (
+        <div
+          data-onboard="day-layers"
+          className="no-scrollbar mt-1.5 flex gap-1 overflow-x-auto rounded-full border border-white/25 bg-sky-950/50 p-1 shadow-[0_12px_28px_-16px_rgba(0,0,0,0.7)] backdrop-blur-md"
+          role="group"
+          aria-label="Camadas do dia"
+        >
+          {DAY_LAYER_CHIPS.map((item) => {
+            const selected = dayLayer === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                aria-pressed={selected}
+                onPointerDown={(event) => event.preventDefault()}
+                onClick={() => onDayLayer(item.id)}
+                className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium ${
+                  selected ? "bg-amber-100 text-[#3b2a12]" : "text-white/80"
+                }`}
+              >
+                {item.emoji} {item.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {open ? (
         <div

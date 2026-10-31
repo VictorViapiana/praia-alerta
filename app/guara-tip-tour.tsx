@@ -80,7 +80,7 @@ export function GuaraTipTour({
         <div className="w-full rounded-[22px] bg-white px-3.5 py-3 text-[#1c120c] shadow-[0_16px_36px_rgba(0,0,0,0.28)]">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <p className="text-[15px] font-semibold leading-snug">{title}</p>
+              <p className="pa-brand text-[16px] leading-snug text-[#0c2a4a]">{title}</p>
               {subtitle ? <p className="mt-0.5 text-[12px] text-neutral-500">{subtitle}</p> : null}
             </div>
             <p className="shrink-0 rounded-full bg-black/5 px-2 py-0.5 text-[10px] font-semibold text-neutral-500">
