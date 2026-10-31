@@ -1,4 +1,4 @@
-const CACHE = "praia-alerta-v45";
+const CACHE = "praia-alerta-v47";
 const PRECACHE = [
   "/",
   "/logo.png",
@@ -34,6 +34,70 @@ self.addEventListener("message", (event) => {
   if (event.data && event.data.type === "SKIP_WAITING") {
     self.skipWaiting();
   }
+});
+
+function resolveTarget(data) {
+  if (data && typeof data.url === "string" && data.url.startsWith("/")) return data.url;
+  if (data && typeof data.spot === "string" && data.spot) {
+    return `/?spot=${encodeURIComponent(data.spot)}&map=1`;
+  }
+  return "/?map=1";
+}
+
+/**
+ * Toque na notificação → abre o app já no ícone (Marlin, Golfinho, quiosque, rampa).
+ * Cobre iOS PWA (16.4+), Chrome/Samsung/Firefox Android e tablets.
+ */
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const data = event.notification.data || {};
+  const path = resolveTarget(data);
+  const absolute = new URL(path, self.location.origin).href;
+
+  event.waitUntil(
+    (async () => {
+      const payload = {
+        type: "ORLA_OPEN_SPOT",
+        url: path,
+        spot: data.spot || null,
+        kind: data.kind || null,
+      };
+
+      const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      for (const client of windows) {
+        try {
+          if (!client.url || !client.url.startsWith(self.location.origin)) continue;
+        } catch {
+          continue;
+        }
+        if ("focus" in client) {
+          try {
+            await client.focus();
+          } catch {
+            /* alguns WebViews bloqueiam focus */
+          }
+          // postMessage primeiro: SPA aplica o ícone sem depender do navigate
+          try {
+            client.postMessage(payload);
+          } catch {
+            /* ignore */
+          }
+          if ("navigate" in client) {
+            try {
+              await client.navigate(path);
+            } catch {
+              /* navigate falha em parte dos iPhones / WebAPK — postMessage já cobriu */
+            }
+          }
+          return;
+        }
+      }
+
+      if (self.clients.openWindow) {
+        await self.clients.openWindow(absolute);
+      }
+    })(),
+  );
 });
 
 self.addEventListener("fetch", (event) => {

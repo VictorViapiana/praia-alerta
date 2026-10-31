@@ -30,10 +30,9 @@ import { AmbulanteSheet, EscunaSheet, SponsorSheet } from "./marker-popup";
 import { FlagsLink, FotosScreen, LiveClima, LiveMare, MarlinScreen, OrlaCards, FlagsScreen, type StoryId } from "./orla";
 import {
   AMBULANTES,
+  GOLFINHO,
   landmarkById,
   MARLIN,
-  MARLIN_SPEAK,
-  MARLIN_TIPS,
   ORLA_LANDMARKS,
   PLACES,
   SHOWERS,
@@ -43,9 +42,19 @@ import { CameraFab, TouristCamera } from "./tourist-camera";
 import { GuaraOnboarding, HOME_STEPS, HOME_TOUR_KEY, MAP_STEPS, MAP_TOUR_KEY } from "./guara-onboarding";
 import { GuaraMapChat } from "./guara-map";
 import { FAR_FROM_BEACH_M, HOME_PROMPTS, PRAIA_MORRO_VIEW, answerGuara } from "./guara-guide";
+import { GuaraTipTour, type GuaraTipStep } from "./guara-tip-tour";
+import {
+  clearSpotFromUrl,
+  ensureNotifyPermission,
+  isQuiosqueSpotId,
+  peekPendingSpot,
+  readSpotFromLocation,
+  stashPendingSpot,
+  takePendingSpot,
+} from "./orla-notify";
 import { RouteActionsProvider, RouteChoice } from "./route-choice";
-import { useRampWatch } from "./rampa-sentinel";
-import { RAMPA_RULE, RAMPA_WARN } from "./rampas";
+import { MARLIN_TOUR_SPEAK, MARLIN_TOUR_STEPS, useOrlaSentinel, type OrlaAlert } from "./orla-sentinel";
+import { RAMPA_PRINCIPAL, RAMPA_RULE, RAMPA_WARN } from "./rampas";
 import { speakGuara, stopSpeaking } from "./voice";
 import { NavDrive } from "./nav-drive";
 import { MissionModal, MissionTrigger } from "./mission-modal";
@@ -778,16 +787,57 @@ const ROUTE_COLOR: Record<TravelMode, string> = {
   car: "#1d4ed8",
 };
 
+type TipTourState = {
+  key: string;
+  title: string;
+  subtitle?: string;
+  steps: GuaraTipStep[];
+  speak?: string;
+  accent: "ocean" | "teal" | "amber" | "rose";
+  step: number;
+  onDone?: () => void;
+};
+
+const RAMP_TOUR_STEPS: GuaraTipStep[] = [
+  {
+    kind: "aviso",
+    title: "3 minutos no corredor",
+    text: RAMPA_WARN,
+  },
+  {
+    kind: "alerta",
+    title: "Passagem livre",
+    text: RAMPA_RULE,
+  },
+  {
+    kind: "convivencia",
+    title: "Vai pra areia",
+    text: "Guarda-sol, cadeira e barraca ficam fora deste caminho. Liberte a rampa e o trânsito da orla flui.",
+  },
+];
+
+const GOLFINHO_TOUR_STEPS: GuaraTipStep[] = GOLFINHO.tips.map((tip) => ({
+  title: tip.title,
+  text: tip.text,
+  kind: tip.kind,
+}));
+
 function MapScreen({
   onClose,
   onSos,
   rampAlert,
   onDismissRamp,
+  focusSpot = null,
+  focusNonce = 0,
+  onFocusSpotHandled,
 }: {
   onClose: () => void;
   onSos: () => void;
   rampAlert: boolean;
   onDismissRamp: () => void;
+  focusSpot?: string | null;
+  focusNonce?: number;
+  onFocusSpotHandled?: () => void;
 }) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapReady, setMapReady] = useState(false);
@@ -799,15 +849,16 @@ function MapScreen({
   const [cameraOpen, setCameraOpen] = useState(false);
   const [userPoint, setUserPoint] = useState<{ lat: number; lng: number } | null>(null);
   const heading = useDeviceHeading();
-  const [flyTo, setFlyTo] = useState<{ id: number; lat: number; lng: number; zoom?: number } | null>(null);
+  const [flyTo, setFlyTo] = useState<{ id: number; lat: number; lng: number; zoom?: number; instant?: boolean } | null>(null);
   const [beachInvite, setBeachInvite] = useState(false);
   const beachInviteAsked = useRef(false);
   const [locating, setLocating] = useState(false);
   const [locateNote, setLocateNote] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [rampTalk, setRampTalk] = useState(false);
-  const [marlinTalk, setMarlinTalk] = useState(false);
   const [landmarkTalkId, setLandmarkTalkId] = useState<string | null>(null);
+  const [tipTour, setTipTour] = useState<TipTourState | null>(null);
+  const [arrivalBanner, setArrivalBanner] = useState<string | null>(null);
   const landmarkTalk = landmarkById(landmarkTalkId);
   const [basemap, setBasemap] = useState<"satellite" | "clean">("satellite");
   const onSearchActive = useCallback((active: boolean) => setSearchOpen(active), []);
@@ -1115,7 +1166,109 @@ function MapScreen({
     locate();
   }, []);
 
-  // Dicas/alertas do mapa NÃO falam sozinhas — só via botão "Ouvir" no card.
+  const closeTipTour = useCallback(() => {
+    stopSpeaking();
+    setTipTour((current) => {
+      current?.onDone?.();
+      return null;
+    });
+  }, []);
+
+  const openMarlinTour = useCallback((withFly = true, instant = false) => {
+    setCoach(false);
+    setFilter("neutro");
+    setQuery("");
+    setSheetId(null);
+    setLandmarkTalkId(null);
+    setRampTalk(false);
+    setOpenId(MARLIN.id);
+    if (withFly) setFlyTo({ id: Date.now(), lat: MARLIN.lat, lng: MARLIN.lng, zoom: 18, instant });
+    setTipTour({
+      key: "marlin",
+      title: "Marlin Azul",
+      subtitle: "Patrimônio da orla · preserve e se cuide",
+      steps: MARLIN_TOUR_STEPS,
+      speak: MARLIN_TOUR_SPEAK,
+      accent: "ocean",
+      step: 0,
+    });
+  }, []);
+
+  const openGolfinhoTour = useCallback((withFly = true, instant = false) => {
+    setCoach(false);
+    setFilter("neutro");
+    setQuery("");
+    setSheetId(null);
+    setRampTalk(false);
+    setLandmarkTalkId(null);
+    setOpenId(GOLFINHO.id);
+    if (withFly) setFlyTo({ id: Date.now(), lat: GOLFINHO.lat, lng: GOLFINHO.lng, zoom: 18, instant });
+    setTipTour({
+      key: "golfinho",
+      title: GOLFINHO.name,
+      subtitle: GOLFINHO.detail,
+      steps: GOLFINHO_TOUR_STEPS,
+      speak: GOLFINHO.speak,
+      accent: "teal",
+      step: 0,
+    });
+  }, []);
+
+  const openRampTour = useCallback(
+    (forced = false, instant = false) => {
+      setCoach(false);
+      setLandmarkTalkId(null);
+      setOpenId(RAMPA_PRINCIPAL.id);
+      setFlyTo({ id: Date.now(), lat: RAMPA_PRINCIPAL.lat, lng: RAMPA_PRINCIPAL.lng, zoom: 18, instant: instant || forced });
+      setTipTour({
+        key: "rampa",
+        title: "Corredor da rampa",
+        subtitle: "Livre para ambulantes e banhistas",
+        steps: RAMP_TOUR_STEPS,
+        speak: RAMPA_WARN,
+        accent: "rose",
+        step: 0,
+        onDone: () => {
+          if (forced || rampAlert) onDismissRamp();
+          setRampTalk(false);
+        },
+      });
+    },
+    [onDismissRamp, rampAlert],
+  );
+
+  const openQuiosqueFocus = useCallback((id: string, instant = true) => {
+    const place = PLACES.find((item) => item.id === id);
+    if (!place) return;
+    setCoach(false);
+    setFilter("quiosques");
+    setQuery("");
+    setLandmarkTalkId(null);
+    setRampTalk(false);
+    setTipTour(null);
+    setOpenId(place.id);
+    setFlyTo({ id: Date.now(), lat: place.lat, lng: place.lng, zoom: 18.2, instant });
+    setArrivalBanner(`Você chegou ao ${place.name}!`);
+    if (place.isSponsor) setSheetId(place.id);
+    window.setTimeout(() => setArrivalBanner((current) => (current?.includes(place.name) ? null : current)), 5200);
+  }, []);
+
+  useEffect(() => {
+    if (!focusSpot || !focusNonce) return;
+    // Entrada por notificação / deep link: ícone já selecionado de cara.
+    if (focusSpot === MARLIN.id || focusSpot === "marlin") openMarlinTour(true, true);
+    else if (focusSpot === GOLFINHO.id || focusSpot === "golfinho") openGolfinhoTour(true, true);
+    else if (focusSpot === RAMPA_PRINCIPAL.id || focusSpot === "rampa") {
+      setRampTalk(true);
+      openRampTour(true, true);
+    } else if (isQuiosqueSpotId(focusSpot)) openQuiosqueFocus(focusSpot, true);
+    onFocusSpotHandled?.();
+  }, [focusSpot, focusNonce, onFocusSpotHandled, openGolfinhoTour, openMarlinTour, openQuiosqueFocus, openRampTour]);
+
+  useEffect(() => {
+    if (!rampAlert || tipTour?.key === "rampa" || cameraOpen || searchOpen || driving) return;
+    openRampTour(true);
+  }, [rampAlert, tipTour?.key, cameraOpen, searchOpen, driving, openRampTour]);
 
   const markOnMap = (mark: MapMark) => {
     setCoach(false);
@@ -1124,16 +1277,19 @@ function MapScreen({
     setFlyTo({ id: Date.now(), lat: mark.lat, lng: mark.lng });
     const vendor = AMBULANTES.find((item) => item.id === mark.placeId && item.isSponsor && item.isOnline);
     if (vendor) setSheetId(vendor.id);
+    if (mark.placeId === MARLIN.id) {
+      openMarlinTour(false);
+      return;
+    }
+    if (mark.placeId === GOLFINHO.id) {
+      openGolfinhoTour(false);
+      return;
+    }
     const landmark = landmarkById(mark.placeId);
     if (landmark) {
       setRampTalk(false);
-      setMarlinTalk(false);
+      setTipTour(null);
       setLandmarkTalkId(landmark.id);
-    }
-    if (mark.placeId === MARLIN.id) {
-      setRampTalk(false);
-      setLandmarkTalkId(null);
-      setMarlinTalk(true);
     }
   };
 
@@ -1186,21 +1342,22 @@ function MapScreen({
             onSelect={(id) => {
               setCoach(false);
               if (id === MARLIN.id) {
-                setOpenId(MARLIN.id);
-                setRampTalk(false);
-                setLandmarkTalkId(null);
-                setMarlinTalk(true);
+                openMarlinTour(false);
+                return;
+              }
+              if (id === GOLFINHO.id) {
+                openGolfinhoTour(false);
                 return;
               }
               const landmark = landmarkById(id);
               if (landmark) {
                 setOpenId(landmark.id);
                 setRampTalk(false);
-                setMarlinTalk(false);
+                setTipTour(null);
                 setLandmarkTalkId(landmark.id);
                 return;
               }
-              setMarlinTalk(false);
+              setTipTour(null);
               setLandmarkTalkId(null);
               setOpenId((current) => (current === id ? null : id));
             }}
@@ -1216,13 +1373,14 @@ function MapScreen({
             }}
             onRampTap={() => {
               setCoach(false);
-              setMarlinTalk(false);
               setLandmarkTalkId(null);
+              setTipTour(null);
               setRampTalk(true);
+              openRampTour(false);
             }}
             onClear={() => {
               setOpenId(null);
-              setMarlinTalk(false);
+              setTipTour(null);
               setLandmarkTalkId(null);
             }}
             onHold={holdPoint}
@@ -1311,60 +1469,40 @@ function MapScreen({
       </div>
       )}
 
-      {!driving && marlinTalk && !cameraOpen && !searchOpen && (
-        <motion.div
-          role="dialog"
-          aria-label="Cuidados no Marlin Azul"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="@container absolute inset-0 z-[75] flex items-center justify-center bg-black/45 px-5"
+      {arrivalBanner && !driving && (
+        <div
+          role="status"
+          className="pointer-events-none absolute inset-x-4 z-[70] rounded-2xl border border-white/35 bg-black/70 px-3 py-2 text-center text-[13px] font-semibold text-white shadow-[0_12px_28px_rgba(0,0,0,0.35)] backdrop-blur-md"
+          style={{ top: "max(5.8rem, calc(env(safe-area-inset-top, 0px) + 4.6rem))" }}
         >
-          <div className="flex max-h-full w-full max-w-[19.5rem] flex-col items-center">
-            <div className="w-full rounded-[22px] bg-white px-3.5 py-3 text-[#1c120c] shadow-[0_16px_36px_rgba(0,0,0,0.28)]">
-              <p className="text-[15px] font-semibold leading-snug">Marlin Azul</p>
-              <p className="mt-0.5 text-[12px] text-neutral-500">Patrimônio da orla · preserve e se cuide</p>
-              <ul className="mt-2 space-y-2">
-                {MARLIN_TIPS.map((tip) => (
-                  <li key={tip.title}>
-                    <p className="text-[12px] font-semibold leading-snug text-[#082E84]">{tip.title}</p>
-                    <p className="mt-0.5 text-[12px] leading-snug text-neutral-600">{tip.text}</p>
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-2.5 flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => speakGuara(MARLIN_SPEAK)}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-[#1d4ed8]/25 bg-[#1d4ed8]/10 px-3 py-1.5 text-[13px] font-semibold text-[#1d4ed8]"
-                >
-                  <Volume2 className="h-3.5 w-3.5" />
-                  Ouvir
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    stopSpeaking();
-                    setMarlinTalk(false);
-                  }}
-                  className="rounded-full bg-[#1d4ed8] px-3 py-1.5 text-[13px] font-semibold text-white"
-                >
-                  Entendi
-                </button>
-              </div>
-            </div>
-            <img
-              src="/guara-inteiro.png?v=1"
-              alt="Guará"
-              draggable={false}
-              decoding="async"
-              className="guara-float-lg h-auto max-h-[min(18rem,42cqh)] w-auto max-w-full object-contain object-bottom drop-shadow-[0_16px_28px_rgba(0,0,0,0.45)]"
-            />
-          </div>
-        </motion.div>
+          {arrivalBanner}
+        </div>
       )}
 
-      {!driving && landmarkTalk && !cameraOpen && !searchOpen && (
+      {!driving && tipTour && !cameraOpen && !searchOpen && (
+        <GuaraTipTour
+          title={tipTour.title}
+          subtitle={tipTour.subtitle}
+          steps={tipTour.steps}
+          stepIndex={tipTour.step}
+          speakAll={tipTour.speak}
+          accent={tipTour.accent}
+          onNext={() =>
+            setTipTour((current) => {
+              if (!current) return null;
+              if (current.step >= current.steps.length - 1) {
+                stopSpeaking();
+                current.onDone?.();
+                return null;
+              }
+              return { ...current, step: current.step + 1 };
+            })
+          }
+          onClose={closeTipTour}
+        />
+      )}
+
+      {!driving && !tipTour && landmarkTalk && landmarkTalk.id !== GOLFINHO.id && !cameraOpen && !searchOpen && (
         <motion.div
           role="dialog"
           aria-label={landmarkTalk.name}
@@ -1453,52 +1591,6 @@ function MapScreen({
         </motion.div>
       )}
 
-      {!driving && !marlinTalk && !landmarkTalk && (rampAlert || rampTalk) && !cameraOpen && !searchOpen && (
-        <motion.div
-          role="dialog"
-          aria-label="Corredor da rampa"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="@container absolute inset-0 z-[75] flex items-center justify-center bg-black/45 px-5"
-        >
-          <div className="flex max-h-full w-full max-w-[19.5rem] flex-col items-center">
-            <div className="w-full rounded-[22px] bg-white px-3.5 py-3 text-[#1c120c] shadow-[0_16px_36px_rgba(0,0,0,0.28)]">
-              <p className="text-[15px] font-semibold leading-snug">Corredor da rampa</p>
-              <p className="mt-1 text-[13px] leading-snug text-neutral-600">{rampAlert ? RAMPA_WARN : RAMPA_RULE}</p>
-              <div className="mt-2.5 flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => speakGuara(rampAlert ? RAMPA_WARN : RAMPA_RULE)}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-[#0284c7]/25 bg-[#0284c7]/10 px-3 py-1.5 text-[13px] font-semibold text-[#0284c7]"
-                >
-                  <Volume2 className="h-3.5 w-3.5" />
-                  Ouvir
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    stopSpeaking();
-                    if (rampAlert) onDismissRamp();
-                    setRampTalk(false);
-                  }}
-                  className="rounded-full bg-[#0284c7] px-3 py-1.5 text-[13px] font-semibold text-white"
-                >
-                  {rampAlert ? "Entendi, vou sair" : "Entendi"}
-                </button>
-              </div>
-            </div>
-            <img
-              src="/guara-inteiro.png?v=1"
-              alt="Guará"
-              draggable={false}
-              decoding="async"
-              className="guara-float-lg h-auto max-h-[min(20rem,46cqh)] w-auto max-w-full object-contain object-bottom drop-shadow-[0_16px_28px_rgba(0,0,0,0.45)]"
-            />
-          </div>
-        </motion.div>
-      )}
-
       {!driving && (
       <MapSearch
         query={query}
@@ -1530,15 +1622,15 @@ function MapScreen({
           if (guide.filter) setFilter(guide.filter);
           if (guide.basemap) setBasemap(guide.basemap);
           if (guide.openId !== undefined) {
-            setOpenId(guide.openId);
-            if (guide.openId === MARLIN.id) {
-              setMarlinTalk(true);
-              setLandmarkTalkId(null);
-              setRampTalk(false);
-            } else if (landmarkById(guide.openId)) {
+            if (guide.openId === MARLIN.id) openMarlinTour(true);
+            else if (guide.openId === GOLFINHO.id) openGolfinhoTour(true);
+            else if (landmarkById(guide.openId)) {
+              setOpenId(guide.openId);
               setLandmarkTalkId(guide.openId);
-              setMarlinTalk(false);
+              setTipTour(null);
               setRampTalk(false);
+            } else {
+              setOpenId(guide.openId);
             }
           }
           if (guide.sheet !== undefined) setSheetId(guide.sheet);
@@ -2004,9 +2096,65 @@ function Phone({
   const [story, setStory] = useState<StoryId | null>(null);
   const [sosKey, setSosKey] = useState(0);
   const [missionOpen, setMissionOpen] = useState(false);
-  const ramp = useRampWatch(mapOpen, !splashActive);
+  const [focusSpot, setFocusSpot] = useState<string | null>(null);
+  const [focusNonce, setFocusNonce] = useState(0);
+  const openSpotFromNotify = useCallback((spot: string) => {
+    stashPendingSpot(spot);
+    setActiveId(null);
+    setChildOpen(false);
+    setStory(null);
+    setMissionOpen(false);
+    setMapOpen(true);
+    setFocusSpot(spot);
+    setFocusNonce((value) => value + 1);
+  }, []);
+  const applyOrlaAlert = useCallback(
+    (alert: OrlaAlert) => {
+      if (alert.kind === "marlin") openSpotFromNotify(MARLIN.id);
+      else if (alert.kind === "golfinho") openSpotFromNotify(GOLFINHO.id);
+      else if (alert.kind === "rampa") openSpotFromNotify(RAMPA_PRINCIPAL.id);
+      else if (alert.kind === "quiosque") openSpotFromNotify(alert.id);
+    },
+    [openSpotFromNotify],
+  );
+  const ramp = useOrlaSentinel({
+    enabled: !splashActive,
+    mapOpen,
+    onForegroundAlert: applyOrlaAlert,
+  });
   const active = FEATURES.find((feature) => feature.id === activeId) ?? null;
   const sheet = active && active.id !== "crianca" ? active : null;
+
+  // Durante a splash: guarda spot da URL/SW para abrir o ícone assim que o app revelar.
+  useEffect(() => {
+    const boot = peekPendingSpot() || readSpotFromLocation()?.spot;
+    if (boot) stashPendingSpot(boot);
+
+    const onMessage = (event: MessageEvent) => {
+      const data = event.data as { type?: string; spot?: string | null; url?: string } | null;
+      if (!data || data.type !== "ORLA_OPEN_SPOT") return;
+      const fromUrl = data.url ? readSpotFromLocation(data.url) : null;
+      const spot = (typeof data.spot === "string" && data.spot) || fromUrl?.spot;
+      if (!spot) return;
+      if (splashActive) {
+        stashPendingSpot(spot);
+        return;
+      }
+      openSpotFromNotify(spot);
+    };
+    navigator.serviceWorker?.addEventListener("message", onMessage);
+    return () => navigator.serviceWorker?.removeEventListener("message", onMessage);
+  }, [splashActive, openSpotFromNotify]);
+
+  useEffect(() => {
+    if (splashActive) return;
+    void ensureNotifyPermission();
+    const spot = takePendingSpot();
+    if (spot) {
+      clearSpotFromUrl();
+      openSpotFromNotify(spot);
+    }
+  }, [splashActive, openSpotFromNotify]);
 
   // Gesto de voltar do iPhone — desligado no mapa para não sair ao arrastar a orla.
   const canEdgeBack = Boolean(missionOpen || sos || childOpen || story || sheet);
@@ -2146,8 +2294,11 @@ function Phone({
               key="map"
               onClose={() => setMapOpen(false)}
               onSos={onSos}
-              rampAlert={ramp.alert}
-              onDismissRamp={ramp.dismiss}
+              rampAlert={ramp.rampAlert}
+              onDismissRamp={ramp.dismissRamp}
+              focusSpot={focusSpot}
+              focusNonce={focusNonce}
+              onFocusSpotHandled={() => setFocusSpot(null)}
             />
           )}
         </AnimatePresence>
