@@ -308,12 +308,22 @@ body[data-pa-surface="sheet"] {
   cursor: pointer;
 }
 
-/* Maré: véu suave na linha da areia (sem traço duro / sem dashed) */
+/* Maré: coastal feathering — sem stroke/dashed; satélite aparece (multiply) */
+.leaflet-overlay-pane path.day-layer-mare-body,
+.leaflet-overlay-pane path.day-layer-mare-mid,
 .leaflet-overlay-pane path.day-layer-mare-soft {
-  filter: blur(1.8px);
+  stroke: none !important;
+  mix-blend-mode: multiply;
+}
+.leaflet-overlay-pane path.day-layer-mare-soft {
+  /* coastal feathering na areia — blur forte, margem geométrica impede bleed na avenida */
+  filter: blur(22px);
+}
+.leaflet-overlay-pane path.day-layer-mare-mid {
+  filter: blur(4px);
 }
 .leaflet-overlay-pane path.day-layer-mare-body {
-  filter: blur(0.45px);
+  filter: none;
 }
 
 
