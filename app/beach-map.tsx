@@ -26,7 +26,9 @@ import {
 } from "lucide-react";
 import { fold, useTide } from "./coast";
 import {
-  sunBand,
+  sunAzimuthDeg,
+  sunHeatFactor,
+  sunSandRings,
   tideLayers,
   tideRatio,
   type DayLayer,
@@ -1020,21 +1022,50 @@ function DayLayerOverlay({ layer }: { layer: DayLayer }) {
   const common = { renderer: svg, interactive: false as const, stroke: false as const };
 
   if (layer === "sol") {
+    const heat = sunHeatFactor();
+    const az = sunAzimuthDeg();
+    const rings = sunSandRings();
+    // Anéis na areia (sem blur CSS) — intensidade pela hora local
+    const washOp = 0.12 + heat * 0.2;
+    const midOp = 0.1 + heat * 0.24;
+    const coreOp = 0.08 + heat * 0.3;
     return (
-      <Polygon
-        key="sol-band"
-        positions={sunBand()}
-        pathOptions={{
-          fillColor: "#fbbf24",
-          fillOpacity: 0.2,
-          className: "day-layer-sol",
-          ...common,
-        }}
-      />
+      <>
+        <Polygon
+          key={`sol-wash-${az.toFixed(0)}`}
+          positions={rings.wash}
+          pathOptions={{
+            fillColor: "#f59e0b",
+            fillOpacity: washOp,
+            className: "day-layer-sol day-layer-sol-wash",
+            ...common,
+          }}
+        />
+        <Polygon
+          key={`sol-mid-${az.toFixed(0)}`}
+          positions={rings.mid}
+          pathOptions={{
+            fillColor: "#fbbf24",
+            fillOpacity: midOp,
+            className: "day-layer-sol day-layer-sol-mid",
+            ...common,
+          }}
+        />
+        <Polygon
+          key={`sol-core-${az.toFixed(0)}`}
+          positions={rings.core}
+          pathOptions={{
+            fillColor: "#fde68a",
+            fillOpacity: coreOp,
+            className: "day-layer-sol day-layer-sol-core",
+            ...common,
+          }}
+        />
+      </>
     );
   }
 
-  // Maré dinâmica (API): baía fechada + feather na areia. Sem stroke.
+  // Maré dinâmica (API): baía fechada + feather em anéis (sem blur CSS).
   const water = "#0e76a8";
   return (
     <>
@@ -1043,7 +1074,7 @@ function DayLayerOverlay({ layer }: { layer: DayLayer }) {
         positions={bands.body}
         pathOptions={{
           fillColor: water,
-          fillOpacity: 0.35,
+          fillOpacity: 0.34,
           className: "day-layer-mare-body",
           ...common,
         }}
@@ -1053,11 +1084,23 @@ function DayLayerOverlay({ layer }: { layer: DayLayer }) {
         positions={bands.soft}
         pathOptions={{
           fillColor: water,
-          fillOpacity: 0.28,
+          fillOpacity: 0.16,
           className: "day-layer-mare-soft",
           ...common,
         }}
       />
+      {bands.softInner && (
+        <Polygon
+          key={`mare-soft-inner-${ratio.toFixed(2)}`}
+          positions={bands.softInner}
+          pathOptions={{
+            fillColor: water,
+            fillOpacity: 0.22,
+            className: "day-layer-mare-soft-inner",
+            ...common,
+          }}
+        />
+      )}
     </>
   );
 }

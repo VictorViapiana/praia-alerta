@@ -69,8 +69,8 @@ export function useOrlaSentinel({
   mapOpenRef.current = mapOpen;
 
   useEffect(() => {
+    // Soft prompt: `enabled` só fica true após aceite na LocationSoftPrompt.
     if (!enabled || typeof navigator === "undefined" || !navigator.geolocation) return;
-    // Soft prompt: não pede permissão nativa aqui — só o modal da UI.
 
     const clearRampTimer = () => {
       if (rampTimer.current != null) {
