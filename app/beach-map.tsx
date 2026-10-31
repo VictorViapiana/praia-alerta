@@ -28,7 +28,9 @@ import { fold, useTide } from "./coast";
 import {
   sunBand,
   tideEdgeLine,
+  tideOceanBand,
   tideRatio,
+  tideSurfLine,
   tideWaterBand,
   tideWetSandBand,
   type DayLayer,
@@ -213,6 +215,7 @@ function MapReady({ onClear, onHold }: { onClear: () => void; onHold: (lat: numb
     },
   });
   useEffect(() => {
+    (window as Window & { __ORLA_MAP?: typeof map }).__ORLA_MAP = map;
     const node = map.getContainer();
     let scheduled = 0;
     const paint = () => {
@@ -235,6 +238,8 @@ function MapReady({ onClear, onHold }: { onClear: () => void; onHold: (lat: numb
       window.removeEventListener("orientationchange", paint);
       window.clearTimeout(timer.current);
       if (scheduled) cancelAnimationFrame(scheduled);
+      const w = window as Window & { __ORLA_MAP?: typeof map };
+      if (w.__ORLA_MAP === map) delete w.__ORLA_MAP;
     };
   }, [map]);
   return null;
@@ -1001,11 +1006,24 @@ function RampaPin({ selected, onSelect, alert = false }: { selected: boolean; on
 }
 
 function DayLayerOverlay({ layer }: { layer: DayLayer }) {
+  const map = useMap();
   const { data: tide } = useTide();
   const ratio = tide ? tideRatio(tide.level, tide.rangeMin, tide.rangeMax) : 0.45;
   const edge = tideEdgeLine(ratio);
+  const surf = tideSurfLine();
+  // Canvas (preferCanvas no mapa) recorta polígonos longos da orla —
+  // SVG dedicado pinta a faixa ponta a ponta sem corte no viewport.
+  const svg = useMemo(() => L.svg({ padding: 2.5 }), []);
+  useEffect(() => {
+    svg.addTo(map);
+    return () => {
+      map.removeLayer(svg);
+    };
+  }, [map, svg]);
 
   if (layer === "off") return null;
+
+  const common = { renderer: svg, interactive: false as const };
 
   if (layer === "sol") {
     return (
@@ -1017,61 +1035,84 @@ function DayLayerOverlay({ layer }: { layer: DayLayer }) {
           fillColor: "#fbbf24",
           fillOpacity: 0.2,
           className: "day-layer-sol",
+          ...common,
         }}
-        interactive={false}
       />
     );
   }
 
-  // Maré: água no mar + areia molhada + linha de espuma (sem subir na avenida)
+  // Maré: nasce na água (rebentação) → sobe na areia · ponta a ponta · sem avenida
   return (
     <>
+      <Polygon
+        key="mare-ocean"
+        positions={tideOceanBand(ratio)}
+        pathOptions={{
+          stroke: false,
+          fillColor: "#0c4a6e",
+          fillOpacity: 0.45,
+          className: "day-layer-mare-ocean",
+          ...common,
+        }}
+      />
       <Polygon
         key={`mare-water-${ratio.toFixed(2)}`}
         positions={tideWaterBand(ratio)}
         pathOptions={{
           stroke: false,
-          fillColor: "#0ea5e9",
-          fillOpacity: 0.14,
+          fillColor: "#0284c7",
+          fillOpacity: 0.4,
           className: "day-layer-mare-water",
+          ...common,
         }}
-        interactive={false}
       />
       <Polygon
         key={`mare-wet-${ratio.toFixed(2)}`}
         positions={tideWetSandBand(ratio)}
         pathOptions={{
           stroke: false,
-          fillColor: "#e0f2fe",
-          fillOpacity: 0.22,
+          fillColor: "#7dd3fc",
+          fillOpacity: 0.28,
           className: "day-layer-mare-wet",
+          ...common,
         }}
-        interactive={false}
+      />
+      <Polyline
+        key="mare-surf"
+        positions={surf}
+        pathOptions={{
+          color: "#e0f2fe",
+          weight: 2.6,
+          opacity: 0.7,
+          dashArray: "5 8",
+          lineCap: "round",
+          className: "day-layer-mare-surf",
+          ...common,
+        }}
       />
       <Polyline
         key={`mare-foam-${ratio.toFixed(2)}`}
         positions={edge}
         pathOptions={{
           color: "#ffffff",
-          weight: 2.6,
-          opacity: 0.8,
-          dashArray: "4 6",
+          weight: 3.2,
+          opacity: 0.95,
           lineCap: "round",
           className: "day-layer-mare-foam",
+          ...common,
         }}
-        interactive={false}
       />
       <Polyline
         key={`mare-edge-${ratio.toFixed(2)}`}
         positions={edge}
         pathOptions={{
-          color: "#7dd3fc",
-          weight: 1.4,
+          color: "#38bdf8",
+          weight: 1.5,
           opacity: 0.9,
           lineCap: "round",
           className: "day-layer-mare-edge",
+          ...common,
         }}
-        interactive={false}
       />
     </>
   );
