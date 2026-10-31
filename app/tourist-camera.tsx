@@ -16,7 +16,7 @@ export function CameraFab({ onOpen }: { onOpen: () => void }) {
       data-onboard="map-camera"
       onClick={onOpen}
       aria-label="Eu amo Guarapari. Abrir a câmera."
-      className="group absolute right-3 z-[70] flex flex-col items-center gap-1.5 overflow-visible rounded-[28px] pb-1"
+      className="group absolute right-3 z-[50] flex flex-col items-center gap-1.5 overflow-visible rounded-[28px] pb-1"
       style={{
         position: "absolute",
         /* 10–20px acima da barra de busca preta (chrome inferior ≈ 9rem) */
