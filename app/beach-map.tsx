@@ -122,7 +122,7 @@ function markerSize(place: Place) {
 
 type MapFilter = "neutro" | PinKind;
 
-type FlyTarget = { id: number; lat: number; lng: number; zoom?: number } | null;
+type FlyTarget = { id: number; lat: number; lng: number; zoom?: number; instant?: boolean } | null;
 
 function pinIcon(host: HTMLElement, size: number, anchor: "tip" | "center") {
   return L.divIcon({
@@ -423,8 +423,14 @@ function FlyTo({ target }: { target: FlyTarget }) {
     const shift = () => {
       if (shifted) return;
       shifted = true;
-      map.panBy([0, zoom >= 17.5 ? -120 : -155], { animate: true, duration: 0.35 });
+      map.panBy([0, zoom >= 17.5 ? -120 : -155], { animate: !target.instant, duration: 0.35 });
     };
+    if (target.instant) {
+      // Notificação / deep link: cai no ícone já selecionado, sem esperar o fly.
+      map.setView([target.lat, target.lng], zoom, { animate: false });
+      shift();
+      return;
+    }
     map.flyTo([target.lat, target.lng], zoom, { duration: 1.05 });
     map.once("moveend", shift);
     return () => {
@@ -1018,7 +1024,9 @@ function OrlaMarkers({
     },
   });
   const showPlaces = zoom >= PLACE_ZOOM;
-  const showRamp = zoom >= 16;
+  // Ícone focado (notificação / deep link) aparece mesmo antes do zoom de lugares.
+  const showFocused = Boolean(openId);
+  const showRamp = zoom >= 16 || openId === RAMPA_PRINCIPAL.id;
   const escunaPin = useMemo(() => escunaIcon(zoom), [zoom]);
   const vendorMode = filter === "ambulantes";
   const cartIcons = useMemo(
@@ -1066,9 +1074,9 @@ function OrlaMarkers({
             </ReactPin>
           );
         })}
-      {showPlaces &&
+      {(showPlaces || showFocused) &&
         !vendorMode &&
-        PLACES.map((place) => {
+        PLACES.filter((place) => showPlaces || place.id === openId).map((place) => {
           const nameHit = !query || fold(place.name).includes(query);
           const inCategory = filter === "neutro" || filter === place.mapKind;
           const highlighted = nameHit && inCategory && (query.length > 0 || filter !== "neutro");
@@ -1135,13 +1143,13 @@ function OrlaMarkers({
           }}
         />
       )}
-      {showPlaces && (
+      {(showPlaces || openId === MARLIN.id) && (
         <ReactPin position={[MARLIN.lat, MARLIN.lng]} zIndexOffset={openId === MARLIN.id ? 960 : 260} size={48} anchor="center">
           <MarlinPin selected={openId === MARLIN.id} onSelect={() => onSelect(MARLIN.id)} />
         </ReactPin>
       )}
-      {showPlaces &&
-        ORLA_LANDMARKS.map((landmark) => (
+      {(showPlaces || showFocused) &&
+        ORLA_LANDMARKS.filter((landmark) => showPlaces || landmark.id === openId).map((landmark) => (
           <ReactPin
             key={landmark.id}
             position={[landmark.lat, landmark.lng]}
