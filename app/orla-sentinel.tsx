@@ -6,7 +6,6 @@ import {
   EXIT_HYSTERESIS_M,
   MONUMENT_RADIUS_M,
   QUIOSQUE_RADIUS_M,
-  ensureNotifyPermission,
   pushOrlaNotice,
   rampDwellMs,
   stashPendingSpot,
@@ -71,7 +70,7 @@ export function useOrlaSentinel({
 
   useEffect(() => {
     if (!enabled || typeof navigator === "undefined" || !navigator.geolocation) return;
-    void ensureNotifyPermission();
+    // Soft prompt: não pede permissão nativa aqui — só o modal da UI.
 
     const clearRampTimer = () => {
       if (rampTimer.current != null) {

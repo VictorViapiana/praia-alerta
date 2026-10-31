@@ -1034,8 +1034,7 @@ function DayLayerOverlay({ layer }: { layer: DayLayer }) {
     );
   }
 
-  // Maré: fill contínuo até oceano aberto + feather na areia.
-  // Sem stroke/dashed. Azul rgba(14,118,168,0.35). Satélite visível por baixo.
+  // Maré dinâmica (API): baía fechada + feather na areia. Sem stroke.
   const water = "#0e76a8";
   return (
     <>
@@ -1050,21 +1049,11 @@ function DayLayerOverlay({ layer }: { layer: DayLayer }) {
         }}
       />
       <Polygon
-        key={`mare-mid-${ratio.toFixed(2)}`}
-        positions={bands.mid}
-        pathOptions={{
-          fillColor: water,
-          fillOpacity: 0.16,
-          className: "day-layer-mare-mid",
-          ...common,
-        }}
-      />
-      <Polygon
         key={`mare-soft-${ratio.toFixed(2)}`}
         positions={bands.soft}
         pathOptions={{
           fillColor: water,
-          fillOpacity: 0.3,
+          fillOpacity: 0.28,
           className: "day-layer-mare-soft",
           ...common,
         }}

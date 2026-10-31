@@ -47,13 +47,13 @@ import { FAR_FROM_BEACH_M, HOME_PROMPTS, PRAIA_MORRO_VIEW, answerGuara } from ".
 import { GuaraTipTour, type GuaraTipStep } from "./guara-tip-tour";
 import {
   clearSpotFromUrl,
-  ensureNotifyPermission,
   isQuiosqueSpotId,
   peekPendingSpot,
   readSpotFromLocation,
   stashPendingSpot,
   takePendingSpot,
 } from "./orla-notify";
+import { NotifySoftPrompt } from "./notify-soft-prompt";
 import { RouteActionsProvider, RouteChoice } from "./route-choice";
 import { MARLIN_TOUR_SPEAK, MARLIN_TOUR_STEPS, useOrlaSentinel, type OrlaAlert } from "./orla-sentinel";
 import { RAMPA_PRINCIPAL, RAMPA_RULE, RAMPA_WARN } from "./rampas";
@@ -892,7 +892,7 @@ function MapScreen({
     : dayLayer === "sol"
       ? "Camada Sol: faixa quente só na areia — quiosques intactos."
       : dayLayer === "mare"
-        ? "Camada Maré: oceano aberto → areia · feather suave, sem avenida."
+        ? "Camada Maré: dinâmica pela API · baía até a areia, sem avenida."
         : coach
           ? "Arraste a orla. Segure o mapa para marcar um ponto."
           : activeFilter.hint;
@@ -1623,6 +1623,7 @@ function MapScreen({
       )}
 
       {!driving && !cameraOpen && !searchOpen && <CameraFab onOpen={() => setCameraOpen(true)} />}
+      {!driving && !cameraOpen && !searchOpen && <NotifySoftPrompt ready={mapReady} />}
       {!driving && (
       <GuaraMapChat
         hidden={cameraOpen || searchOpen}
@@ -2185,7 +2186,7 @@ function Phone({
 
   useEffect(() => {
     if (splashActive) return;
-    void ensureNotifyPermission();
+    // Soft prompt: permissão nativa só após aceite no modal NotifySoftPrompt.
     const spot = takePendingSpot();
     if (spot) {
       clearSpotFromUrl();
