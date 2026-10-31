@@ -1031,8 +1031,8 @@ function DayLayerOverlay({ layer }: { layer: DayLayer }) {
         positions={tideWaterBand(ratio)}
         pathOptions={{
           stroke: false,
-          fillColor: "#38bdf8",
-          fillOpacity: 0.2,
+          fillColor: "#0ea5e9",
+          fillOpacity: 0.14,
           className: "day-layer-mare-water",
         }}
         interactive={false}
@@ -1042,8 +1042,8 @@ function DayLayerOverlay({ layer }: { layer: DayLayer }) {
         positions={tideWetSandBand(ratio)}
         pathOptions={{
           stroke: false,
-          fillColor: "#7dd3fc",
-          fillOpacity: 0.16,
+          fillColor: "#e0f2fe",
+          fillOpacity: 0.22,
           className: "day-layer-mare-wet",
         }}
         interactive={false}
@@ -1053,9 +1053,9 @@ function DayLayerOverlay({ layer }: { layer: DayLayer }) {
         positions={edge}
         pathOptions={{
           color: "#ffffff",
-          weight: 2.2,
-          opacity: 0.72,
-          dashArray: "5 7",
+          weight: 2.6,
+          opacity: 0.8,
+          dashArray: "4 6",
           lineCap: "round",
           className: "day-layer-mare-foam",
         }}
@@ -1065,9 +1065,9 @@ function DayLayerOverlay({ layer }: { layer: DayLayer }) {
         key={`mare-edge-${ratio.toFixed(2)}`}
         positions={edge}
         pathOptions={{
-          color: "#bae6fd",
-          weight: 1.1,
-          opacity: 0.85,
+          color: "#7dd3fc",
+          weight: 1.4,
+          opacity: 0.9,
           lineCap: "round",
           className: "day-layer-mare-edge",
         }}
