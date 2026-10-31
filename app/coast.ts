@@ -277,6 +277,9 @@ function parseTide(json: MarineJson): TideNow | null {
 
 let weatherPromise: Promise<WeatherNow | null> | null = null;
 let tidePromise: Promise<TideNow | null> | null = null;
+let tideFetchedAt = 0;
+/** Revalida maré a cada 10 min — linha d'água sempre do fetch ao vivo. */
+const TIDE_TTL_MS = 10 * 60_000;
 
 export function loadWeather() {
   weatherPromise ??= fetch(
@@ -291,8 +294,11 @@ export function loadWeather() {
   return weatherPromise;
 }
 
-export function loadTide() {
-  tidePromise ??= fetch(
+export function loadTide(force = false) {
+  const stale = !tidePromise || force || Date.now() - tideFetchedAt > TIDE_TTL_MS;
+  if (!stale && tidePromise) return tidePromise;
+  tideFetchedAt = Date.now();
+  tidePromise = fetch(
     `https://marine-api.open-meteo.com/v1/marine?latitude=${LAT}&longitude=${LON}&hourly=sea_level_height_msl,wave_height,wave_direction,wave_period,swell_wave_height,swell_wave_direction,swell_wave_period,sea_surface_temperature,ocean_current_velocity,ocean_current_direction&timezone=America/Sao_Paulo&forecast_days=2`,
   )
     .then((response) => {
@@ -329,13 +335,22 @@ export function useTide() {
 
   useEffect(() => {
     let alive = true;
-    void loadTide().then((value) => {
-      if (!alive) return;
-      if (!value) setFailed(true);
-      else setData(value);
-    });
+    const pull = (force = false) => {
+      void loadTide(force).then((value) => {
+        if (!alive) return;
+        if (!value) setFailed(true);
+        else {
+          setFailed(false);
+          setData(value);
+        }
+      });
+    };
+    pull(false);
+    // Atualiza ao vivo a cada 10 min (mesmo TTL do cache)
+    const id = window.setInterval(() => pull(true), TIDE_TTL_MS);
     return () => {
       alive = false;
+      window.clearInterval(id);
     };
   }, []);
 

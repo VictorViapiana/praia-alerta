@@ -1007,10 +1007,10 @@ function RampaPin({ selected, onSelect, alert = false }: { selected: boolean; on
 function DayLayerOverlay({ layer }: { layer: DayLayer }) {
   const map = useMap();
   const { data: tide } = useTide();
-  const ratio = tide ? tideRatio(tide.level, tide.rangeMin, tide.rangeMax) : 0.45;
-  const bands = tideLayers(ratio);
-  // SVG dedicado + padding alto p/ blur extremo na areia não ser clipado
-  const svg = useMemo(() => L.svg({ padding: 2.8 }), []);
+  // Ratio SÓ da API ao vivo — sem fallback mockado
+  const ratio = tide ? tideRatio(tide.level, tide.rangeMin, tide.rangeMax) : null;
+  const bands = ratio != null ? tideLayers(ratio) : null;
+  const svg = useMemo(() => L.svg({ padding: 1.2 }), []);
   useEffect(() => {
     svg.addTo(map);
     return () => {
@@ -1068,12 +1068,13 @@ function DayLayerOverlay({ layer }: { layer: DayLayer }) {
     );
   }
 
-  // Maré dinâmica (API): baía fechada + feather em anéis (sem blur CSS).
+  // Maré: só desenha com ratio da API ao vivo (sem mock).
+  if (ratio == null || !bands) return null;
   const water = "#0e76a8";
   return (
     <>
       <Polygon
-        key={`mare-body-${ratio.toFixed(2)}`}
+        key={`mare-body-${ratio.toFixed(3)}`}
         positions={bands.body}
         pathOptions={{
           fillColor: water,
@@ -1083,7 +1084,7 @@ function DayLayerOverlay({ layer }: { layer: DayLayer }) {
         }}
       />
       <Polygon
-        key={`mare-soft-${ratio.toFixed(2)}`}
+        key={`mare-soft-${ratio.toFixed(3)}`}
         positions={bands.soft}
         pathOptions={{
           fillColor: water,
@@ -1094,7 +1095,7 @@ function DayLayerOverlay({ layer }: { layer: DayLayer }) {
       />
       {bands.softInner && (
         <Polygon
-          key={`mare-soft-inner-${ratio.toFixed(2)}`}
+          key={`mare-soft-inner-${ratio.toFixed(3)}`}
           positions={bands.softInner}
           pathOptions={{
             fillColor: water,
