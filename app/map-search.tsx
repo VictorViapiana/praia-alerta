@@ -399,6 +399,7 @@ export function MapSearch({
   onActiveChange,
   dayLayer = "off",
   onDayLayer,
+  sunAvailable = true,
 }: {
   query: string;
   onQuery: (value: string) => void;
@@ -411,6 +412,8 @@ export function MapSearch({
   onActiveChange: (active: boolean) => void;
   dayLayer?: DayLayer;
   onDayLayer?: (value: DayLayer) => void;
+  /** Sol só de dia (05:30–17:30). */
+  sunAvailable?: boolean;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [focused, setFocused] = useState(false);
@@ -444,7 +447,7 @@ export function MapSearch({
       initial={false}
       animate={{ height: open ? "56%" : "auto" }}
       transition={spring}
-      className="absolute inset-x-3 bottom-0 z-[55] flex flex-col overflow-hidden bg-transparent"
+      className="absolute inset-x-3 bottom-0 z-[60] flex flex-col overflow-hidden bg-transparent"
       style={{
         paddingBottom: "max(1rem, calc(env(safe-area-inset-bottom, 0px) + 0.35rem))",
       }}
@@ -535,15 +538,25 @@ export function MapSearch({
         >
           {DAY_LAYER_CHIPS.map((item) => {
             const selected = dayLayer === item.id;
+            const nightBlocked = item.id === "sol" && !sunAvailable;
             return (
               <button
                 key={item.id}
                 type="button"
                 aria-pressed={selected}
+                aria-disabled={nightBlocked}
+                title={nightBlocked ? "Sol disponível das 05:30 às 17:30" : undefined}
                 onPointerDown={(event) => event.preventDefault()}
-                onClick={() => onDayLayer(item.id)}
+                onClick={() => {
+                  if (nightBlocked) return;
+                  onDayLayer(item.id);
+                }}
                 className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium ${
-                  selected ? "bg-amber-100 text-[#3b2a12]" : "text-white/80"
+                  nightBlocked
+                    ? "cursor-not-allowed text-white/35 line-through decoration-white/30"
+                    : selected
+                      ? "bg-amber-100 text-[#3b2a12]"
+                      : "text-white/80"
                 }`}
               >
                 {item.emoji} {item.label}

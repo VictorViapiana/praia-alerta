@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { fold, useTide } from "./coast";
 import {
+  isSunActive,
   sunAzimuthDeg,
   sunHeatFactor,
   sunSandRings,
@@ -1022,10 +1023,12 @@ function DayLayerOverlay({ layer }: { layer: DayLayer }) {
   const common = { renderer: svg, interactive: false as const, stroke: false as const };
 
   if (layer === "sol") {
+    // Estrito: 17:30–05:30 (America/Sao_Paulo) → não renderiza (sem calor noturno)
+    if (!isSunActive()) return null;
     const heat = sunHeatFactor();
+    if (heat <= 0) return null;
     const az = sunAzimuthDeg();
     const rings = sunSandRings();
-    // Anéis na areia (sem blur CSS) — intensidade pela hora local
     const washOp = 0.12 + heat * 0.2;
     const midOp = 0.1 + heat * 0.24;
     const coreOp = 0.08 + heat * 0.3;

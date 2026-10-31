@@ -52,11 +52,15 @@ export function GuaraMapChat({
       {!open && !hidden && beachInvite && (
         <motion.div
           data-map-ui
+          data-guara-beach-invite
           initial={{ opacity: 0, x: -16, y: 8 }}
           animate={{ opacity: 1, x: 0, y: 0 }}
-          className="absolute left-3 z-[80] w-[min(17.5rem,calc(100%-6.5rem))] rounded-[22px] border border-white/25 bg-[#102028]/94 p-3 text-white shadow-[0_18px_40px_rgba(0,0,0,0.45)] backdrop-blur-xl"
+          className="pointer-events-auto absolute left-3 w-[min(17.5rem,calc(100%-6.5rem))] rounded-[22px] border border-white/25 bg-[#102028]/94 p-3 text-white shadow-[0_18px_40px_rgba(0,0,0,0.45)] backdrop-blur-xl"
           style={{
-            bottom: "max(10.85rem, calc(env(safe-area-inset-bottom, 0px) + 9.85rem))",
+            position: "absolute",
+            /* Acima da busca + filtros + chips do dia (~11.5rem) — não tapa cliques */
+            bottom: "max(14.75rem, calc(env(safe-area-inset-bottom, 0px) + 13.75rem))",
+            zIndex: 9999,
           }}
         >
           <div className="flex items-start gap-2.5">
@@ -92,9 +96,11 @@ export function GuaraMapChat({
           data-map-ui
           onClick={() => setOpen(true)}
           aria-label="Falar com o Guará"
-          className="absolute left-4 z-[80] flex items-center gap-1.5 rounded-full border border-white/30 bg-black/55 py-1 pl-1 pr-3 text-white shadow-[0_12px_28px_rgba(0,0,0,0.35)] backdrop-blur-md"
+          className="pointer-events-auto absolute left-4 flex items-center gap-1.5 rounded-full border border-white/30 bg-black/55 py-1 pl-1 pr-3 text-white shadow-[0_12px_28px_rgba(0,0,0,0.35)] backdrop-blur-md"
           style={{
-            bottom: "max(10.85rem, calc(env(safe-area-inset-bottom, 0px) + 9.85rem))",
+            position: "absolute",
+            bottom: "max(14.75rem, calc(env(safe-area-inset-bottom, 0px) + 13.75rem))",
+            zIndex: 9999,
           }}
         >
           <img src="/guara.png?v=3" alt="" className="h-8 w-auto" draggable={false} />

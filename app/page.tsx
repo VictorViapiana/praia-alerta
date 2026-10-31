@@ -24,7 +24,7 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { CriancaModal } from "./crianca-perdida";
 import { fold, useTide, useWeather } from "./coast";
-import { type DayLayer } from "./day-layers";
+import { isSunActive, type DayLayer } from "./day-layers";
 import { requestCompass, useDeviceHeading } from "./heading-beam";
 import { MapSearch, type MapMark } from "./map-search";
 import { useSkyPhase } from "./sky-phase";
@@ -871,6 +871,18 @@ function MapScreen({
   const [tipTour, setTipTour] = useState<TipTourState | null>(null);
   const [arrivalBanner, setArrivalBanner] = useState<string | null>(null);
   const [dayLayer, setDayLayer] = useState<DayLayer>("off");
+  const [sunAvailable, setSunAvailable] = useState(() => isSunActive());
+  // Sol à noite: força off — impossível calor na areia após o pôr do sol
+  useEffect(() => {
+    const sync = () => {
+      const on = isSunActive();
+      setSunAvailable(on);
+      if (dayLayer === "sol" && !on) setDayLayer("off");
+    };
+    sync();
+    const id = window.setInterval(sync, 30_000);
+    return () => window.clearInterval(id);
+  }, [dayLayer]);
   const landmarkTalk = landmarkById(landmarkTalkId);
   const [basemap, setBasemap] = useState<"satellite" | "clean">("satellite");
   const onSearchActive = useCallback((active: boolean) => setSearchOpen(active), []);
@@ -899,7 +911,9 @@ function MapScreen({
       ? "Nenhum estabelecimento com esse nome."
       : `${hits} estabelecimento${hits === 1 ? "" : "s"} na orla.`
     : dayLayer === "sol"
-      ? "Camada Sol: faixa quente só na areia — quiosques intactos."
+      ? sunAvailable
+        ? "Camada Sol: faixa quente só na areia — quiosques intactos."
+        : "Sol desligado à noite (17:30–05:30). Sem calor noturno."
       : dayLayer === "mare"
         ? "Camada Maré: dinâmica pela API · baía até a areia, sem avenida."
         : coach
@@ -1638,8 +1652,14 @@ function MapScreen({
         dayLayer={dayLayer}
         onDayLayer={(next) => {
           setCoach(false);
+          // Bloqueia Sol fora de 05:30–17:30
+          if (next === "sol" && !isSunActive()) {
+            setDayLayer("off");
+            return;
+          }
           setDayLayer(next);
         }}
+        sunAvailable={isSunActive()}
       />
       )}
 
