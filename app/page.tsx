@@ -54,6 +54,13 @@ import {
   takePendingSpot,
 } from "./orla-notify";
 import { NotifySoftPrompt } from "./notify-soft-prompt";
+import {
+  LOCATION_SOFT_EVENT,
+  locationSoftAccepted,
+  readLocationSoftChoice,
+  reopenLocationSoftPrompt,
+} from "./location-soft";
+import { LocationSoftPrompt } from "./location-soft-prompt";
 import { RouteActionsProvider, RouteChoice } from "./route-choice";
 import { MARLIN_TOUR_SPEAK, MARLIN_TOUR_STEPS, useOrlaSentinel, type OrlaAlert } from "./orla-sentinel";
 import { RAMPA_PRINCIPAL, RAMPA_RULE, RAMPA_WARN } from "./rampas";
@@ -850,7 +857,9 @@ function MapScreen({
   const [sheetId, setSheetId] = useState<string | null>(null);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [userPoint, setUserPoint] = useState<{ lat: number; lng: number } | null>(null);
-  const heading = useDeviceHeading();
+  const [locSoftOk, setLocSoftOk] = useState(false);
+  const [locSoftForce, setLocSoftForce] = useState(false);
+  const heading = useDeviceHeading(locSoftOk);
   const [flyTo, setFlyTo] = useState<{ id: number; lat: number; lng: number; zoom?: number; instant?: boolean } | null>(null);
   const [beachInvite, setBeachInvite] = useState(false);
   const beachInviteAsked = useRef(false);
@@ -946,7 +955,7 @@ function MapScreen({
   }, [destination, mode, originMark, userPoint, anchor]);
 
   useEffect(() => {
-    if (!routeActive || !navigator.geolocation) return;
+    if (!routeActive || !locSoftOk || !navigator.geolocation) return;
     const last = { lat: 0, lng: 0, at: 0, ready: false };
     const watch = navigator.geolocation.watchPosition(
       (position) => {
@@ -969,7 +978,7 @@ function MapScreen({
       { enableHighAccuracy: true, maximumAge: 4000, timeout: 15000 },
     );
     return () => navigator.geolocation.clearWatch(watch);
-  }, [routeActive]);
+  }, [routeActive, locSoftOk]);
 
   useEffect(() => {
     if (!destination || !anchor || !mode) {
@@ -1138,7 +1147,7 @@ function MapScreen({
     });
   }, []);
 
-  const locate = () => {
+  const runNativeLocate = useCallback(() => {
     void requestCompass();
     if (!navigator.geolocation) {
       setLocateNote("Este aparelho não informou a localização.");
@@ -1167,10 +1176,22 @@ function MapScreen({
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 },
     );
-  };
+  }, [routeActive]);
+
+  /** Soft prompt: nunca chama geolocation/compass sem aceite na nossa UI. */
+  const locate = useCallback(() => {
+    if (locationSoftAccepted() || locSoftOk) {
+      setLocSoftOk(true);
+      runNativeLocate();
+      return;
+    }
+    reopenLocationSoftPrompt();
+    setLocSoftForce(true);
+  }, [locSoftOk, runNativeLocate]);
 
   useEffect(() => {
-    locate();
+    // Só sincroniza estado — NÃO dispara API nativa no load.
+    if (readLocationSoftChoice() === "accepted") setLocSoftOk(true);
   }, []);
 
   const closeTipTour = useCallback(() => {
@@ -1624,6 +1645,23 @@ function MapScreen({
 
       {!driving && !cameraOpen && !searchOpen && <CameraFab onOpen={() => setCameraOpen(true)} />}
       {!driving && !cameraOpen && !searchOpen && <NotifySoftPrompt ready={mapReady} />}
+      {!driving && !cameraOpen && !searchOpen && (
+        <LocationSoftPrompt
+          ready={mapReady}
+          forceOpen={locSoftForce}
+          onAccepted={() => {
+            setLocSoftOk(true);
+            setLocSoftForce(false);
+            runNativeLocate();
+          }}
+          onDeclined={() => {
+            setLocSoftOk(false);
+            setLocSoftForce(false);
+            setLocateNote("Sem localização — toque de novo se mudar de ideia.");
+          }}
+          onDismissed={() => setLocSoftForce(false)}
+        />
+      )}
       {!driving && (
       <GuaraMapChat
         hidden={cameraOpen || searchOpen}
@@ -2155,8 +2193,16 @@ function Phone({
     },
     [openSpotFromNotify],
   );
+  const [sentinelLocOk, setSentinelLocOk] = useState(false);
+  useEffect(() => {
+    const sync = () => setSentinelLocOk(locationSoftAccepted());
+    sync();
+    window.addEventListener(LOCATION_SOFT_EVENT, sync);
+    return () => window.removeEventListener(LOCATION_SOFT_EVENT, sync);
+  }, []);
   const ramp = useOrlaSentinel({
-    enabled: !splashActive,
+    // Soft prompt: GPS do sentinela só após aceite — nunca no load.
+    enabled: !splashActive && sentinelLocOk,
     mapOpen,
     onForegroundAlert: applyOrlaAlert,
   });

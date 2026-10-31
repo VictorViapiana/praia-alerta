@@ -20,10 +20,15 @@ export function requestCompass() {
   return orientation.requestPermission().then(() => undefined).catch(() => undefined);
 }
 
-export function useDeviceHeading() {
+/** Só escuta orientação depois do soft prompt aceito (evita pop-up nativo no load). */
+export function useDeviceHeading(enabled = true) {
   const [heading, setHeading] = useState<number | null>(null);
 
   useEffect(() => {
+    if (!enabled) {
+      setHeading(null);
+      return;
+    }
     let last = -1;
     let stamp = 0;
     const onOrient = (event: Event) => {
@@ -45,7 +50,7 @@ export function useDeviceHeading() {
       window.removeEventListener("deviceorientationabsolute", onOrient, true);
       window.removeEventListener("deviceorientation", onOrient, true);
     };
-  }, []);
+  }, [enabled]);
 
   return heading;
 }

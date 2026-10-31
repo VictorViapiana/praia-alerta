@@ -308,18 +308,30 @@ body[data-pa-surface="sheet"] {
   cursor: pointer;
 }
 
-/* Maré: baía dinâmica — sem stroke; satélite via multiply */
+/* Maré: baía dinâmica — sem stroke; satélite via multiply.
+   SEM filter:blur — blur CSS no path SVG preenche a bbox e vaza p/ cidade. */
 .leaflet-overlay-pane path.day-layer-mare-body,
-.leaflet-overlay-pane path.day-layer-mare-soft {
+.leaflet-overlay-pane path.day-layer-mare-soft,
+.leaflet-overlay-pane path.day-layer-mare-soft-inner {
   stroke: none !important;
+  filter: none !important;
   mix-blend-mode: multiply;
 }
-.leaflet-overlay-pane path.day-layer-mare-soft {
-  /* feather forte na areia (borda norte dinâmica) */
-  filter: blur(24px);
+
+/* Sol: máscara térmica só na areia.
+   SEM filter:blur — blur CSS no path SVG usa a bbox e vira bloco no oceano/cidade. */
+.leaflet-overlay-pane path.day-layer-sol {
+  stroke: none !important;
+  filter: none !important;
 }
-.leaflet-overlay-pane path.day-layer-mare-body {
-  filter: none;
+.leaflet-overlay-pane path.day-layer-sol-wash {
+  mix-blend-mode: multiply;
+}
+.leaflet-overlay-pane path.day-layer-sol-mid {
+  mix-blend-mode: overlay;
+}
+.leaflet-overlay-pane path.day-layer-sol-core {
+  mix-blend-mode: soft-light;
 }
 
 
