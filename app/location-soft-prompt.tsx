@@ -66,7 +66,7 @@ export function LocationSoftPrompt({
   return (
     <div
       className="absolute inset-x-3 z-[96] flex justify-center"
-      style={{ bottom: "max(11.5rem, calc(env(safe-area-inset-bottom, 0px) + 10.5rem))" }}
+      style={{ bottom: "max(calc(9rem + 16px), calc(env(safe-area-inset-bottom, 0px) + 8rem + 16px))" }}
       data-map-ui
       role="dialog"
       aria-label="Ativar localização da orla"
