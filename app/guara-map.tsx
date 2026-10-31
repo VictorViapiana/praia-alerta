@@ -58,8 +58,8 @@ export function GuaraMapChat({
           className="pointer-events-auto absolute left-3 z-[70] w-[min(17.5rem,calc(100%-6.5rem))] rounded-[22px] border border-white/25 bg-[#102028]/94 p-3 text-white shadow-[0_18px_40px_rgba(0,0,0,0.45)] backdrop-blur-xl"
           style={{
             position: "absolute",
-            /* Sentado logo acima da busca — margem ~80px sobre o chrome inferior */
-            bottom: "max(calc(5.75rem + 80px), calc(env(safe-area-inset-bottom, 0px) + 4.75rem + 80px))",
+            /* 10–20px acima da barra de busca preta (chrome inferior ≈ 9rem) */
+            bottom: "max(calc(9rem + 16px), calc(env(safe-area-inset-bottom, 0px) + 8rem + 16px))",
           }}
         >
           <div className="flex items-start gap-2.5">
@@ -98,7 +98,7 @@ export function GuaraMapChat({
           className="pointer-events-auto absolute left-4 z-[70] flex items-center gap-1.5 rounded-full border border-white/30 bg-black/55 py-1 pl-1 pr-3 text-white shadow-[0_12px_28px_rgba(0,0,0,0.35)] backdrop-blur-md"
           style={{
             position: "absolute",
-            bottom: "max(calc(5.75rem + 80px), calc(env(safe-area-inset-bottom, 0px) + 4.75rem + 80px))",
+            bottom: "max(calc(9rem + 16px), calc(env(safe-area-inset-bottom, 0px) + 8rem + 16px))",
           }}
         >
           <img src="/guara.png?v=3" alt="" className="h-8 w-auto" draggable={false} />
