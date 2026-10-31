@@ -9,82 +9,145 @@ export const DAY_LAYER_CHIPS: { id: DayLayer; label: string; emoji: string }[] =
 ];
 
 /**
- * Linha dos quiosques na areia (sul → norte).
- * Mar = leste (+lng); calçadão/cidade = oeste (−lng).
+ * Limite seco (beira do calçadão), além da ponta sul → além da Pescaria.
+ * Extremos passam da areia para a tampa do polígono ficar fora da praia.
+ * Mar = leste (+lng).
  */
-const SAND_LINE: Array<[number, number]> = [
-  [-20.6598, -40.495],
-  [-20.6587, -40.4938],
-  [-20.6575, -40.4923],
-  [-20.6562, -40.4907],
-  [-20.6552, -40.4892],
-  [-20.6544, -40.4876],
-  [-20.6536, -40.4857],
-  [-20.653, -40.4842],
-  [-20.6526, -40.4826],
-  [-20.6524, -40.4804],
-  [-20.65245, -40.4785],
-  [-20.6527, -40.4768],
-  [-20.6531, -40.4756],
+const DRY_LIMIT: Array<[number, number]> = [
+  // bem além da ponta sul (tampa fora da areia / quadra)
+  [-20.6672, -40.5021],
+  [-20.6666, -40.5016],
+  [-20.666, -40.5011],
+  [-20.6654, -40.5006],
+  [-20.6648, -40.5001],
+  [-20.6642, -40.4996],
+  [-20.6636, -40.4991],
+  [-20.663, -40.4986],
+  [-20.6624, -40.4981],
+  [-20.6618, -40.49755],
+  [-20.6612, -40.497],
+  [-20.6606, -40.4964],
+  [-20.66, -40.49575],
+  [-20.6594, -40.4951],
+  [-20.6588, -40.4944],
+  [-20.6582, -40.49365],
+  [-20.6576, -40.49285],
+  [-20.65705, -40.492],
+  [-20.6565, -40.4912],
+  [-20.656, -40.4904],
+  [-20.65555, -40.48965],
+  [-20.6551, -40.4889],
+  [-20.6547, -40.48815],
+  [-20.6543, -40.4874],
+  [-20.65395, -40.4866],
+  [-20.6536, -40.48575],
+  [-20.6533, -40.4849],
+  [-20.65305, -40.484],
+  [-20.65285, -40.4831],
+  [-20.6527, -40.4822],
+  [-20.65258, -40.4813],
+  [-20.6525, -40.4804],
+  [-20.65248, -40.4795],
+  [-20.6525, -40.47865],
+  [-20.6526, -40.47785],
+  [-20.65278, -40.4771],
+  [-20.65305, -40.4764],
+  [-20.6534, -40.4758],
+  [-20.6538, -40.4753],
+  [-20.65425, -40.4749],
+  [-20.65475, -40.47455],
+  [-20.6553, -40.4743],
+  [-20.6559, -40.47415],
+  [-20.6565, -40.4741],
+  [-20.6571, -40.47415],
+  [-20.65765, -40.4743],
+  [-20.65815, -40.47455],
+  [-20.6586, -40.4749],
+  // bem além da Pescaria
+  [-20.65905, -40.4753],
+  [-20.6595, -40.47575],
+  [-20.6599, -40.47625],
 ];
 
 const METERS_LAT = 1 / 111_320;
+/** Longe o bastante para a borda do mar sair da tela ao ver a areia. */
+const OCEAN_M = 420;
+const SURF_M = 100;
 
 function metersLng(lat: number) {
   return 1 / (111_320 * Math.cos((lat * Math.PI) / 180));
 }
 
-/** Empurra a linha para o mar (leste +) ou para o calçadão (oeste −). */
-export function shiftLine(points: Array<[number, number]>, eastM: number, northM = 0): Array<[number, number]> {
-  return points.map(([lat, lng]) => [
-    lat + northM * METERS_LAT,
-    lng + eastM * metersLng(lat),
-  ]);
-}
-
-function closedBand(seaSide: Array<[number, number]>, landSide: Array<[number, number]>): Array<[number, number]> {
-  return [...seaSide, ...[...landSide].reverse()];
-}
-
-/** Sol: só a areia (entre beira-mar e os quiosques) — sem subir na avenida. */
-export function sunBand(): Array<[number, number]> {
-  const sea = shiftLine(SAND_LINE, 48);
-  const land = shiftLine(SAND_LINE, 4);
-  return closedBand(sea, land);
+/**
+ * Empurra para o mar (leste). No crescente norte (Morro) soma um pouco de sul,
+ * com teto baixo para não subir na avenida.
+ */
+export function shiftSeaward(points: Array<[number, number]>, meters: number): Array<[number, number]> {
+  return points.map(([lat, lng]) => {
+    const northBend = lng > -40.4785 ? Math.min(0.55, (lng + 40.4785) / 0.008) : 0;
+    const eastPart = meters * (1 - northBend * 0.22);
+    const southPart = meters * northBend * 0.4;
+    return [
+      lat - southPart * METERS_LAT,
+      lng + eastPart * metersLng(lat),
+    ] as [number, number];
+  });
 }
 
 /**
- * Maré = água molhando a areia (entre o mar e a linha da maré).
- * Nunca passa dos quiosques em direção à cidade.
- *
- * ratio 0 = vazante → água longe, quase só beira
- * ratio 1 = preamar → sobe na areia até perto dos quiosques
+ * Fecha a faixa afinando nas pontas (lado do mar encontra o reach).
+ * Assim a tampa tem comprimento ~0 — some o corte diagonal na areia.
+ * Os primeiros ~8 pts ficam além da areia útil (extensão sul/norte).
  */
+function closedBand(seaSide: Array<[number, number]>, landSide: Array<[number, number]>): Array<[number, number]> {
+  const n = seaSide.length;
+  const blend = 8;
+  const sea = seaSide.map((p, i) => {
+    const tip = Math.min(i, n - 1 - i);
+    if (tip >= blend) return p;
+    const t = tip / blend; // 0 na ponta → 1
+    const land = landSide[i];
+    return [p[0] * t + land[0] * (1 - t), p[1] * t + land[1] * (1 - t)] as [number, number];
+  });
+  return [...sea, ...[...landSide].reverse()];
+}
+
+/**
+ * Metros do calçadão até a linha da água na areia.
+ * 0 = vazante (rebentação); 1 = preamar (sobe na areia, sem avenida).
+ */
+function reachFromDry(ratio: number) {
+  const t = Math.min(1, Math.max(0, ratio));
+  return SURF_M - t * (SURF_M - 20);
+}
+
+export function sunBand(): Array<[number, number]> {
+  return closedBand(shiftSeaward(DRY_LIMIT, 75), shiftSeaward(DRY_LIMIT, 3));
+}
+
+/** Faixa escura no mar — ancora visual “vem da água”. */
+export function tideOceanBand(_ratio?: number): Array<[number, number]> {
+  return closedBand(shiftSeaward(DRY_LIMIT, OCEAN_M), shiftSeaward(DRY_LIMIT, SURF_M));
+}
+
+/** Água: do mar até a linha da maré — praia inteira. */
 export function tideWaterBand(ratio: number): Array<[number, number]> {
-  const t = Math.min(1, Math.max(0, ratio));
-  // Borda no mar (fixa)
-  const ocean = shiftLine(SAND_LINE, 88);
-  // Até onde a água sobe na areia (nunca inland dos quiosques: eastM >= 6)
-  const reachEast = 62 - t * 52; // 62 m (vazante) → 10 m (preamar)
-  const reach = shiftLine(SAND_LINE, Math.max(6, reachEast));
-  return closedBand(ocean, reach);
+  return closedBand(shiftSeaward(DRY_LIMIT, OCEAN_M), shiftSeaward(DRY_LIMIT, reachFromDry(ratio)));
 }
 
-/** Faixa de areia molhada logo acima da linha da água (véu suave). */
+/** Areia molhada logo acima da linha da água. */
 export function tideWetSandBand(ratio: number): Array<[number, number]> {
-  const t = Math.min(1, Math.max(0, ratio));
-  const reachEast = Math.max(6, 62 - t * 52);
-  const water = shiftLine(SAND_LINE, reachEast);
-  // 8–14 m de areia molhada “acima” da água, ainda no lado do mar dos quiosques
-  const wet = shiftLine(SAND_LINE, Math.max(4, reachEast - (8 + t * 6)));
-  return closedBand(water, wet);
+  const reachM = reachFromDry(ratio);
+  return closedBand(shiftSeaward(DRY_LIMIT, reachM), shiftSeaward(DRY_LIMIT, Math.max(12, reachM - 14)));
 }
 
-/** Linha da espuma / limite da água na areia. */
 export function tideEdgeLine(ratio: number): Array<[number, number]> {
-  const t = Math.min(1, Math.max(0, ratio));
-  const reachEast = Math.max(6, 62 - t * 52);
-  return shiftLine(SAND_LINE, reachEast);
+  return shiftSeaward(DRY_LIMIT, reachFromDry(ratio));
+}
+
+/** Rebentação — origem visual da maré (sempre na água). */
+export function tideSurfLine(): Array<[number, number]> {
+  return shiftSeaward(DRY_LIMIT, SURF_M);
 }
 
 export function tideRatio(level: number, rangeMin: number, rangeMax: number) {
@@ -95,8 +158,8 @@ export function tideRatio(level: number, rangeMin: number, rangeMax: number) {
 }
 
 export function tideReachLabel(ratio: number) {
-  if (ratio < 0.28) return "vazante · água longe na beira";
+  if (ratio < 0.28) return "vazante · água na beira";
   if (ratio < 0.55) return "maré média · molhando a areia";
   if (ratio < 0.78) return "enchente · subindo na areia";
-  return "preamar · água perto dos quiosques";
+  return "preamar · água perto do calçadão";
 }
