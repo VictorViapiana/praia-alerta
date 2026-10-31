@@ -862,6 +862,7 @@ function MapScreen({
   const heading = useDeviceHeading(locSoftOk);
   const [flyTo, setFlyTo] = useState<{ id: number; lat: number; lng: number; zoom?: number; instant?: boolean } | null>(null);
   const [beachInvite, setBeachInvite] = useState(false);
+  const [guaraOpen, setGuaraOpen] = useState(false);
   const beachInviteAsked = useRef(false);
   const [locating, setLocating] = useState(false);
   const [locateNote, setLocateNote] = useState<string | null>(null);
@@ -1663,9 +1664,11 @@ function MapScreen({
       />
       )}
 
-      {!driving && !cameraOpen && !searchOpen && <CameraFab onOpen={() => setCameraOpen(true)} />}
-      {!driving && !cameraOpen && !searchOpen && <NotifySoftPrompt ready={mapReady} />}
-      {!driving && !cameraOpen && !searchOpen && (
+      {!driving && !cameraOpen && !searchOpen && !guaraOpen && (
+        <CameraFab onOpen={() => setCameraOpen(true)} />
+      )}
+      {!driving && !cameraOpen && !searchOpen && !guaraOpen && <NotifySoftPrompt ready={mapReady} />}
+      {!driving && !cameraOpen && !searchOpen && !guaraOpen && (
         <LocationSoftPrompt
           ready={mapReady}
           forceOpen={locSoftForce}
@@ -1686,6 +1689,7 @@ function MapScreen({
       <GuaraMapChat
         hidden={cameraOpen || searchOpen}
         beachInvite={beachInvite && !cameraOpen && !searchOpen}
+        onOpenChange={setGuaraOpen}
         onAcceptBeach={showPraiaDoMorro}
         onDeclineBeach={() => setBeachInvite(false)}
         onGuide={(guide) => {
