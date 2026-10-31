@@ -308,6 +308,14 @@ body[data-pa-surface="sheet"] {
   cursor: pointer;
 }
 
+/* Maré: véu suave na linha da areia (sem traço duro / sem dashed) */
+.leaflet-overlay-pane path.day-layer-mare-soft {
+  filter: blur(1.8px);
+}
+.leaflet-overlay-pane path.day-layer-mare-body {
+  filter: blur(0.45px);
+}
+
 
 .leaflet-layer.orla-satellite {
   /* sem blur: filter blur em tiles trava pan/zoom no celular */

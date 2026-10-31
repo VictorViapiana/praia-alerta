@@ -27,12 +27,8 @@ import {
 import { fold, useTide } from "./coast";
 import {
   sunBand,
-  tideEdgeLine,
-  tideOceanBand,
+  tideLayers,
   tideRatio,
-  tideSurfLine,
-  tideWaterBand,
-  tideWetSandBand,
   type DayLayer,
 } from "./day-layers";
 import { MarkerPopup } from "./marker-popup";
@@ -1009,11 +1005,9 @@ function DayLayerOverlay({ layer }: { layer: DayLayer }) {
   const map = useMap();
   const { data: tide } = useTide();
   const ratio = tide ? tideRatio(tide.level, tide.rangeMin, tide.rangeMax) : 0.45;
-  const edge = tideEdgeLine(ratio);
-  const surf = tideSurfLine();
-  // preferCanvas recorta polígonos longos e inventa “triângulos” na cidade —
-  // SVG dedicado mantém a faixa só na areia/água.
-  const svg = useMemo(() => L.svg({ padding: 1 }), []);
+  const bands = tideLayers(ratio);
+  // SVG dedicado: canvas do mapa inventa cortes/triângulos em faixas longas
+  const svg = useMemo(() => L.svg({ padding: 1.25 }), []);
   useEffect(() => {
     svg.addTo(map);
     return () => {
@@ -1023,7 +1017,7 @@ function DayLayerOverlay({ layer }: { layer: DayLayer }) {
 
   if (layer === "off") return null;
 
-  const common = { renderer: svg, interactive: false as const };
+  const common = { renderer: svg, interactive: false as const, stroke: false as const };
 
   if (layer === "sol") {
     return (
@@ -1031,7 +1025,6 @@ function DayLayerOverlay({ layer }: { layer: DayLayer }) {
         key="sol-band"
         positions={sunBand()}
         pathOptions={{
-          stroke: false,
           fillColor: "#fbbf24",
           fillOpacity: 0.2,
           className: "day-layer-sol",
@@ -1041,79 +1034,38 @@ function DayLayerOverlay({ layer }: { layer: DayLayer }) {
     );
   }
 
-  // Maré: leste dos quiosques apenas (água → areia) · sem avenida
+  // Maré orgânica: oceano → areia. Sem tracejado. Azul translúcido (#006994).
+  // Orla = eixo leste; crescente norte = faixa sul à parte (sem cunha na avenida).
+  const water = "#006994";
+  const layerDefs = [
+    { key: "deep", opacity: 0.4, main: bands.main.deep, crescent: bands.crescent.deep },
+    { key: "body", opacity: 0.32, main: bands.main.body, crescent: bands.crescent.body },
+    { key: "soft", opacity: 0.26, main: bands.main.soft, crescent: bands.crescent.soft },
+  ] as const;
   return (
     <>
-      <Polygon
-        key="mare-ocean"
-        positions={tideOceanBand(ratio)}
-        pathOptions={{
-          stroke: false,
-          fillColor: "#0c4a6e",
-          fillOpacity: 0.36,
-          className: "day-layer-mare-ocean",
-          ...common,
-        }}
-      />
-      <Polygon
-        key={`mare-water-${ratio.toFixed(2)}`}
-        positions={tideWaterBand(ratio)}
-        pathOptions={{
-          stroke: false,
-          fillColor: "#0284c7",
-          fillOpacity: 0.34,
-          className: "day-layer-mare-water",
-          ...common,
-        }}
-      />
-      <Polygon
-        key={`mare-wet-${ratio.toFixed(2)}`}
-        positions={tideWetSandBand(ratio)}
-        pathOptions={{
-          stroke: false,
-          fillColor: "#7dd3fc",
-          fillOpacity: 0.22,
-          className: "day-layer-mare-wet",
-          ...common,
-        }}
-      />
-      <Polyline
-        key="mare-surf"
-        positions={surf}
-        pathOptions={{
-          color: "#e0f2fe",
-          weight: 2.2,
-          opacity: 0.7,
-          dashArray: "4 7",
-          lineCap: "round",
-          className: "day-layer-mare-surf",
-          ...common,
-        }}
-      />
-      <Polyline
-        key={`mare-foam-${ratio.toFixed(2)}`}
-        positions={edge}
-        pathOptions={{
-          color: "#ffffff",
-          weight: 2.6,
-          opacity: 0.92,
-          lineCap: "round",
-          className: "day-layer-mare-foam",
-          ...common,
-        }}
-      />
-      <Polyline
-        key={`mare-edge-${ratio.toFixed(2)}`}
-        positions={edge}
-        pathOptions={{
-          color: "#38bdf8",
-          weight: 1.3,
-          opacity: 0.9,
-          lineCap: "round",
-          className: "day-layer-mare-edge",
-          ...common,
-        }}
-      />
+      {layerDefs.map(({ key, opacity, main, crescent }) => (
+        <Fragment key={`mare-${key}-${ratio.toFixed(2)}`}>
+          <Polygon
+            positions={main}
+            pathOptions={{
+              fillColor: water,
+              fillOpacity: opacity,
+              className: `day-layer-mare-${key}`,
+              ...common,
+            }}
+          />
+          <Polygon
+            positions={crescent}
+            pathOptions={{
+              fillColor: water,
+              fillOpacity: opacity,
+              className: `day-layer-mare-${key}`,
+              ...common,
+            }}
+          />
+        </Fragment>
+      ))}
     </>
   );
 }
