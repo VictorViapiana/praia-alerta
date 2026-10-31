@@ -1011,9 +1011,9 @@ function DayLayerOverlay({ layer }: { layer: DayLayer }) {
   const ratio = tide ? tideRatio(tide.level, tide.rangeMin, tide.rangeMax) : 0.45;
   const edge = tideEdgeLine(ratio);
   const surf = tideSurfLine();
-  // Canvas (preferCanvas no mapa) recorta polígonos longos da orla —
-  // SVG dedicado pinta a faixa ponta a ponta sem corte no viewport.
-  const svg = useMemo(() => L.svg({ padding: 2.5 }), []);
+  // preferCanvas recorta polígonos longos e inventa “triângulos” na cidade —
+  // SVG dedicado mantém a faixa só na areia/água.
+  const svg = useMemo(() => L.svg({ padding: 1 }), []);
   useEffect(() => {
     svg.addTo(map);
     return () => {
@@ -1041,7 +1041,7 @@ function DayLayerOverlay({ layer }: { layer: DayLayer }) {
     );
   }
 
-  // Maré: nasce na água (rebentação) → sobe na areia · ponta a ponta · sem avenida
+  // Maré: leste dos quiosques apenas (água → areia) · sem avenida
   return (
     <>
       <Polygon
@@ -1050,7 +1050,7 @@ function DayLayerOverlay({ layer }: { layer: DayLayer }) {
         pathOptions={{
           stroke: false,
           fillColor: "#0c4a6e",
-          fillOpacity: 0.45,
+          fillOpacity: 0.36,
           className: "day-layer-mare-ocean",
           ...common,
         }}
@@ -1061,7 +1061,7 @@ function DayLayerOverlay({ layer }: { layer: DayLayer }) {
         pathOptions={{
           stroke: false,
           fillColor: "#0284c7",
-          fillOpacity: 0.4,
+          fillOpacity: 0.34,
           className: "day-layer-mare-water",
           ...common,
         }}
@@ -1072,7 +1072,7 @@ function DayLayerOverlay({ layer }: { layer: DayLayer }) {
         pathOptions={{
           stroke: false,
           fillColor: "#7dd3fc",
-          fillOpacity: 0.28,
+          fillOpacity: 0.22,
           className: "day-layer-mare-wet",
           ...common,
         }}
@@ -1082,9 +1082,9 @@ function DayLayerOverlay({ layer }: { layer: DayLayer }) {
         positions={surf}
         pathOptions={{
           color: "#e0f2fe",
-          weight: 2.6,
+          weight: 2.2,
           opacity: 0.7,
-          dashArray: "5 8",
+          dashArray: "4 7",
           lineCap: "round",
           className: "day-layer-mare-surf",
           ...common,
@@ -1095,8 +1095,8 @@ function DayLayerOverlay({ layer }: { layer: DayLayer }) {
         positions={edge}
         pathOptions={{
           color: "#ffffff",
-          weight: 3.2,
-          opacity: 0.95,
+          weight: 2.6,
+          opacity: 0.92,
           lineCap: "round",
           className: "day-layer-mare-foam",
           ...common,
@@ -1107,7 +1107,7 @@ function DayLayerOverlay({ layer }: { layer: DayLayer }) {
         positions={edge}
         pathOptions={{
           color: "#38bdf8",
-          weight: 1.5,
+          weight: 1.3,
           opacity: 0.9,
           lineCap: "round",
           className: "day-layer-mare-edge",
