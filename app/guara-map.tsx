@@ -56,7 +56,7 @@ export function GuaraMapChat({
           animate={{ opacity: 1, x: 0, y: 0 }}
           className="absolute left-3 z-[80] w-[min(17.5rem,calc(100%-6.5rem))] rounded-[22px] border border-white/25 bg-[#102028]/94 p-3 text-white shadow-[0_18px_40px_rgba(0,0,0,0.45)] backdrop-blur-xl"
           style={{
-            bottom: "max(14.5rem, calc(env(safe-area-inset-bottom, 0px) + 13.25rem))",
+            bottom: "max(10.85rem, calc(env(safe-area-inset-bottom, 0px) + 9.85rem))",
           }}
         >
           <div className="flex items-start gap-2.5">
@@ -94,7 +94,7 @@ export function GuaraMapChat({
           aria-label="Falar com o Guará"
           className="absolute left-4 z-[80] flex items-center gap-1.5 rounded-full border border-white/30 bg-black/55 py-1 pl-1 pr-3 text-white shadow-[0_12px_28px_rgba(0,0,0,0.35)] backdrop-blur-md"
           style={{
-            bottom: "max(14.5rem, calc(env(safe-area-inset-bottom, 0px) + 13.25rem))",
+            bottom: "max(10.85rem, calc(env(safe-area-inset-bottom, 0px) + 9.85rem))",
           }}
         >
           <img src="/guara.png?v=3" alt="" className="h-8 w-auto" draggable={false} />

@@ -83,13 +83,54 @@ export function clearSpotFromUrl() {
   }
 }
 
-export async function ensureNotifyPermission(): Promise<NotificationPermission | "unsupported"> {
+export const NOTIFY_SOFT_KEY = "pa_notify_soft_prompt_v1";
+export type NotifySoftChoice = "unset" | "accepted" | "declined";
+
+export function readNotifySoftChoice(): NotifySoftChoice {
+  if (typeof window === "undefined") return "unset";
+  try {
+    const raw = localStorage.getItem(NOTIFY_SOFT_KEY);
+    if (raw === "accepted" || raw === "declined") return raw;
+  } catch {
+    /* private mode */
+  }
+  return "unset";
+}
+
+export function writeNotifySoftChoice(choice: Exclude<NotifySoftChoice, "unset">) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(NOTIFY_SOFT_KEY, choice);
+  } catch {
+    /* private mode */
+  }
+}
+
+/**
+ * Soft prompt: NÃO chama o dialog nativo.
+ * Retorna o estado atual; quem pede nativo é requestNativeNotifyPermission (só após aceite na UI).
+ */
+export async function ensureNotifyPermission(): Promise<NotificationPermission | "unsupported" | "soft-pending"> {
+  if (typeof window === "undefined" || typeof Notification === "undefined") return "unsupported";
+  if (Notification.permission === "granted" || Notification.permission === "denied") {
+    return Notification.permission;
+  }
+  const soft = readNotifySoftChoice();
+  if (soft === "declined") return "denied";
+  if (soft !== "accepted") return "soft-pending";
+  return "default";
+}
+
+/** Só após o usuário aceitar no modal da app. */
+export async function requestNativeNotifyPermission(): Promise<NotificationPermission | "unsupported"> {
   if (typeof window === "undefined" || typeof Notification === "undefined") return "unsupported";
   if (Notification.permission === "granted" || Notification.permission === "denied") {
     return Notification.permission;
   }
   try {
-    return await Notification.requestPermission();
+    const result = await Notification.requestPermission();
+    writeNotifySoftChoice(result === "granted" ? "accepted" : "declined");
+    return result;
   } catch {
     return Notification.permission;
   }
@@ -163,13 +204,10 @@ function viaPage(payload: OrlaNotifyPayload) {
   }
 }
 
-/** Dispara banner local. Prefere o SW (segundo plano / PWA iOS 16.4+ e Android). */
+/** Dispara banner local. Prefere o SW. Nunca dispara o prompt nativo daqui. */
 export async function pushOrlaNotice(payload: OrlaNotifyPayload) {
   if (typeof window === "undefined" || typeof Notification === "undefined") return false;
-  if (Notification.permission !== "granted") {
-    const permission = await ensureNotifyPermission();
-    if (permission !== "granted") return false;
-  }
+  if (Notification.permission !== "granted") return false;
   // Sempre tenta SW primeiro: no iOS o clique só chega de forma confiável assim.
   if (await viaServiceWorker(payload)) return true;
   return viaPage(payload);

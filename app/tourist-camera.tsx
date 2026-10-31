@@ -18,7 +18,8 @@ export function CameraFab({ onOpen }: { onOpen: () => void }) {
       aria-label="Eu amo Guarapari. Abrir a câmera."
       className="group absolute right-3 z-[80] flex flex-col items-center gap-1.5 overflow-visible rounded-[28px] pb-1"
       style={{
-        bottom: "max(14.5rem, calc(env(safe-area-inset-bottom, 0px) + 13.25rem))",
+        /* Logo acima da busca (~10.4rem de chrome) — sem voar no meio do mapa */
+        bottom: "max(10.85rem, calc(env(safe-area-inset-bottom, 0px) + 9.85rem))",
       }}
     >
       <span className="relative grid h-[76px] w-[76px] shrink-0 place-items-center">
