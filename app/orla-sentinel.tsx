@@ -5,6 +5,8 @@ import { GOLFINHO, MARLIN, MARLIN_SPEAK, MARLIN_TIPS, PLACES } from "./places";
 import {
   EXIT_HYSTERESIS_M,
   MONUMENT_RADIUS_M,
+  QUIOSQUE_ACCURACY_M,
+  QUIOSQUE_EXIT_HYSTERESIS_M,
   QUIOSQUE_RADIUS_M,
   pushOrlaNotice,
   rampDwellMs,
@@ -46,8 +48,8 @@ async function notify(kind: OrlaSpotKind, spot: string, title: string, body: str
 }
 
 /**
- * Vigia a orla: Marlin/Golfinho (200 m), quiosques (chegada) e rampa (3 min).
- * App em evidência → callback para o Guará. App fechado/segundo plano → notificação.
+ * Vigia a orla: Marlin/Golfinho (200 m), quiosques (passagem) e rampa (3 min).
+ * Quiosques: notifica SEMPRE ao entrar na zona (app aberto ou em segundo plano).
  */
 export function useOrlaSentinel({
   enabled,
@@ -105,8 +107,8 @@ export function useOrlaSentinel({
       (position) => {
         const accuracy = Number(position.coords.accuracy);
         // GPS ruim: NÃO aborta o loop — ainda processa SAÍDAS para rearmar a zona.
-        // Só bloqueia ENTRADAS (evita falso positivo de quiosque/monumento).
-        const accuracyOk = !Number.isFinite(accuracy) || accuracy <= 55;
+        const accuracyOkMonument = !Number.isFinite(accuracy) || accuracy <= 55;
+        const accuracyOkQuiosque = !Number.isFinite(accuracy) || accuracy <= QUIOSQUE_ACCURACY_M;
         const here = { lat: position.coords.latitude, lng: position.coords.longitude };
         const visible = isAppVisible();
 
@@ -115,16 +117,19 @@ export function useOrlaSentinel({
           point: { lat: number; lng: number },
           radius: number,
           enter: () => void,
+          opts?: { exitHysteresis?: number; accuracyOk?: boolean },
         ) => {
+          const exitExtra = opts?.exitHysteresis ?? EXIT_HYSTERESIS_M;
+          const mayEnter = opts?.accuracyOk ?? accuracyOkMonument;
           const dist = metersBetween(here, point);
           const was = inside.current.has(key);
-          if (was && dist > radius + EXIT_HYSTERESIS_M) {
-            // Saiu de verdade → rearma para a próxima chegada
+          if (was && dist > radius + exitExtra) {
+            // Saiu de verdade → rearma para a próxima passagem
             inside.current.delete(key);
             return;
           }
           if (!was && dist <= radius) {
-            if (!accuracyOk) return;
+            if (!mayEnter) return;
             inside.current.add(key);
             enter();
           }
@@ -158,18 +163,25 @@ export function useOrlaSentinel({
           );
         });
 
+        // Passagem pelos quiosques: notifica cada um ao entrar na zona (mesmo com app aberto).
         for (const place of QUIOSQUES) {
           const key = `q:${place.id}`;
-          checkZone(key, place, QUIOSQUE_RADIUS_M, () => {
-            void notify(
-              "quiosque",
-              place.id,
-              `Você chegou ao ${place.name}!`,
-              `${place.name} está bem aqui na areia. Toque para abrir o mapa com o quiosque selecionado.`,
-              `orla-${place.id}`,
-            );
-            if (visible) onAlert.current({ kind: "quiosque", id: place.id, name: place.name });
-          });
+          checkZone(
+            key,
+            place,
+            QUIOSQUE_RADIUS_M,
+            () => {
+              void notify(
+                "quiosque",
+                place.id,
+                `Passando pelo ${place.name}`,
+                `Você está perto do ${place.name} na areia. Toque para abrir no mapa.`,
+                `orla-${place.id}`,
+              );
+              if (visible) onAlert.current({ kind: "quiosque", id: place.id, name: place.name });
+            },
+            { exitHysteresis: QUIOSQUE_EXIT_HYSTERESIS_M, accuracyOk: accuracyOkQuiosque },
+          );
         }
 
         if (!insideRampCorridor(here)) {
@@ -182,7 +194,7 @@ export function useOrlaSentinel({
           return;
         }
 
-        if (!accuracyOk) return;
+        if (!accuracyOkMonument) return;
 
         inside.current.add("rampa");
         const now = Date.now();
@@ -194,7 +206,7 @@ export function useOrlaSentinel({
         fireRamp();
       },
       () => {},
-      { enableHighAccuracy: true, maximumAge: 2500, timeout: 20000 },
+      { enableHighAccuracy: true, maximumAge: 1200, timeout: 15000 },
     );
 
     return () => {

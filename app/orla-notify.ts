@@ -230,9 +230,14 @@ export async function pushOrlaNotice(payload: OrlaNotifyPayload) {
 }
 
 export const MONUMENT_RADIUS_M = 200;
-export const QUIOSQUE_RADIUS_M = 38;
+/** Passagem na orla: calçadão ↔ areia. 38 m era curto demais pro GPS + trajeto. */
+export const QUIOSQUE_RADIUS_M = 58;
+/** Saiu de verdade do quiosque — histerese menor que monumento pra rearmar entre vizinhos. */
+export const QUIOSQUE_EXIT_HYSTERESIS_M = 20;
 export const RAMP_DWELL_MS = 3 * 60 * 1000;
 export const EXIT_HYSTERESIS_M = 28;
+/** GPS de praia costuma oscilar 40–80 m; entradas de quiosque aceitam até este teto. */
+export const QUIOSQUE_ACCURACY_M = 85;
 
 /** Em teste (?rampDwellMs=800) o corredor avisa mais rápido. */
 export function rampDwellMs() {
