@@ -105,12 +105,12 @@ export function SponsorSheet({ place, onClose }: { place: Place; onClose: () => 
   return (
     <motion.div
       data-map-ui
-      className="absolute inset-0 z-[60]"
+      className="absolute inset-0 z-[110]"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <button type="button" aria-label="Fechar detalhes" className="absolute inset-0 bg-black/45" onClick={onClose} />
+      <button type="button" aria-label="Fechar detalhes" className="absolute inset-0 bg-black/55" onClick={onClose} />
       <motion.section
         role="dialog"
         aria-label={place.name}
@@ -209,12 +209,12 @@ export function EscunaSheet({ onClose }: { onClose: () => void }) {
   return (
     <motion.div
       data-map-ui
-      className="absolute inset-0 z-[60]"
+      className="absolute inset-0 z-[110]"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <button type="button" aria-label="Fechar detalhes" className="absolute inset-0 bg-black/45" onClick={onClose} />
+      <button type="button" aria-label="Fechar detalhes" className="absolute inset-0 bg-black/55" onClick={onClose} />
       <motion.section
         role="dialog"
         aria-label="Ponto das Escunas"
@@ -287,12 +287,12 @@ export function AmbulanteSheet({ vendor, onClose }: { vendor: Ambulante; onClose
   return (
     <motion.div
       data-map-ui
-      className="absolute inset-0 z-[60]"
+      className="absolute inset-0 z-[110]"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <button type="button" aria-label="Fechar detalhes" className="absolute inset-0 bg-black/45" onClick={onClose} />
+      <button type="button" aria-label="Fechar detalhes" className="absolute inset-0 bg-black/55" onClick={onClose} />
       <motion.section
         role="dialog"
         aria-label={vendor.name}

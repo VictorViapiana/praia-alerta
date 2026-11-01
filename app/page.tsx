@@ -913,6 +913,8 @@ function MapScreen({
   }).length;
   const sheetPlace = PLACES.find((place) => place.id === sheetId && place.isSponsor) ?? null;
   const sheetVendor = AMBULANTES.find((vendor) => vendor.id === sheetId && vendor.isSponsor && vendor.isOnline) ?? null;
+  /** Ficha de patrocinador/ambulante/escuna aberta — esconde chrome do mapa. */
+  const sheetOpen = Boolean(sheetId);
   const mapHint = foldedQuery
     ? hits === 0
       ? "Nenhum estabelecimento com esse nome."
@@ -1455,17 +1457,11 @@ function MapScreen({
         )}
       </div>
 
-      <AnimatePresence>
-        {sheetPlace && <SponsorSheet key={sheetPlace.id} place={sheetPlace} onClose={() => setSheetId(null)} />}
-        {sheetVendor && <AmbulanteSheet key={sheetVendor.id} vendor={sheetVendor} onClose={() => setSheetId(null)} />}
-        {sheetId === "escunas" && <EscunaSheet onClose={() => setSheetId(null)} />}
-      </AnimatePresence>
-
-      {!driving && <div className="pointer-events-none absolute inset-x-0 top-0 z-40 h-28 bg-gradient-to-b from-black/45 to-transparent" />}
+      {!driving && !sheetOpen && <div className="pointer-events-none absolute inset-x-0 top-0 z-40 h-28 bg-gradient-to-b from-black/45 to-transparent" />}
       {/* vignette leve — sem bloco sólido na base que pareça faixa */}
-      {!driving && <div className="pointer-events-none absolute inset-x-0 bottom-0 z-40 h-28 bg-gradient-to-t from-black/25 to-transparent" />}
+      {!driving && !sheetOpen && <div className="pointer-events-none absolute inset-x-0 bottom-0 z-40 h-28 bg-gradient-to-t from-black/25 to-transparent" />}
 
-      {!driving && (
+      {!driving && !sheetOpen && (
         <div
           className="pointer-events-none absolute left-5 right-16 z-50"
           style={{ top: "max(0.85rem, calc(env(safe-area-inset-top, 0px) + 0.35rem))" }}
@@ -1479,9 +1475,9 @@ function MapScreen({
         </div>
       )}
 
-      <CloseButton onClose={onClose} light={!driving} className={closeTopClass} data-map-ui />
+      {!sheetOpen && <CloseButton onClose={onClose} light={!driving} className={closeTopClass} data-map-ui />}
 
-      {!driving && (
+      {!driving && !sheetOpen && (
       <div
         className="absolute right-4 z-50 flex flex-col items-end gap-1"
         style={{ top: "max(4.7rem, calc(env(safe-area-inset-top, 0px) + 3.7rem))" }}
@@ -1642,7 +1638,7 @@ function MapScreen({
         </motion.div>
       )}
 
-      {!driving && (
+      {!driving && !sheetOpen && (
       <MapSearch
         query={query}
         onQuery={setQuery}
@@ -1670,11 +1666,11 @@ function MapScreen({
       />
       )}
 
-      {!driving && !cameraOpen && !searchOpen && !guaraOpen && (
+      {!driving && !sheetOpen && !cameraOpen && !searchOpen && !guaraOpen && (
         <CameraFab onOpen={() => setCameraOpen(true)} />
       )}
-      {!driving && !cameraOpen && !searchOpen && !guaraOpen && <NotifySoftPrompt ready={mapReady} />}
-      {!driving && !cameraOpen && !searchOpen && !guaraOpen && (
+      {!driving && !sheetOpen && !cameraOpen && !searchOpen && !guaraOpen && <NotifySoftPrompt ready={mapReady} />}
+      {!driving && !sheetOpen && !cameraOpen && !searchOpen && !guaraOpen && (
         <LocationSoftPrompt
           ready={mapReady}
           forceOpen={locSoftForce}
@@ -1691,7 +1687,7 @@ function MapScreen({
           onDismissed={() => setLocSoftForce(false)}
         />
       )}
-      {!driving && (
+      {!driving && !sheetOpen && (
       <GuaraMapChat
         hidden={cameraOpen || searchOpen}
         beachInvite={beachInvite && !cameraOpen && !searchOpen}
@@ -1768,15 +1764,22 @@ function MapScreen({
           }}
         />
       )}
-      {pending && !cardOwnsRoute(pending.id) && !cameraOpen && !searchOpen && (
+      {pending && !sheetOpen && !cardOwnsRoute(pending.id) && !cameraOpen && !searchOpen && (
         <div className={`absolute z-[66] rounded-[22px] border border-white/70 bg-white/95 p-3 text-[#142018] shadow-[0_16px_36px_rgba(0,0,0,0.28)] ${driving ? "inset-x-3 bottom-[13.5rem]" : "left-[5.25rem] top-[7.7rem] w-[min(14rem,calc(100%-10.75rem))]"}`}>
           <p className="text-[13px] font-semibold">{pending.name}</p>
           <RouteChoice place={pending} tone="light" />
         </div>
       )}
-      <MapSos onTrigger={onSos} parked={driving} />
+      {!sheetOpen && <MapSos onTrigger={onSos} parked={driving} />}
       {cameraOpen && <TouristCamera onClose={() => setCameraOpen(false)} />}
-      <GuaraOnboarding rootRef={mapRef} steps={MAP_STEPS} storageKey={MAP_TOUR_KEY} />
+      {!sheetOpen && <GuaraOnboarding rootRef={mapRef} steps={MAP_STEPS} storageKey={MAP_TOUR_KEY} />}
+
+      {/* Sheets por cima de TODO o chrome do mapa (busca, FABs, Sol/Maré). */}
+      <AnimatePresence>
+        {sheetPlace && <SponsorSheet key={sheetPlace.id} place={sheetPlace} onClose={() => setSheetId(null)} />}
+        {sheetVendor && <AmbulanteSheet key={sheetVendor.id} vendor={sheetVendor} onClose={() => setSheetId(null)} />}
+        {sheetId === "escunas" && <EscunaSheet onClose={() => setSheetId(null)} />}
+      </AnimatePresence>
     </motion.div>
     </RouteActionsProvider>
   );
