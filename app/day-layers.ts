@@ -45,8 +45,12 @@ const LOW_TIDE_M = 48;
 const HIGH_TIDE_M = 12;
 const FEATHER_M = 11;
 
-const SAND_LAND_M = 3;
-const SAND_SEA_M = 34;
+/**
+ * Faixa térmica do Sol — só areia SECA (entre quiosques e a linha molhada).
+ * 34 m vazava na espuma; ~26 m cobre a areia quente sem entrar na água.
+ */
+const SAND_LAND_M = 4;
+const SAND_SEA_M = 26;
 
 /**
  * Costa LESTE (Pescaria) N→S — água a OESTE.
@@ -247,18 +251,72 @@ export function sunAzimuthDeg(now = new Date()) {
   );
 }
 
+/** Projeta na areia sem clip da baía (o clip puxava vértices pra água). */
+function projectOnSand(dry: Array<[number, number]>, meters: number): Array<[number, number]> {
+  return dry.map((p, i) => {
+    const prev = dry[Math.max(0, i - 1)];
+    const next = dry[Math.min(dry.length - 1, i + 1)];
+    let [nN, nE] = seawardNE(prev, next, p[0]);
+    // Empurra SE (mar) sem deixar o normal virar pra oeste (cidade).
+    if (nE < 0.28) {
+      nE = 0.5;
+      nN = Math.min(nN, -0.8);
+      const len = Math.hypot(nN, nE);
+      nN /= len;
+      nE /= len;
+    }
+    // Extremos da orla (ponte oeste / Atalaia leste): recua pra não cair na água.
+    const tip =
+      i < dry.length * 0.08 || i > dry.length * 0.92
+        ? 0.72
+        : i < dry.length * 0.16 || i > dry.length * 0.84
+          ? 0.88
+          : 1;
+    const m = Math.max(0, meters * tip);
+    const lat = p[0] + nN * m * METERS_LAT;
+    let lng = p[1] + nE * m * metersLng(p[0]);
+    // Nunca inland do dry wall; leve empurrão seaward.
+    lng = Math.max(lng, p[1] + 3 * metersLng(p[0]));
+    return [lat, lng] as [number, number];
+  });
+}
+
+function chaikin(line: Array<[number, number]>, rounds = 2): Array<[number, number]> {
+  let cur = line;
+  for (let r = 0; r < rounds; r++) {
+    if (cur.length < 2) return cur;
+    const next: Array<[number, number]> = [cur[0]];
+    for (let i = 0; i < cur.length - 1; i++) {
+      const [aLat, aLng] = cur[i];
+      const [bLat, bLng] = cur[i + 1];
+      next.push([aLat * 0.75 + bLat * 0.25, aLng * 0.75 + bLng * 0.25]);
+      next.push([aLat * 0.25 + bLat * 0.75, aLng * 0.25 + bLng * 0.75]);
+    }
+    next.push(cur[cur.length - 1]);
+    cur = next;
+  }
+  return cur;
+}
+
+const SAND_DRY = densify(DRY_WALL, 10);
+
 export function sunSandRings(): {
   wash: Array<[number, number]>;
   mid: Array<[number, number]>;
   core: Array<[number, number]>;
+  glow: Array<[number, number]>;
 } {
-  const land0 = projectFromDry(DRY_DENSE, SAND_LAND_M);
-  const land1 = projectFromDry(DRY_DENSE, SAND_LAND_M + 5);
-  const land2 = projectFromDry(DRY_DENSE, SAND_LAND_M + 10);
-  const sea0 = projectFromDry(DRY_DENSE, SAND_SEA_M);
-  const sea1 = projectFromDry(DRY_DENSE, SAND_SEA_M - 8);
-  const sea2 = projectFromDry(DRY_DENSE, SAND_SEA_M - 16);
+  // Anéis concêntricos na areia seca — glow externo bem fraco, core interno quente.
+  const landGlow = chaikin(projectOnSand(SAND_DRY, SAND_LAND_M - 1));
+  const land0 = chaikin(projectOnSand(SAND_DRY, SAND_LAND_M + 1));
+  const land1 = chaikin(projectOnSand(SAND_DRY, SAND_LAND_M + 4));
+  const land2 = chaikin(projectOnSand(SAND_DRY, SAND_LAND_M + 7));
+  const seaGlow = chaikin(projectOnSand(SAND_DRY, SAND_SEA_M));
+  const sea0 = chaikin(projectOnSand(SAND_DRY, SAND_SEA_M - 3));
+  const sea1 = chaikin(projectOnSand(SAND_DRY, SAND_SEA_M - 7));
+  const sea2 = chaikin(projectOnSand(SAND_DRY, SAND_SEA_M - 11));
   return {
+    glow: closedBand(seaGlow, landGlow),
     wash: closedBand(sea0, land0),
     mid: closedBand(sea1, land1),
     core: closedBand(sea2, land2),
