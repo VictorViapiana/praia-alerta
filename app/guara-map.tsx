@@ -16,7 +16,7 @@ type Line = { role: "user" | "guara"; text: string };
 const FAB_LEFT = 20;
 const FAB_Z = 100;
 const FAB_BOTTOM =
-  "max(12.5rem, calc(env(safe-area-inset-bottom, 0px) + 11.5rem))";
+  "max(13.5rem, calc(env(safe-area-inset-bottom, 0px) + 12.5rem))";
 const fabStyle = {
   position: "absolute" as const,
   left: FAB_LEFT,

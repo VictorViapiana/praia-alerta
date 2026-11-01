@@ -21,7 +21,7 @@ export function CameraFab({ onOpen }: { onOpen: () => void }) {
         position: "absolute",
         right: 20,
         /* Mesma altura do Guará — acima do chrome de busca/filtros */
-        bottom: "max(12.5rem, calc(env(safe-area-inset-bottom, 0px) + 11.5rem))",
+        bottom: "max(13.5rem, calc(env(safe-area-inset-bottom, 0px) + 12.5rem))",
         zIndex: 100,
       }}
     >
