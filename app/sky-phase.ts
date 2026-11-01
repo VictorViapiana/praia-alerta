@@ -13,7 +13,8 @@ export type SkyPhaseInfo = {
   themeColor: string;
 };
 
-function hourInSaoPaulo(date = new Date()) {
+/** Hora decimal em America/Sao_Paulo (ex.: 17.5 = 17h30). */
+export function hourInSaoPaulo(date = new Date()) {
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone: "America/Sao_Paulo",
     hour: "numeric",

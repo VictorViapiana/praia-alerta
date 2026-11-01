@@ -8,6 +8,24 @@ export type MenuItem = {
 
 export type PerkId = "shower" | "wifi" | "access" | "music";
 
+/** Oferta viva do patrocinador — muda com a fase do dia. */
+export type SponsorOffer = {
+  title: string;
+  detail: string;
+  code: string;
+};
+
+export type SponsorMoment = {
+  photo: string;
+  caption: string;
+};
+
+export type SponsorGift = {
+  title: string;
+  detail: string;
+  code: string;
+};
+
 export type Place = {
   id: string;
   mapKind: PinKind;
@@ -18,6 +36,18 @@ export type Place = {
   cover?: string;
   menu?: MenuItem[];
   perks?: PerkId[];
+  /** Texto curto da casa para a ficha. */
+  about?: string;
+  /** Dica do Guará neste lugar. */
+  guaraTip?: string;
+  /** WhatsApp só dígitos (ex.: 5527999999999). */
+  phone?: string;
+  /** Ofertas por fase do céu. */
+  offers?: Partial<Record<"dawn" | "day" | "dusk" | "night", SponsorOffer>>;
+  /** Presente exclusivo ao checar selo. */
+  gift?: SponsorGift;
+  /** Fotos-momento da casa. */
+  moments?: SponsorMoment[];
   lat: number;
   lng: number;
   x: number;
@@ -141,6 +171,21 @@ export const PLACES: Place[] = [
     tag: "Porções de frutos do mar",
     cover: COVERS[1],
     perks: ["shower", "wifi", "music"],
+    about: "Camarão na brasa, mesa na areia e o mar no colo. O 07 é o coração dos frutos do mar na orla.",
+    guaraTip: "Peça o camarão no fim da tarde — a brasa fica no ponto e o sol ainda ilumina a mesa.",
+    phone: "5527999100007",
+    gift: { title: "Camarão surpresa", detail: "Mostre o código e ganhe um petisco da casa na primeira visita do dia.", code: "GUARA07" },
+    offers: {
+      dawn: { title: "Café na areia", detail: "Suco + pão de queijo com 15% off até 11h.", code: "AURORA07" },
+      day: { title: "Almoço na brasa", detail: "Porção + 2 geladas com preço de amigo.", code: "SOL07" },
+      dusk: { title: "Happy da maré", detail: "Drinque da casa em dobro no pôr do sol.", code: "MARE07" },
+      night: { title: "Noite do camarão", detail: "Camarão na brasa com sobremesa cortesia.", code: "LUA07" },
+    },
+    moments: [
+      { photo: CAMARAO, caption: "Camarão saindo da brasa" },
+      { photo: COVERS[1], caption: "Mesa de frente pro mar" },
+      { photo: DRINK, caption: "Drinque da casa gelando" },
+    ],
     menu: sponsorMenu([
       { name: "Camarão na brasa", price: "R$ 89", photo: CAMARAO },
       { name: "Gelada da orla", price: "R$ 14", photo: GELADA },
@@ -157,6 +202,21 @@ export const PLACES: Place[] = [
     tag: "Música ao vivo",
     cover: COVERS[2],
     perks: ["wifi", "music", "access"],
+    about: "Violão, barca e gente boa. O 12 é onde a orla canta até o sol dormir.",
+    guaraTip: "Chegue um pouco antes do show — a mesa boa some rápido e o som fica perfeito.",
+    phone: "5527999100012",
+    gift: { title: "Brinde do violão", detail: "Código libera um long neck na primeira música ao vivo.", code: "SOM12" },
+    offers: {
+      dawn: { title: "Manhã com som", detail: "Café + suco com 10% off até 10h.", code: "CANTO12" },
+      day: { title: "Barca do meio-dia", detail: "Barca da casa com petisco extra.", code: "BARCA12" },
+      dusk: { title: "Palco do pôr do sol", detail: "Drinque do Zé em promoção no show.", code: "PALCO12" },
+      night: { title: "Encore gelado", detail: "Segunda long neck pela metade depois das 20h.", code: "ENCORE12" },
+    },
+    moments: [
+      { photo: COVERS[2], caption: "Palco na areia" },
+      { photo: BARCA, caption: "Barca da casa" },
+      { photo: DRINK, caption: "Drinque do Zé" },
+    ],
     menu: sponsorMenu([
       { name: "Drinque do Zé", price: "R$ 26", photo: DRINK },
       { name: "Barca da casa", price: "R$ 120", photo: BARCA },
@@ -174,6 +234,21 @@ export const PLACES: Place[] = [
     tag: "Tigela e petiscos",
     cover: COVERS[0],
     perks: ["wifi", "access", "shower"],
+    about: "Bowl fresco, hot crocante e sombra boa. O 18 é o pit-stop leve da faixa.",
+    guaraTip: "Depois do banho de mar, o bowl da casa recupera energia sem pesar.",
+    phone: "5527999100018",
+    gift: { title: "Granola da casa", detail: "Upgrade de granola no bowl na primeira visita.", code: "BOWL18" },
+    offers: {
+      dawn: { title: "Bowl do nascer", detail: "Bowl + suco com desconto até 11h.", code: "NASCE18" },
+      day: { title: "Combo leve", detail: "Bowl + hot da areia juntos.", code: "LEVE18" },
+      dusk: { title: "Happy bowl", detail: "Segundo bowl com 30% off.", code: "HAPPY18" },
+      night: { title: "Petisco da noite", detail: "Hot da areia + drinque gelado.", code: "NOITE18" },
+    },
+    moments: [
+      { photo: BOWL, caption: "Bowl montado na hora" },
+      { photo: HOT, caption: "Hot da areia" },
+      { photo: COVERS[0], caption: "Sombra no 18" },
+    ],
     menu: sponsorMenu([
       { name: "Bowl da casa", price: "R$ 32", photo: BOWL },
       { name: "Hot da areia", price: "R$ 42", photo: HOT },
@@ -189,6 +264,21 @@ export const PLACES: Place[] = [
     tag: "Pôr do sol com som",
     cover: COVERS[4],
     perks: ["music", "wifi", "shower"],
+    about: "O 22 nasce pro pôr do sol: mesa, som baixo e o céu virando ouro na Praia do Morro.",
+    guaraTip: "Chegue 40 minutos antes do sol sumir — a vista e a mesa valem o timing.",
+    phone: "5527999100022",
+    gift: { title: "Brinde do horizonte", detail: "Gelada cortesia ao reservar mesa no pôr do sol.", code: "HORIZ22" },
+    offers: {
+      dawn: { title: "Café com vista", detail: "Café + pão com 12% off.", code: "VISTA22" },
+      day: { title: "Combinado do dia", detail: "Combinado + brinde gelado.", code: "DIA22" },
+      dusk: { title: "Mesa do sol", detail: "Camarão do sol com entrada cortesia.", code: "SOL22" },
+      night: { title: "After glow", detail: "Segunda gelada pela metade após o show.", code: "GLOW22" },
+    },
+    moments: [
+      { photo: COVERS[4], caption: "Pôr do sol na mesa" },
+      { photo: CAMARAO, caption: "Camarão do sol" },
+      { photo: GELADA, caption: "Brinde gelado" },
+    ],
     menu: sponsorMenu([
       { name: "Camarão do sol", price: "R$ 96", photo: CAMARAO },
       { name: "Combinado", price: "R$ 78", photo: HOT },
@@ -219,6 +309,21 @@ export const PLACES: Place[] = [
     tag: "Fila que vale",
     cover: COVERS[3],
     perks: ["wifi", "access"],
+    about: "Taça gelada, fila simpática e o sabor que fecha o passeio na orla.",
+    guaraTip: "Depois das 16h a taça da casa some rápido — chega cedo ou manda mensagem.",
+    phone: "5527999100033",
+    gift: { title: "Bola extra", detail: "Uma bola a mais na primeira taça do dia.", code: "DOCE33" },
+    offers: {
+      dawn: { title: "Pré-fila", detail: "Reserve a taça e pule a fila até 12h.", code: "FILA33" },
+      day: { title: "Combo dois", detail: "Duas taças com 15% off.", code: "DUO33" },
+      dusk: { title: "Pôr do sol doce", detail: "Drinque cremoso em promoção.", code: "DOCE33B" },
+      night: { title: "Última bola", detail: "Gelada + taça depois das 20h.", code: "LUA33" },
+    },
+    moments: [
+      { photo: BOWL, caption: "Taça da casa" },
+      { photo: COVERS[3], caption: "Fila na orla" },
+      { photo: DRINK, caption: "Drinque cremoso" },
+    ],
     menu: [
       { name: "Drinque cremoso", price: "R$ 22", photo: DRINK },
       { name: "Taça da casa", price: "R$ 18", photo: BOWL },
@@ -238,6 +343,21 @@ export const PLACES: Place[] = [
     tag: "Quarto com vista",
     cover: COVERS[1],
     perks: ["wifi", "shower", "access"],
+    about: "Janela pro mar, café com cheiro de areia e a orla a dois passos. Dormir aqui é acordar dentro da Praia do Morro.",
+    guaraTip: "Peça o quarto com vista pro nascer — o Guará recomenda a varanda do segundo andar.",
+    phone: "5527999100044",
+    gift: { title: "Boas-vindas da casa", detail: "Drinque de boas-vindas no check-in com o código do selo.", code: "ORLA44" },
+    offers: {
+      dawn: { title: "Late check-out suave", detail: "Saída até 13h sem taxa no dia do sol.", code: "LATE44" },
+      day: { title: "Day use orla", detail: "Piscina + bowl da pousada até 17h.", code: "DAY44" },
+      dusk: { title: "Noite com vista", detail: "Upgrade de vista sujeito à disponibilidade.", code: "VISTA44" },
+      night: { title: "Madrugada calma", detail: "Café da manhã incluso na reserva de hoje.", code: "CAFE44" },
+    },
+    moments: [
+      { photo: COVERS[1], caption: "Vista da varanda" },
+      { photo: BOWL, caption: "Bowl da pousada" },
+      { photo: DRINK, caption: "Boas-vindas geladas" },
+    ],
     menu: [
       { name: "Bowl da pousada", price: "R$ 36", photo: BOWL },
       { name: "Combinado", price: "R$ 64", photo: HOT },
@@ -257,6 +377,21 @@ export const PLACES: Place[] = [
     tag: "Reserva na hora",
     cover: COVERS[2],
     perks: ["access", "wifi", "music"],
+    about: "Prato feito pra fechar o dia na orla: camarão, barca do chef e mesa com brisa.",
+    guaraTip: "Reserva pelo app evita fila no fim de semana — a barca do chef some cedo.",
+    phone: "5527999100055",
+    gift: { title: "Entrada do chef", detail: "Entrada cortesia na primeira reserva pelo Praia Alerta.", code: "CHEF55" },
+    offers: {
+      dawn: { title: "Almoço antecipado", detail: "Mesa garantida das 12h às 13h.", code: "MESA55" },
+      day: { title: "Executivo beira-mar", detail: "Prato + suco com preço de semana.", code: "EXEC55" },
+      dusk: { title: "Barca do pôr do sol", detail: "Barca do chef com brinde.", code: "BARCA55" },
+      night: { title: "Jantar na brisa", detail: "Camarão na brasa + sobremesa.", code: "BRISA55" },
+    },
+    moments: [
+      { photo: CAMARAO, caption: "Camarão na brasa" },
+      { photo: BARCA, caption: "Barca do chef" },
+      { photo: COVERS[2], caption: "Mesa beira-mar" },
+    ],
     menu: [
       { name: "Camarão na brasa", price: "R$ 98", photo: CAMARAO },
       { name: "Barca do chef", price: "R$ 140", photo: BARCA },
