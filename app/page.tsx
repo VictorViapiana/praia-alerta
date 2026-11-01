@@ -919,7 +919,7 @@ function MapScreen({
       : `${hits} estabelecimento${hits === 1 ? "" : "s"} na orla.`
     : dayLayer === "sol"
       ? sunAvailable
-        ? "Camada Sol: faixa quente só na areia — quiosques intactos."
+        ? "Camada Sol: areia ao vivo (hora + UV/céu Open-Meteo) — quiosques intactos."
         : "Sol desligado à noite (17:30–05:30). Sem calor noturno."
       : dayLayer === "mare"
         ? "Camada Maré: dinâmica pela API · baía até a areia, sem avenida."

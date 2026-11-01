@@ -236,11 +236,47 @@ function bayWaterPolygon(shoreNearSand: Array<[number, number]>): Array<[number,
   return [...north, ...east, ...south, ...west];
 }
 
-export function sunHeatFactor(now = new Date()) {
+/** Clima ao vivo (Open-Meteo) que modula o calor na areia. */
+export type SunWeatherLive = {
+  code: number;
+  uv: number;
+};
+
+/**
+ * Intensidade do Sol na areia.
+ * - Relógio (America/Sao_Paulo): pico ~13h, zero à noite
+ * - Clima ao vivo: nuvem/chuva esfria; UV alto esquenta
+ */
+export function sunHeatFactor(now = new Date(), weather?: SunWeatherLive | null) {
   if (!isSunActive(now)) return 0;
   const hour = localHourSaoPaulo(now);
   const peak = 13;
-  return Math.max(0.25, Math.min(1, 1 - Math.abs(hour - peak) / 7));
+  let heat = Math.max(0.22, Math.min(1, 1 - Math.abs(hour - peak) / 7));
+
+  if (weather) {
+    const code = weather.code;
+    // WMO: 0 limpo → 1–3 parcial → 45+ névoa → 51+ chuva → 95+ trovoada
+    const sky =
+      code === 0
+        ? 1
+        : code <= 2
+          ? 0.82
+          : code <= 3
+            ? 0.62
+            : code === 45 || code === 48
+              ? 0.4
+              : code <= 67
+                ? 0.28
+                : code >= 95
+                  ? 0.18
+                  : 0.35;
+    const uv = Number.isFinite(weather.uv) ? weather.uv : 5;
+    // UV 0–11 → fator ~0.35–1.15 (clamp depois)
+    const uvFactor = 0.35 + Math.min(11, Math.max(0, uv)) / 11 * 0.8;
+    heat *= sky * uvFactor;
+  }
+
+  return Math.max(0.08, Math.min(1, heat));
 }
 
 export function sunAzimuthDeg(now = new Date()) {
