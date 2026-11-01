@@ -24,7 +24,7 @@ import {
   Utensils,
   type LucideIcon,
 } from "lucide-react";
-import { fold, useTide } from "./coast";
+import { fold, useTide, useWeather } from "./coast";
 import {
   isSunActive,
   sunAzimuthDeg,
@@ -1007,6 +1007,7 @@ function RampaPin({ selected, onSelect, alert = false }: { selected: boolean; on
 function DayLayerOverlay({ layer }: { layer: DayLayer }) {
   const map = useMap();
   const { data: tide } = useTide();
+  const { data: weather } = useWeather();
   // Ratio SÓ da API ao vivo — sem fallback mockado
   const ratio = tide ? tideRatio(tide.level, tide.rangeMin, tide.rangeMax) : null;
   const bands = ratio != null ? tideLayers(ratio) : null;
@@ -1025,7 +1026,11 @@ function DayLayerOverlay({ layer }: { layer: DayLayer }) {
   if (layer === "sol") {
     // Estrito: 17:30–05:30 (America/Sao_Paulo) → não renderiza (sem calor noturno)
     if (!isSunActive()) return null;
-    const heat = sunHeatFactor();
+    // Calor = horário + clima ao vivo (Open-Meteo: código + UV)
+    const heat = sunHeatFactor(
+      new Date(),
+      weather ? { code: weather.code, uv: weather.uv } : null,
+    );
     if (heat <= 0) return null;
     const az = sunAzimuthDeg();
     const rings = sunSandRings();
