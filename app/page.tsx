@@ -1997,13 +1997,13 @@ function SosSlider({ onTrigger }: { onTrigger: () => void }) {
   };
 
   return (
-    <div className="pa-sos-dock relative">
+    <div className="pa-sos-dock relative pt-9">
       <GuaraPose
         pose="emergencia"
         alt=""
-        width={88}
-        height={92}
-        className="pointer-events-none absolute -top-14 right-2 z-[1] h-[4.6rem] w-auto drop-shadow-[0_12px_20px_rgba(127,29,29,0.45)]"
+        width={72}
+        height={76}
+        className="pointer-events-none absolute left-3 top-0 z-[2] h-[3.55rem] w-auto drop-shadow-[0_10px_16px_rgba(127,29,29,0.4)]"
       />
       <div
         ref={trackRef}
