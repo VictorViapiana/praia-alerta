@@ -17,27 +17,27 @@ export const SUN_OFF_HOUR = 17.5;
  * Pontas já afastadas de Muquiçaba (oeste) e do Morro da Pescaria (leste).
  */
 const DRY_WALL: Array<[number, number]> = [
-  [-20.6602, -40.49515], // oeste: na areia, a leste de Muquiçaba
-  [-20.6595, -40.49455],
-  [-20.6588, -40.49375],
-  [-20.6580, -40.49275],
-  [-20.6571, -40.49165],
-  [-20.6565, -40.49075],
-  [-20.6559, -40.4898],
-  [-20.6551, -40.4888],
-  [-20.6546, -40.48785],
-  [-20.6542, -40.48695],
-  [-20.6538, -40.48595],
-  [-20.6534, -40.48495],
-  [-20.6530, -40.48395],
-  [-20.6527, -40.48295],
-  [-20.6524, -40.48175],
-  [-20.65235, -40.4805],
-  [-20.6524, -40.47925],
-  [-20.65255, -40.4780],
-  [-20.65285, -40.47685],
-  [-20.65315, -40.47605],
-  [-20.6534, -40.47555], // leste: antes do verde da Pescaria
+  [-20.65985, -40.49435], // oeste: areia, longe de Muquiçaba
+  [-20.6592, -40.4938],
+  [-20.6585, -40.49305],
+  [-20.6577, -40.4921],
+  [-20.65695, -40.49115],
+  [-20.65635, -40.49035],
+  [-20.65575, -40.4895],
+  [-20.65495, -40.4886],
+  [-20.6545, -40.4877],
+  [-20.6541, -40.48685],
+  [-20.6537, -40.48585],
+  [-20.6533, -40.48485],
+  [-20.6529, -40.48385],
+  [-20.6526, -40.48285],
+  [-20.65238, -40.48165],
+  [-20.65232, -40.48045],
+  [-20.65238, -40.4792],
+  [-20.65255, -40.47795],
+  [-20.65285, -40.47675],
+  [-20.6532, -40.47555],
+  [-20.65355, -40.47455], // leste: areia antes do costão / bancos norte
 ];
 
 /** Metros seaward: vazante → preamar (ainda na areia). */
@@ -50,50 +50,59 @@ const SAND_SEA_M = 34;
 
 /**
  * Costa OESTE (Muquiçaba) — água fica a LESTE desta linha.
- * Norte→sul: acompanha a península urbana sem cobrir telhados/ruas.
+ * Strictamente dentro da baía: contorno da terra, zero telhado/rua.
+ * Quadra de areia ~-40.4944 — waterline fica a leste disso.
  */
 const MUQUICABA_WATERLINE: Array<[number, number]> = [
-  [-20.6598, -40.4952],
-  [-20.6610, -40.49505],
-  [-20.6622, -40.49485],
-  [-20.6634, -40.49455],
-  [-20.6646, -40.4942],
-  [-20.6658, -40.4937],
-  [-20.6668, -40.4931],
-  [-20.6676, -40.4924],
-  [-20.6683, -40.4915],
-  [-20.6688, -40.4904],
+  [-20.6595, -40.49395],
+  [-20.6606, -40.4938],
+  [-20.6618, -40.49355],
+  [-20.6630, -40.4932],
+  [-20.6642, -40.49275],
+  [-20.6654, -40.4922],
+  [-20.6664, -40.49155],
+  [-20.6672, -40.49085],
+  [-20.6679, -40.49005],
+  [-20.66845, -40.48915],
 ];
 
 /**
  * Costa LESTE (Morro da Pescaria) — água fica a OESTE desta linha.
- * Norte→sul: contorna a base do morro verde, sem subir na mata.
+ * Fecha o buraco: encosta na areia/costa que antecede o morro.
+ * BANCOS_NORTE ~-40.4736 · píer ~-40.4743 · golfinho ~-40.47415.
+ * Sem subir no verde do parque (~-40.4718).
  */
 const PESCARIA_WATERLINE: Array<[number, number]> = [
-  [-20.6535, -40.4757],
-  [-20.6543, -40.47575],
-  [-20.6552, -40.47585],
-  [-20.6561, -40.4760],
-  [-20.6570, -40.47625],
-  [-20.6580, -40.4766],
-  [-20.6591, -40.4771],
-  [-20.6603, -40.47775],
-  [-20.6615, -40.47855],
-  [-20.6628, -40.4795],
-  [-20.6641, -40.48065],
-  [-20.6654, -40.4820],
-  [-20.6666, -40.48355],
-  [-20.6676, -40.4853],
-  [-20.6684, -40.4872],
-  [-20.6689, -40.4892],
+  [-20.65355, -40.47455],
+  [-20.6540, -40.47395],
+  [-20.65445, -40.47358], // areia dos bancos norte — fecha o NE
+  [-20.6548, -40.47362],
+  [-20.65515, -40.4739], // curva para a costa do costão
+  [-20.65555, -40.4742],
+  [-20.65601, -40.47435], // água na base do píer (sem cobrir o monumento)
+  [-20.6562, -40.47442], // oeste do golfinho
+  [-20.65685, -40.47455],
+  [-20.65765, -40.47485],
+  [-20.6585, -40.4753],
+  [-20.65945, -40.47595],
+  [-20.6605, -40.4767],
+  [-20.66165, -40.4776],
+  [-20.6629, -40.47865],
+  [-20.66415, -40.4799],
+  [-20.66535, -40.4814],
+  [-20.6665, -40.4831],
+  [-20.6675, -40.4851],
+  [-20.66825, -40.48725],
+  [-20.66885, -40.4892],
 ];
 
 /** Arco sul no oceano aberto (só água). */
 const OCEAN_SOUTH_ARC: Array<[number, number]> = [
-  [-20.6689, -40.4900],
-  [-20.6691, -40.4907],
-  [-20.6690, -40.4915],
-  [-20.6688, -40.4922],
+  [-20.66885, -40.48955],
+  [-20.66905, -40.49035],
+  [-20.66905, -40.49115],
+  [-20.66885, -40.49185],
+  [-20.6685, -40.49245],
 ];
 
 const METERS_LAT = 1 / 111_320;
@@ -160,19 +169,22 @@ function waterlineLngAt(line: Array<[number, number]>, lat: number) {
 }
 
 /**
- * CLIP terrestre: empurra o ponto para dentro da água da baía.
- * Oeste → a leste da costa de Muquiçaba (+ margem).
- * Leste → a oeste da base do Morro da Pescaria (− margem).
+ * CLIP terrestre assimétrico:
+ * - Oeste (Muquiçaba): empurra para DENTRO da água (longe de telhados/ruas).
+ * - Leste (Pescaria): margem ~0 — azul encosta na costa, sem buraco no mar.
  */
-function clipToBayWater(lat: number, lng: number, marginM = 12): [number, number] {
+function clipToBayWater(
+  lat: number,
+  lng: number,
+  westMarginM = 28,
+  eastMarginM = 1,
+): [number, number] {
   const mLng = metersLng(lat);
-  const margin = marginM * mLng;
-  const westLimit = waterlineLngAt(MUQUICABA_WATERLINE, lat) + margin; // mais leste = água
-  const eastLimit = waterlineLngAt(PESCARIA_WATERLINE, lat) - margin; // mais oeste = água
+  const westLimit = waterlineLngAt(MUQUICABA_WATERLINE, lat) + westMarginM * mLng;
+  const eastLimit = waterlineLngAt(PESCARIA_WATERLINE, lat) - eastMarginM * mLng;
   let next = lng;
   if (next < westLimit) next = westLimit;
   if (next > eastLimit) next = eastLimit;
-  // Norte demais (avenida): empurra um pouco ao sul se acima da dry wall local
   return [lat, next];
 }
 
@@ -194,7 +206,7 @@ function projectFromDry(dry: Array<[number, number]>, meters: number): Array<[nu
     if (p[1] > -40.482) {
       lat = Math.min(lat, p[0] - 6 * METERS_LAT);
     }
-    return clipToBayWater(lat, lng, 14);
+    return clipToBayWater(lat, lng);
   });
 }
 
@@ -202,7 +214,7 @@ function lerpShore(low: Array<[number, number]>, high: Array<[number, number]>, 
   const t = Math.min(1, Math.max(0, ratio));
   return low.map((p, i) => {
     const h = high[i] ?? p;
-    return clipToBayWater(p[0] + (h[0] - p[0]) * t, p[1] + (h[1] - p[1]) * t, 14);
+    return clipToBayWater(p[0] + (h[0] - p[0]) * t, p[1] + (h[1] - p[1]) * t);
   });
 }
 
@@ -225,17 +237,17 @@ const SOUTH_DENSE = densify(OCEAN_SOUTH_ARC, 3);
  * Oeste: sobe pela waterline de Muquiçaba (água, nunca telhados).
  */
 function bayWaterPolygon(shore: Array<[number, number]>): Array<[number, number]> {
-  const shoreClipped = shore.map(([lat, lng]) => clipToBayWater(lat, lng, 14));
+  const shoreClipped = shore.map(([lat, lng]) => clipToBayWater(lat, lng));
 
-  // Costa leste: da ponta da areia → waterline Pescaria (empurrada 14 m para a água)
-  const eastCoast = PESCA_DENSE.map(([lat, lng]) => clipToBayWater(lat, lng, 14));
+  // Leste: encosta EXATAMENTE na costa/areia da Pescaria (sem buraco)
+  const eastCoast = PESCA_DENSE.map(([lat, lng]) => clipToBayWater(lat, lng, 28, 0));
 
-  // Costa oeste: waterline Muquiçaba invertida (sul→norte) até a ponta da areia
+  // Oeste: contorno da água — fora de Muquiçaba/telhados/ruas
   const westCoast = [...MUQUI_DENSE]
     .reverse()
-    .map(([lat, lng]) => clipToBayWater(lat, lng, 14));
+    .map(([lat, lng]) => clipToBayWater(lat, lng, 28, 0));
 
-  const south = SOUTH_DENSE.map(([lat, lng]) => clipToBayWater(lat, lng, 10));
+  const south = SOUTH_DENSE.map(([lat, lng]) => clipToBayWater(lat, lng, 24, 0));
 
   return [...shoreClipped, ...eastCoast, ...south, ...westCoast];
 }

@@ -19,8 +19,9 @@ export function CameraFab({ onOpen }: { onOpen: () => void }) {
       className="group absolute right-3 z-[50] flex flex-col items-center gap-1.5 overflow-visible rounded-[28px] pb-1"
       style={{
         position: "absolute",
-        /* 10–20px acima da barra de busca preta (chrome inferior ≈ 9rem) */
-        bottom: "max(calc(9rem + 16px), calc(env(safe-area-inset-bottom, 0px) + 8rem + 16px))",
+        right: 20,
+        /* Espelha o Guará: canto inferior direito, 85px acima da barra */
+        bottom: "max(85px, calc(env(safe-area-inset-bottom, 0px) + 85px))",
       }}
     >
       <span className="relative grid h-[76px] w-[76px] shrink-0 place-items-center">
