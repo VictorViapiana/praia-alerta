@@ -1,6 +1,7 @@
 "use client";
 
-import { LocateFixed, MapPinOff, X } from "lucide-react";
+import { MapPinOff, X } from "lucide-react";
+import { GuaraPose } from "./guara-pose";
 import { useEffect, useState } from "react";
 import {
   LOCATION_SOFT_KEY,
@@ -71,11 +72,16 @@ export function LocationSoftPrompt({
       role="dialog"
       aria-label="Ativar localização da orla"
     >
-      <div className="w-full max-w-[22rem] rounded-[22px] border border-white/25 bg-[#102028]/96 p-3.5 text-white shadow-[0_20px_48px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+      <div className="w-full max-w-[22rem] overflow-hidden rounded-[22px] border border-white/25 bg-[#102028]/96 p-3.5 text-white shadow-[0_20px_48px_rgba(0,0,0,0.5)] backdrop-blur-xl">
         <div className="flex items-start gap-2.5">
-          <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full bg-amber-500/25 text-amber-100">
-            <LocateFixed className="h-4 w-4" strokeWidth={2.2} />
-          </span>
+          <GuaraPose
+            pose="busca"
+            alt=""
+            width={72}
+            height={70}
+            priority
+            className="mt-0.5 h-[4.1rem] w-auto shrink-0 drop-shadow-[0_10px_18px_rgba(0,0,0,0.4)]"
+          />
           <div className="min-w-0 flex-1">
             <p className="text-[13px] font-semibold leading-snug">Quer que o Guará te ache na orla?</p>
             <p className="mt-1 text-[11px] leading-snug text-white/65">

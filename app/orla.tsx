@@ -30,6 +30,9 @@ import {
   weatherMark,
   type TideNow,
 } from "./coast";
+import { isSunActive } from "./day-layers";
+import { GuaraPose } from "./guara-pose";
+import { mareGuaraPose, weatherGuaraPose } from "./guara-poses";
 import { CloseButton, closeTopClass, screenEnter } from "./nav-chrome";
 
 export type StoryId = "marlin" | "fotos" | "bandeiras";
@@ -506,10 +509,21 @@ export function LiveClima() {
     { icon: Sun, label: "UV agora", value: `${data.uv.toFixed(1).replace(".", ",")} ${uvLabel(data.uv)}` },
   ];
 
+  const night = !isSunActive();
+  const pose = weatherGuaraPose(data.code, night);
+
   return (
     <div className="space-y-5">
-      <div className="glass-panel relative z-[1] rounded-[1.4rem] p-4 text-center">
-        <p className="text-3xl" aria-hidden>
+      <div className="glass-panel relative z-[1] overflow-hidden rounded-[1.4rem] p-4 text-center">
+        <GuaraPose
+          pose={pose}
+          alt=""
+          width={160}
+          height={140}
+          priority
+          className="mx-auto h-[7.25rem] w-auto drop-shadow-[0_14px_28px_rgba(0,0,0,0.35)]"
+        />
+        <p className="mt-1 text-3xl" aria-hidden>
           {weatherMark(data.code)}
         </p>
         <p className="mt-1 font-serif text-6xl leading-none text-white">{Math.round(data.temp)}°</p>
@@ -876,14 +890,12 @@ export function LiveMare() {
       {/* Dica do Guará */}
       <div className="glass-panel relative z-[1] overflow-hidden rounded-[1.4rem] border-rose-200/35 bg-gradient-to-br from-rose-500/25 via-[rgba(8,38,72,0.88)] to-cyan-500/15 p-4">
         <div className="flex items-center gap-3">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/pins/guara-mascot.webp"
+          <GuaraPose
+            pose={mareGuaraPose(data.wave)}
             alt=""
-            width={72}
+            width={88}
             height={96}
-            className="h-16 w-12 object-contain drop-shadow-[0_8px_16px_rgba(127,29,29,0.35)]"
-            draggable={false}
+            className="h-[4.75rem] w-auto shrink-0 drop-shadow-[0_8px_16px_rgba(127,29,29,0.35)]"
           />
           <div className="min-w-0">
             <p className="text-[11px] uppercase tracking-[0.18em] text-rose-100/70">Dica do Guará</p>

@@ -5,6 +5,7 @@ import { MapPin, Search, Star, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { fold } from "./coast";
 import { DAY_LAYER_CHIPS, type DayLayer } from "./day-layers";
+import { GuaraPose } from "./guara-pose";
 import {
   AMBULANTES,
   CARRINHO_SRC,
@@ -604,7 +605,23 @@ export function MapSearch({
               ))}
             </AnimatePresence>
             {hits.length === 0 && (
-              <p className="px-1 py-6 text-center text-[13px] text-white/70">Nenhum estabelecimento com esse nome.</p>
+              <div className="flex flex-col items-center gap-2 px-2 py-5 text-center">
+                <GuaraPose
+                  pose="busca"
+                  alt=""
+                  width={128}
+                  height={124}
+                  className="h-[5.5rem] w-auto drop-shadow-[0_12px_22px_rgba(0,0,0,0.35)]"
+                />
+                <p className="text-[13px] font-semibold text-white/90">
+                  {query.trim() ? "Nada com esse nome na orla" : "O Guará está de lupa na mão"}
+                </p>
+                <p className="max-w-[16rem] text-[12px] leading-snug text-white/60">
+                  {query.trim()
+                    ? "Tente outro nome, um quiosque ou um ambulante. Ou volte ao mapa."
+                    : "Digite um estabelecimento — quiosques, ambulantes, marcos…"}
+                </p>
+              </div>
             )}
           </div>
         </div>

@@ -1,8 +1,9 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, Baby, Check, ChevronRight, HeartHandshake, Search, X } from "lucide-react";
+import { ArrowLeft, Check, ChevronRight, HeartHandshake, Search, X } from "lucide-react";
 import { useState, type ReactNode } from "react";
+import { GuaraPose } from "./guara-pose";
 
 type Path = "perdi" | "achei";
 type Step = "escolha" | "crianca" | "responsavel" | "revisao" | "enviado";
@@ -322,14 +323,18 @@ export function CriancaModal({ onClose }: { onClose: () => void }) {
           {step === "escolha" ? (
             <StepBody key="escolha">
               <div className="px-2 pt-3 text-center">
-                <span className="mx-auto grid h-16 w-16 place-items-center rounded-full border border-orange-200/30 bg-orange-400/15 shadow-[0_0_32px_rgba(251,146,60,0.35)]">
-                  <Baby className="h-7 w-7 text-orange-100" />
-                </span>
-                <h2 id="crianca-titulo" className="mt-4 font-serif text-[1.7rem] leading-none text-white">
+                <GuaraPose
+                  pose="crianca"
+                  alt=""
+                  width={140}
+                  height={160}
+                  className="mx-auto h-[7.5rem] w-auto drop-shadow-[0_14px_28px_rgba(0,0,0,0.4)]"
+                />
+                <h2 id="crianca-titulo" className="mt-3 font-serif text-[1.7rem] leading-none text-white">
                   Criança na praia
                 </h2>
                 <p className="mx-auto mt-3 max-w-[18rem] text-sm leading-relaxed text-white/75">
-                  Para evitar trotes e acionar os Salva-Vidas, identifique-se.
+                  O Guará ajuda a acionar os Salva-Vidas. Para evitar trotes, identifique-se.
                 </p>
               </div>
 

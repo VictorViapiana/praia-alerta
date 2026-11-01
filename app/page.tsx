@@ -9,7 +9,6 @@ import {
 } from "framer-motion";
 import {
   Baby,
-  LifeBuoy,
   LocateFixed,
   MapPin,
   Phone as PhoneIcon,
@@ -45,6 +44,7 @@ import { GuaraOnboarding, HOME_STEPS, HOME_TOUR_KEY, MAP_STEPS, MAP_TOUR_KEY } f
 import { GuaraMapChat } from "./guara-map";
 import { FAR_FROM_BEACH_M, HOME_PROMPTS, PRAIA_MORRO_VIEW, answerGuara } from "./guara-guide";
 import { GuaraTipTour, type GuaraTipStep } from "./guara-tip-tour";
+import { GuaraPose } from "./guara-pose";
 import {
   clearSpotFromUrl,
   isQuiosqueSpotId,
@@ -754,7 +754,7 @@ function MapSos({ onTrigger, parked = false }: { onTrigger: () => void; parked?:
         }}
         onPointerUp={cancel}
         onPointerCancel={cancel}
-        className="relative grid h-14 w-14 place-items-center rounded-full border border-red-100/30 bg-black/55 text-white shadow-[0_12px_28px_rgba(0,0,0,0.4)] backdrop-blur-md"
+        className="relative grid h-14 w-14 place-items-center overflow-hidden rounded-full border border-red-100/30 bg-black/55 text-white shadow-[0_12px_28px_rgba(0,0,0,0.4)] backdrop-blur-md"
       >
         <svg className="absolute inset-0 -rotate-90" viewBox="0 0 56 56" aria-hidden>
           <circle cx="28" cy="28" r="24" fill="none" stroke="rgba(255,255,255,0.16)" strokeWidth="3" />
@@ -770,7 +770,13 @@ function MapSos({ onTrigger, parked = false }: { onTrigger: () => void; parked?:
             strokeDashoffset={150.8 * (1 - progress)}
           />
         </svg>
-        <LifeBuoy className={`h-6 w-6 ${progress > 0 ? "text-red-100" : "text-red-300"}`} strokeWidth={2.1} />
+        <GuaraPose
+          pose="emergencia"
+          alt=""
+          width={44}
+          height={44}
+          className={`relative z-[1] h-10 w-10 ${progress > 0 ? "scale-110" : ""} transition-transform`}
+        />
       </button>
       <span className="mt-1 block text-center text-[9px] font-semibold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]">
         {progress > 0 ? "Segure" : "Emergência"}
@@ -1991,7 +1997,14 @@ function SosSlider({ onTrigger }: { onTrigger: () => void }) {
   };
 
   return (
-    <div className="pa-sos-dock">
+    <div className="pa-sos-dock relative">
+      <GuaraPose
+        pose="emergencia"
+        alt=""
+        width={88}
+        height={92}
+        className="pointer-events-none absolute -top-14 right-2 z-[1] h-[4.6rem] w-auto drop-shadow-[0_12px_20px_rgba(127,29,29,0.45)]"
+      />
       <div
         ref={trackRef}
         className="relative h-16 overflow-hidden rounded-full border border-white/15 bg-black/45 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-md"
@@ -2035,10 +2048,11 @@ function SosSlider({ onTrigger }: { onTrigger: () => void }) {
             transition={{ duration: 1.5, repeat: Infinity, ease: "easeOut" }}
           />
           <motion.span
-            animate={{ rotate: [0, 10, -8, 0] }}
+            animate={{ rotate: [0, 8, -6, 0] }}
             transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
+            className="grid place-items-center"
           >
-            <LifeBuoy className="h-7 w-7 text-white" strokeWidth={2.1} />
+            <GuaraPose pose="emergencia" alt="" width={40} height={40} className="h-9 w-9" />
           </motion.span>
         </motion.div>
       </div>
@@ -2092,11 +2106,11 @@ function SosModal({ onClose }: { onClose: () => void }) {
             />
           ))}
           <motion.span
-            animate={{ rotate: 360 }}
-            transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
-            className="grid h-16 w-16 place-items-center rounded-full bg-white text-red-600 shadow-[0_0_30px_rgba(255,255,255,0.35)]"
+            animate={{ rotate: [0, 6, -6, 0] }}
+            transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+            className="grid h-16 w-16 place-items-center overflow-hidden rounded-full bg-white text-red-600 shadow-[0_0_30px_rgba(255,255,255,0.35)]"
           >
-            <LifeBuoy className="h-8 w-8" />
+            <GuaraPose pose="emergencia" alt="" width={52} height={52} className="h-12 w-12" />
           </motion.span>
         </div>
         <p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.32em] text-white/80">
