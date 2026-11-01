@@ -10,13 +10,13 @@ import { speakGuara, stopSpeaking } from "./voice";
 type Line = { role: "user" | "guara"; text: string };
 
 /**
- * Acima do chrome inferior (busca + filtros + camadas ≈ 11–12rem).
- * left 20px · z-index 100 — nunca dentro da barra de busca.
+ * Quase na barra de busca — folga ~8–12px acima do pill, sem encostar.
+ * left 20px · z-index 100.
  */
 const FAB_LEFT = 20;
 const FAB_Z = 100;
 const FAB_BOTTOM =
-  "max(13.5rem, calc(env(safe-area-inset-bottom, 0px) + 12.5rem))";
+  "max(calc(10.5rem + 10px), calc(env(safe-area-inset-bottom, 0px) + 9.5rem + 10px))";
 const fabStyle = {
   position: "absolute" as const,
   left: FAB_LEFT,
