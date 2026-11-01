@@ -20,8 +20,8 @@ export function CameraFab({ onOpen }: { onOpen: () => void }) {
       style={{
         position: "absolute",
         right: 20,
-        /* Espelha o Guará: imediatamente acima da barra de busca */
-        bottom: "max(120px, calc(env(safe-area-inset-bottom, 0px) + 120px))",
+        /* Mesma altura do Guará — acima do chrome de busca/filtros */
+        bottom: "max(12.5rem, calc(env(safe-area-inset-bottom, 0px) + 11.5rem))",
         zIndex: 100,
       }}
     >

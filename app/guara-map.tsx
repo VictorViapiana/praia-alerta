@@ -9,14 +9,18 @@ import { speakGuara, stopSpeaking } from "./voice";
 
 type Line = { role: "user" | "guara"; text: string };
 
-/** Canto inferior esquerdo — imediatamente acima da barra de busca. */
+/**
+ * Acima do chrome inferior (busca + filtros + camadas ≈ 11–12rem).
+ * left 20px · z-index 100 — nunca dentro da barra de busca.
+ */
 const FAB_LEFT = 20;
-const FAB_BOTTOM = 120;
 const FAB_Z = 100;
+const FAB_BOTTOM =
+  "max(12.5rem, calc(env(safe-area-inset-bottom, 0px) + 11.5rem))";
 const fabStyle = {
   position: "absolute" as const,
   left: FAB_LEFT,
-  bottom: `max(${FAB_BOTTOM}px, calc(env(safe-area-inset-bottom, 0px) + ${FAB_BOTTOM}px))`,
+  bottom: FAB_BOTTOM,
   zIndex: FAB_Z,
 };
 

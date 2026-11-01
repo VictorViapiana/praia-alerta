@@ -13,91 +13,93 @@ export const SUN_ON_HOUR = 5.5;
 export const SUN_OFF_HOUR = 17.5;
 
 /**
- * Parede seca (quiosques / calçadão) — só para a borda N da maré na areia.
- * Pontas já dentro da baía (longe de Muquiçaba e do verde da Pescaria).
+ * Parede seca (quiosques / calçadão) — borda inland da areia.
+ * Usada só para a borda N dinâmica e para o Sol.
  */
 const DRY_WALL: Array<[number, number]> = [
-  [-20.6597, -40.49355],
-  [-20.65905, -40.4930],
-  [-20.65835, -40.49225],
-  [-20.65755, -40.4913],
-  [-20.6568, -40.4904],
-  [-20.6562, -40.4896],
-  [-20.6556, -40.48875],
-  [-20.65485, -40.4879],
-  [-20.6544, -40.48705],
-  [-20.6540, -40.4862],
-  [-20.6536, -40.48525],
-  [-20.6532, -40.4843],
-  [-20.65285, -40.48335],
-  [-20.65255, -40.4824],
-  [-20.65235, -40.4813],
-  [-20.6523, -40.4802],
-  [-20.65235, -40.47905],
-  [-20.65255, -40.4779],
-  [-20.6529, -40.4768],
-  [-20.6533, -40.47585],
-  [-20.6537, -40.47515],
+  [-20.6599, -40.4939],
+  [-20.6592, -40.4933],
+  [-20.6585, -40.4925],
+  [-20.6577, -40.49155],
+  [-20.65695, -40.4906],
+  [-20.65635, -40.48975],
+  [-20.65575, -40.4889],
+  [-20.65495, -40.4880],
+  [-20.6545, -40.48715],
+  [-20.6541, -40.4863],
+  [-20.6537, -40.48535],
+  [-20.6533, -40.4844],
+  [-20.65295, -40.4834],
+  [-20.65265, -40.4824],
+  [-20.6524, -40.48125],
+  [-20.65232, -40.4801],
+  [-20.65238, -40.47895],
+  [-20.65255, -40.4778],
+  [-20.6529, -40.4767],
+  [-20.6533, -40.47575],
+  [-20.6537, -40.47505],
 ];
 
-/** Metros seaward: vazante → preamar (ainda na areia). */
+/** Metros seaward na areia: vazante → preamar. */
 const LOW_TIDE_M = 48;
-const HIGH_TIDE_M = 14;
+const HIGH_TIDE_M = 12;
 const FEATHER_M = 11;
 
 const SAND_LAND_M = 3;
 const SAND_SEA_M = 34;
 
 /**
- * ANEL FIXO DA BAÍA — só água.
- * Vértices insetos ~20–40 m para DENTRO DO MAR a partir da linha d'água.
- * Oeste: longe de telhados/ruas de Muquiçaba.
- * Leste: longe do verde do Morro da Pescaria, sem buraco no mar.
- * Norte: substituído dinamicamente pela shore da API.
+ * Costa LESTE (Pescaria) N→S — água a OESTE.
+ * Encosta na linha d'água antes do morro (fecha o buraco), sem verde.
  */
 const BAY_EAST: Array<[number, number]> = [
-  [-20.6537, -40.47505],
-  [-20.6542, -40.47455],
-  [-20.6547, -40.47425], // NE: água antes dos bancos — sem subir na areia/verde
-  [-20.6553, -40.4742],
-  [-20.6559, -40.47435],
-  [-20.6564, -40.47455], // oeste do píer/golfinho (só água)
-  [-20.6571, -40.47485],
-  [-20.6579, -40.47525],
-  [-20.6587, -40.47575],
-  [-20.6596, -40.4764],
-  [-20.6606, -40.4772],
-  [-20.6617, -40.47815],
-  [-20.6629, -40.47925],
-  [-20.6641, -40.4805],
-  [-20.6653, -40.48195],
-  [-20.6664, -40.48365],
-  [-20.66735, -40.48555],
-  [-20.6681, -40.48755],
-  [-20.66865, -40.48945],
+  [-20.6537, -40.4749],
+  [-20.6542, -40.47445],
+  [-20.65465, -40.4742],
+  [-20.65515, -40.4741],
+  [-20.6557, -40.4743],
+  [-20.65615, -40.4745], // água a oeste do píer/golfinho
+  [-20.65655, -40.47465],
+  [-20.6572, -40.47495],
+  [-20.65795, -40.47525],
+  [-20.65875, -40.4758],
+  [-20.6596, -40.47645],
+  [-20.66055, -40.47725],
+  [-20.6616, -40.4782],
+  [-20.66275, -40.4793],
+  [-20.66395, -40.48055],
+  [-20.66515, -40.4820],
+  [-20.66625, -40.48365],
+  [-20.6672, -40.48555],
+  [-20.6680, -40.48755],
+  [-20.66855, -40.4894],
 ];
 
+/** Arco sul — oceano aberto. */
 const BAY_SOUTH: Array<[number, number]> = [
-  [-20.66875, -40.4899],
-  [-20.66895, -40.4907],
-  [-20.66895, -40.49145],
-  [-20.6687, -40.4921],
-  [-20.6683, -40.49265],
+  [-20.66865, -40.48985],
+  [-20.6689, -40.49065],
+  [-20.66895, -40.4914],
+  [-20.66875, -40.49205],
+  [-20.6684, -40.4926],
 ];
 
-/** Oeste N→S: água a LESTE — inset da península/cidade. */
+/**
+ * Costa OESTE (Muquiçaba) N→S — água a LESTE.
+ * Logo a leste da linha d'água da península (sem telhado/rua).
+ */
 const BAY_WEST: Array<[number, number]> = [
-  [-20.6590, -40.49325],
-  [-20.6600, -40.49305],
-  [-20.6612, -40.4928],
-  [-20.6624, -40.4925],
-  [-20.6636, -40.49215],
-  [-20.6648, -40.49175],
-  [-20.6659, -40.4914],
-  [-20.66685, -40.4912],
-  [-20.6676, -40.49155],
-  [-20.6682, -40.49215],
-  [-20.6685, -40.4927],
+  [-20.65915, -40.49405],
+  [-20.6601, -40.4939],
+  [-20.6612, -40.4937],
+  [-20.66235, -40.4935],
+  [-20.6635, -40.49315],
+  [-20.66465, -40.4927],
+  [-20.6657, -40.49225],
+  [-20.66665, -40.4919],
+  [-20.66745, -40.49195],
+  [-20.66805, -40.49235],
+  [-20.6684, -40.49265],
 ];
 
 const METERS_LAT = 1 / 111_320;
@@ -148,7 +150,6 @@ function seawardNE(prev: [number, number], next: [number, number], lat: number):
   return [nN / len, nE / len];
 }
 
-/** Interpola lng da costa na latitude (linha N→S). */
 function coastLngAt(line: Array<[number, number]>, lat: number) {
   if (lat >= line[0][0]) return line[0][1];
   if (lat <= line[line.length - 1][0]) return line[line.length - 1][1];
@@ -163,11 +164,7 @@ function coastLngAt(line: Array<[number, number]>, lat: number) {
   return line[0][1];
 }
 
-/**
- * Clip estrito: azul só na água.
- * Oeste → a leste de BAY_WEST (longe da cidade).
- * Leste → a oeste de BAY_EAST (longe do morro).
- */
+/** Clip: azul só entre as costas oeste/leste (água). */
 function clipToBayWater(lat: number, lng: number): [number, number] {
   const westLimit = coastLngAt(BAY_WEST, lat);
   const eastLimit = coastLngAt(BAY_EAST, lat);
@@ -215,20 +212,20 @@ const DRY_DENSE = densify(DRY_WALL, 6);
 const SHORE_LOW = projectFromDry(DRY_DENSE, LOW_TIDE_M);
 const SHORE_HIGH = projectFromDry(DRY_DENSE, HIGH_TIDE_M);
 
-const EAST_DENSE = densify(BAY_EAST, 4);
+const EAST_DENSE = densify(BAY_EAST, 5);
 const SOUTH_DENSE = densify(BAY_SOUTH, 3);
-const WEST_DENSE = densify(BAY_WEST, 4);
+const WEST_DENSE = densify(BAY_WEST, 5);
 
 /**
- * Corpo da maré = borda N dinâmica (API) + costas fixas só na água.
- * Laterais e sul vêm do anel BAY_* (nunca cidade, nunca morro).
+ * Corpo = toda a água da baía até a areia (borda N = preamar / perto da areia).
+ * Laterais fixas na linha d'água. Sem buraco no mar, sem cidade/morro.
  */
-function bayWaterPolygon(shore: Array<[number, number]>): Array<[number, number]> {
-  const shoreClipped = shore.map(([lat, lng]) => clipToBayWater(lat, lng));
-  const eastCoast = EAST_DENSE.map(([lat, lng]) => clipToBayWater(lat, lng));
+function bayWaterPolygon(shoreNearSand: Array<[number, number]>): Array<[number, number]> {
+  const north = shoreNearSand.map(([lat, lng]) => clipToBayWater(lat, lng));
+  const east = EAST_DENSE.map(([lat, lng]) => clipToBayWater(lat, lng));
   const south = SOUTH_DENSE.map(([lat, lng]) => clipToBayWater(lat, lng));
-  const westCoast = [...WEST_DENSE].reverse().map(([lat, lng]) => clipToBayWater(lat, lng));
-  return [...shoreClipped, ...eastCoast, ...south, ...westCoast];
+  const west = [...WEST_DENSE].reverse().map(([lat, lng]) => clipToBayWater(lat, lng));
+  return [...north, ...east, ...south, ...west];
 }
 
 export function sunHeatFactor(now = new Date()) {
@@ -275,12 +272,13 @@ export function sunBand() {
 }
 
 /**
- * Maré: borda Noroeste (areia) = lerp EXCLUSIVO da ratio da API ao vivo.
- * Corpo = água da baía com laterais fixas na linha d'água (inset).
+ * Maré:
+ * - body: SEMPRE até a areia (SHORE_HIGH) + laterais na linha d'água → sem buraco na baía.
+ * - soft: faixa dinâmica (API) entre vazante e preamar na areia.
  */
 export function tideLayers(ratio: number) {
   const t = Math.min(1, Math.max(0, ratio));
-  const shore = lerpShore(SHORE_LOW, SHORE_HIGH, t);
+  const shoreDynamic = lerpShore(SHORE_LOW, SHORE_HIGH, t);
   const softNear = lerpShore(
     projectFromDry(DRY_DENSE, LOW_TIDE_M + FEATHER_M * 0.45),
     projectFromDry(DRY_DENSE, HIGH_TIDE_M + FEATHER_M * 0.45),
@@ -292,9 +290,9 @@ export function tideLayers(ratio: number) {
     t,
   );
   return {
-    body: bayWaterPolygon(shore),
-    soft: closedBand(softFar, shore).map(([lat, lng]) => clipToBayWater(lat, lng)),
-    softInner: closedBand(softNear, shore).map(([lat, lng]) => clipToBayWater(lat, lng)),
+    body: bayWaterPolygon(SHORE_HIGH),
+    soft: closedBand(softFar, shoreDynamic).map(([lat, lng]) => clipToBayWater(lat, lng)),
+    softInner: closedBand(softNear, shoreDynamic).map(([lat, lng]) => clipToBayWater(lat, lng)),
   };
 }
 
