@@ -171,10 +171,26 @@ function noticeOptions(payload: OrlaNotifyPayload, rich = true) {
   } as NotificationOptions;
 }
 
+async function closePriorNotices(reg: ServiceWorkerRegistration, payload: OrlaNotifyPayload) {
+  try {
+    if (typeof reg.getNotifications !== "function") return;
+    const open = await reg.getNotifications();
+    const prefix = payload.tag.replace(/-\d+$/, "");
+    for (const notice of open) {
+      const sameSpot = notice.data && typeof notice.data === "object" && (notice.data as { spot?: string }).spot === payload.spot;
+      const sameFamily = typeof notice.tag === "string" && (notice.tag === prefix || notice.tag.startsWith(`${prefix}-`));
+      if (sameSpot || sameFamily) notice.close();
+    }
+  } catch {
+    /* iOS antigo pode não listar */
+  }
+}
+
 async function viaServiceWorker(payload: OrlaNotifyPayload) {
   if (!("serviceWorker" in navigator)) return false;
   try {
     const reg = await navigator.serviceWorker.ready;
+    await closePriorNotices(reg, payload);
     try {
       await reg.showNotification(payload.title, noticeOptions(payload, true));
       return true;

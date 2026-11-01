@@ -37,9 +37,11 @@ function golfinhoBodies() {
   return GOLFINHO.tips.map((tip) => `• ${tip.title}: ${tip.text}`).join("\n");
 }
 
-async function notify(kind: OrlaSpotKind, spot: string, title: string, body: string, tag: string) {
+async function notify(kind: OrlaSpotKind, spot: string, title: string, body: string, tagBase: string) {
   // Guarda o deep link antes do banner — se o OS matar a aba, o toque ainda abre o ícone certo.
   stashPendingSpot(spot);
+  // Tag única por entrada: iOS/Android não engolem a 2ª chegada com a mesma tag.
+  const tag = `${tagBase}-${Date.now()}`;
   await pushOrlaNotice({ kind, spot, title, body, tag, renotify: true });
 }
 
@@ -101,13 +103,14 @@ export function useOrlaSentinel({
 
     const watch = navigator.geolocation.watchPosition(
       (position) => {
-        // GPS ruim demais gera falso positivo nos quiosques
         const accuracy = Number(position.coords.accuracy);
-        if (Number.isFinite(accuracy) && accuracy > 55) return;
+        // GPS ruim: NÃO aborta o loop — ainda processa SAÍDAS para rearmar a zona.
+        // Só bloqueia ENTRADAS (evita falso positivo de quiosque/monumento).
+        const accuracyOk = !Number.isFinite(accuracy) || accuracy <= 55;
         const here = { lat: position.coords.latitude, lng: position.coords.longitude };
         const visible = isAppVisible();
 
-        const checkMonument = (
+        const checkZone = (
           key: ZoneKey,
           point: { lat: number; lng: number },
           radius: number,
@@ -115,15 +118,19 @@ export function useOrlaSentinel({
         ) => {
           const dist = metersBetween(here, point);
           const was = inside.current.has(key);
+          if (was && dist > radius + EXIT_HYSTERESIS_M) {
+            // Saiu de verdade → rearma para a próxima chegada
+            inside.current.delete(key);
+            return;
+          }
           if (!was && dist <= radius) {
+            if (!accuracyOk) return;
             inside.current.add(key);
             enter();
-          } else if (was && dist > radius + EXIT_HYSTERESIS_M) {
-            inside.current.delete(key);
           }
         };
 
-        checkMonument("marlin", MARLIN, MONUMENT_RADIUS_M, () => {
+        checkZone("marlin", MARLIN, MONUMENT_RADIUS_M, () => {
           if (visible) {
             onAlert.current({ kind: "marlin" });
             return;
@@ -137,7 +144,7 @@ export function useOrlaSentinel({
           );
         });
 
-        checkMonument("golfinho", GOLFINHO, MONUMENT_RADIUS_M, () => {
+        checkZone("golfinho", GOLFINHO, MONUMENT_RADIUS_M, () => {
           if (visible) {
             onAlert.current({ kind: "golfinho" });
             return;
@@ -153,10 +160,7 @@ export function useOrlaSentinel({
 
         for (const place of QUIOSQUES) {
           const key = `q:${place.id}`;
-          const dist = metersBetween(here, place);
-          const was = inside.current.has(key);
-          if (!was && dist <= QUIOSQUE_RADIUS_M) {
-            inside.current.add(key);
+          checkZone(key, place, QUIOSQUE_RADIUS_M, () => {
             void notify(
               "quiosque",
               place.id,
@@ -165,9 +169,7 @@ export function useOrlaSentinel({
               `orla-${place.id}`,
             );
             if (visible) onAlert.current({ kind: "quiosque", id: place.id, name: place.name });
-          } else if (was && dist > QUIOSQUE_RADIUS_M + EXIT_HYSTERESIS_M) {
-            inside.current.delete(key);
-          }
+          });
         }
 
         if (!insideRampCorridor(here)) {
@@ -180,6 +182,8 @@ export function useOrlaSentinel({
           return;
         }
 
+        if (!accuracyOk) return;
+
         inside.current.add("rampa");
         const now = Date.now();
         if (rampSince.current == null) {
@@ -190,7 +194,7 @@ export function useOrlaSentinel({
         fireRamp();
       },
       () => {},
-      { enableHighAccuracy: true, maximumAge: 4000, timeout: 20000 },
+      { enableHighAccuracy: true, maximumAge: 2500, timeout: 20000 },
     );
 
     return () => {
