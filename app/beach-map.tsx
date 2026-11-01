@@ -1029,16 +1029,28 @@ function DayLayerOverlay({ layer }: { layer: DayLayer }) {
     if (heat <= 0) return null;
     const az = sunAzimuthDeg();
     const rings = sunSandRings();
-    const washOp = 0.12 + heat * 0.2;
-    const midOp = 0.1 + heat * 0.24;
-    const coreOp = 0.08 + heat * 0.3;
+    // Calor na areia: âmbar suave (não neon). Soft-light + opacidades baixas.
+    const glowOp = 0.05 + heat * 0.08;
+    const washOp = 0.07 + heat * 0.12;
+    const midOp = 0.06 + heat * 0.14;
+    const coreOp = 0.05 + heat * 0.16;
     return (
       <>
+        <Polygon
+          key={`sol-glow-${az.toFixed(0)}`}
+          positions={rings.glow}
+          pathOptions={{
+            fillColor: "#b45309",
+            fillOpacity: glowOp,
+            className: "day-layer-sol day-layer-sol-glow",
+            ...common,
+          }}
+        />
         <Polygon
           key={`sol-wash-${az.toFixed(0)}`}
           positions={rings.wash}
           pathOptions={{
-            fillColor: "#f59e0b",
+            fillColor: "#d97706",
             fillOpacity: washOp,
             className: "day-layer-sol day-layer-sol-wash",
             ...common,
@@ -1048,7 +1060,7 @@ function DayLayerOverlay({ layer }: { layer: DayLayer }) {
           key={`sol-mid-${az.toFixed(0)}`}
           positions={rings.mid}
           pathOptions={{
-            fillColor: "#fbbf24",
+            fillColor: "#f59e0b",
             fillOpacity: midOp,
             className: "day-layer-sol day-layer-sol-mid",
             ...common,

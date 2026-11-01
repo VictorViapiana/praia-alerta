@@ -318,17 +318,21 @@ body[data-pa-surface="sheet"] {
   mix-blend-mode: multiply;
 }
 
-/* Sol: máscara térmica só na areia.
-   SEM filter:blur — blur CSS no path SVG usa a bbox e vira bloco no oceano/cidade. */
+/* Sol: calor só na areia seca.
+   SEM filter:blur — blur CSS no path SVG usa a bbox e vaza p/ oceano/cidade.
+   Feather = 4 anéis + blend suave (não marca-texto). */
 .leaflet-overlay-pane path.day-layer-sol {
   stroke: none !important;
   filter: none !important;
 }
+.leaflet-overlay-pane path.day-layer-sol-glow {
+  mix-blend-mode: soft-light;
+}
 .leaflet-overlay-pane path.day-layer-sol-wash {
-  mix-blend-mode: multiply;
+  mix-blend-mode: soft-light;
 }
 .leaflet-overlay-pane path.day-layer-sol-mid {
-  mix-blend-mode: overlay;
+  mix-blend-mode: soft-light;
 }
 .leaflet-overlay-pane path.day-layer-sol-core {
   mix-blend-mode: soft-light;
