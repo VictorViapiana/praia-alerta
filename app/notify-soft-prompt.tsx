@@ -1,7 +1,8 @@
 "use client";
 
-import { Bell, BellOff, X } from "lucide-react";
+import { BellOff, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { GuaraPose } from "./guara-pose";
 import {
   NOTIFY_SOFT_KEY,
   readNotifySoftChoice,
@@ -55,15 +56,20 @@ export function NotifySoftPrompt({ ready }: { ready: boolean }) {
       role="dialog"
       aria-label="Ativar avisos da orla"
     >
-      <div className="w-full max-w-[22rem] rounded-[22px] border border-white/25 bg-[#102028]/96 p-3.5 text-white shadow-[0_20px_48px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+      <div className="w-full max-w-[22rem] overflow-hidden rounded-[22px] border border-white/25 bg-[#102028]/96 p-3.5 text-white shadow-[0_20px_48px_rgba(0,0,0,0.5)] backdrop-blur-xl">
         <div className="flex items-start gap-2.5">
-          <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full bg-cyan-500/25 text-cyan-100">
-            <Bell className="h-4 w-4" strokeWidth={2.2} />
-          </span>
+          <GuaraPose
+            pose="avisos"
+            alt=""
+            width={72}
+            height={85}
+            priority
+            className="mt-0.5 h-[4.25rem] w-auto shrink-0 drop-shadow-[0_10px_18px_rgba(0,0,0,0.4)]"
+          />
           <div className="min-w-0 flex-1">
             <p className="text-[13px] font-semibold leading-snug">Quer avisos da orla?</p>
             <p className="mt-1 text-[11px] leading-snug text-white/65">
-              O Guará avisa perto do Marlim, Golfinho, quiosques e rampa. Você escolhe — só ativamos a
+              O Guará fica de olho no Marlim, Golfinho, quiosques e rampa. Você escolhe — só ativamos a
               permissão do celular se você aceitar.
             </p>
           </div>

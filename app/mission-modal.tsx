@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { HeartHandshake, X } from "lucide-react";
+import { GuaraPose } from "./guara-pose";
 
 const spring = { type: "spring" as const, stiffness: 380, damping: 34, mass: 0.86 };
 
@@ -132,6 +133,15 @@ export function MissionModal({ open, onClose }: { open: boolean; onClose: () => 
             </header>
 
             <div className="no-scrollbar relative z-10 min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-4">
+              <div className="mb-4 flex justify-center">
+                <GuaraPose
+                  pose="festa"
+                  alt="Guará celebrando a missão"
+                  width={160}
+                  height={150}
+                  className="h-[7.5rem] w-auto drop-shadow-[0_16px_28px_rgba(0,0,0,0.35)]"
+                />
+              </div>
               <p className="font-serif text-[1.35rem] leading-snug text-white">
                 Nossa missão não é apenas sobre o mar, a areia ou a praia. Nossa missão é sobre a{" "}
                 <span className="bg-gradient-to-r from-amber-200 to-cyan-100 bg-clip-text font-semibold text-transparent">

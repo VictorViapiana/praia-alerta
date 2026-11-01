@@ -147,7 +147,7 @@ export function GuaraTipTour({
           </div>
         </div>
         <img
-          src="/guara-inteiro.png?v=1"
+          src={last ? "/guara/festa.webp" : "/guara-inteiro.png?v=1"}
           alt="Guará"
           draggable={false}
           decoding="async"

@@ -67,6 +67,10 @@ export default function RootLayout({
         <link rel="preload" href="/logo-splash.png" as="image" type="image/png" />
         <link rel="preload" href="/pins/guara-mascot.webp" as="image" type="image/webp" />
         <link rel="preload" href="/guara-inteiro.png?v=1" as="image" type="image/png" />
+        <link rel="preload" href="/guara/busca.webp" as="image" type="image/webp" />
+        <link rel="preload" href="/guara/clima.webp" as="image" type="image/webp" />
+        <link rel="preload" href="/guara/avisos.webp" as="image" type="image/webp" />
+        <link rel="preload" href="/guara/emergencia.webp" as="image" type="image/webp" />
         <link rel="stylesheet" href="/vendor/leaflet/leaflet.css" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
