@@ -58,7 +58,7 @@ export function MissionTrigger({
           Nossa Missão
         </span>
         <span className="mt-0.5 block truncate text-[9px] leading-none text-cyan-50/70">
-          Praia Alerta
+          Praia Guará
         </span>
       </span>
     </button>
@@ -113,7 +113,7 @@ export function MissionModal({ open, onClose }: { open: boolean; onClose: () => 
             <header className="relative z-10 flex items-start gap-3 px-5 pb-3 pt-2 sm:pt-5">
               <div className="min-w-0 flex-1">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-cyan-100/70">
-                  Praia Alerta Alegretto
+                  Praia Alerta Guará
                 </p>
                 <h2
                   id="mission-title"
@@ -156,7 +156,7 @@ export function MissionModal({ open, onClose }: { open: boolean; onClose: () => 
                   chega à nossa querida Guarapari.
                 </p>
                 <p>
-                  O <strong className="font-semibold text-white">Praia Alerta Alegretto</strong> nasceu com
+                  O <strong className="font-semibold text-white">Praia Alerta Guará</strong> nasceu com
                   o propósito de prevenir acidentes, orientar visitantes, proteger nossas crianças,
                   valorizar nossos trabalhadores e preservar as belezas naturais e culturais da nossa
                   cidade.
@@ -185,7 +185,7 @@ export function MissionModal({ open, onClose }: { open: boolean; onClose: () => 
               </blockquote>
 
               <p className="mt-6 pb-2 text-[14.5px] leading-relaxed text-white/88">
-                O <strong className="font-semibold text-white">Praia Alerta Alegretto</strong> não é apenas
+                O <strong className="font-semibold text-white">Praia Alerta Guará</strong> não é apenas
                 um aplicativo. É um compromisso com a vida, com as pessoas e com o futuro de Guarapari.
               </p>
             </div>
