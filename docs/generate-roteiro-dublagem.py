@@ -803,85 +803,7 @@ add(
     "Vale a visita — é casa de patrocinador da orla.",
 )
 
-# ——— NAVEGAÇÃO ———
-N = "Navegação / rota"
-add(
-    "nav_off_route",
-    N,
-    "Saiu do caminho",
-    "Você saiu do caminho. Estou refazendo a rota.",
-)
-add(
-    "nav_arrived_tpl",
-    N,
-    "Chegada (modelo — troque o nome do destino)",
-    "Você chegou. Pousada da Orla está aqui.",
-    "Grave também: «Você chegou.» e «está aqui.»",
-)
-add(
-    "nav_intro_foot_tpl",
-    N,
-    "Início a pé (modelo)",
-    "A pé até o Marlin Azul. 450 metros, cerca de 6 minutos. A pé, nos dois sentidos, pelo calçadão e pelas ruas. Siga em frente.",
-)
-add(
-    "nav_intro_bike_tpl",
-    N,
-    "Início de bicicleta (modelo)",
-    "De bicicleta até a Ducha Norte. 800 metros, cerca de 4 minutos. De bicicleta, pelas ruas e ciclovias. Vire à direita.",
-)
-add(
-    "nav_intro_car_tpl",
-    N,
-    "Início de carro (modelo)",
-    "De carro até o Hotel Mar. 1,2 quilômetros, cerca de 5 minutos. De carro, na mão da via. Siga em frente.",
-)
-add(
-    "nav_ahead_tpl",
-    N,
-    "Manobra à frente (modelo)",
-    "Daqui a 80 metros, vire à esquerda na Avenida Beira Mar.",
-)
-add(
-    "nav_now_tpl",
-    N,
-    "Manobra agora (modelo)",
-    "Agora, vire à direita.",
-)
-add(
-    "nav_remain_tpl",
-    N,
-    "Ouvir na barra de navegação (modelo com restante)",
-    "Vire à esquerda na Avenida Beira Mar. Faltam 120 metros, cerca de 2 minutos.",
-)
-for stem_id, stem in [
-    ("nav_stem_ape", "A pé"),
-    ("nav_stem_bike", "De bicicleta"),
-    ("nav_stem_car", "De carro"),
-    ("nav_stem_ate", "até"),
-    ("nav_stem_metros", "metros"),
-    ("nav_stem_km", "quilômetros"),
-    ("nav_stem_cerca", "cerca de"),
-    ("nav_stem_minutos", "minutos"),
-    ("nav_stem_daqui", "Daqui a"),
-    ("nav_stem_agora", "Agora"),
-    ("nav_stem_chegou", "Você chegou"),
-    ("nav_stem_aqui", "está aqui"),
-    ("nav_stem_frente", "Siga em frente"),
-    ("nav_stem_esq", "vire à esquerda"),
-    ("nav_stem_dir", "vire à direita"),
-    ("nav_stem_leve_esq", "siga levemente à esquerda"),
-    ("nav_stem_leve_dir", "siga levemente à direita"),
-    ("nav_stem_fechado_esq", "vire fechado à esquerda"),
-    ("nav_stem_fechado_dir", "vire fechado à direita"),
-    ("nav_stem_retorno", "faça o retorno"),
-    ("nav_stem_linha", "Linha direta. O traçado das ruas não carregou."),
-    ("nav_stem_surface_foot", "A pé, nos dois sentidos, pelo calçadão e pelas ruas."),
-    ("nav_stem_surface_bike", "De bicicleta, pelas ruas e ciclovias."),
-    ("nav_stem_surface_car", "De carro, na mão da via."),
-    ("nav_stem_faltam", "Faltam"),
-]:
-    add(stem_id, N, f"Stem / palavra solta — {stem_id}", stem, "Grave isolada, limpa, para montagem dinâmica.")
+# Navegação / "Ir até aqui" (a pé, bike, carro) — fora deste roteiro por enquanto.
 
 # ——— TELA MARLIN (orla) ———
 add(
@@ -954,8 +876,10 @@ pdf.ln(2)
 block(
     "App: Praia Alerta Guará\n"
     "Personagem: Guará (guia da Praia do Morro, Guarapari/ES)\n"
-    "Objetivo: gravar TODAS as falas faladas pelo Guará no app "
-    "(tutoriais, chat, marcos, tips, maré, patrocinadores, navegação).\n"
+    "Objetivo: gravar as falas do Guará no app "
+    "(tutoriais, chat, marcos, tips, maré, patrocinadores).\n"
+    "Fora deste roteiro (por enquanto): falas de rota depois de Ir até aqui "
+    "(a pé / bike / carro).\n"
     "Idioma: português do Brasil (pt-BR).\n"
     "Tom: amigável, claro, seguro, praiano — nunca infantil demais; "
     "urgência só em emergência/alerta.\n"
@@ -1022,7 +946,7 @@ block(
     "        guara__tour_home_01.wav\n"
     "        guara__guide_marlin.wav\n"
     "        guara__land_golfinho.wav\n"
-    "        guara__nav_off_route.wav\n"
+    "        guara__mare_tip_enchente.wav\n"
     "   - Tudo em minúsculas, underline, sem acento no nome do arquivo\n"
     "   - Um arquivo = uma fala (não junte várias falas no mesmo arquivo)\n"
     "\n"
@@ -1040,8 +964,7 @@ block(
     "     07_rampa/\n"
     "     08_mare/\n"
     "     09_patrocinadores/\n"
-    "     10_navegacao/\n"
-    "     11_orla_marlin/\n"
+    "     10_orla_marlin/\n"
     "     takes_extras/          (takes alternativos, se houver)\n"
     "\n"
     "   Os arquivos podem ficar todos na raiz do ZIP desde que o nome guara__<ID>.wav esteja correto.\n"

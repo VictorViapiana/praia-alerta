@@ -1,4 +1,4 @@
-# Roteiro Guará — 164 falas
+# Roteiro Guará — 131 falas
 
 Arquivo para a dubladora: `roteiro-dublagem-guara.pdf`
 
@@ -551,204 +551,17 @@ _Nota: Grave o ritmo. Números e direção do vento mudam no app._
 > Vale a visita — é casa de patrocinador da orla.
 
 
-## Navegação / rota
-
-129. **`nav_off_route`** — Saiu do caminho
-
-> Você saiu do caminho. Estou refazendo a rota.
-
-130. **`nav_arrived_tpl`** — Chegada (modelo — troque o nome do destino)
-
-> Você chegou. Pousada da Orla está aqui.
-
-_Nota: Grave também: «Você chegou.» e «está aqui.»_
-
-131. **`nav_intro_foot_tpl`** — Início a pé (modelo)
-
-> A pé até o Marlin Azul. 450 metros, cerca de 6 minutos. A pé, nos dois sentidos, pelo calçadão e pelas ruas. Siga em frente.
-
-132. **`nav_intro_bike_tpl`** — Início de bicicleta (modelo)
-
-> De bicicleta até a Ducha Norte. 800 metros, cerca de 4 minutos. De bicicleta, pelas ruas e ciclovias. Vire à direita.
-
-133. **`nav_intro_car_tpl`** — Início de carro (modelo)
-
-> De carro até o Hotel Mar. 1,2 quilômetros, cerca de 5 minutos. De carro, na mão da via. Siga em frente.
-
-134. **`nav_ahead_tpl`** — Manobra à frente (modelo)
-
-> Daqui a 80 metros, vire à esquerda na Avenida Beira Mar.
-
-135. **`nav_now_tpl`** — Manobra agora (modelo)
-
-> Agora, vire à direita.
-
-136. **`nav_remain_tpl`** — Ouvir na barra de navegação (modelo com restante)
-
-> Vire à esquerda na Avenida Beira Mar. Faltam 120 metros, cerca de 2 minutos.
-
-137. **`nav_stem_ape`** — Stem / palavra solta — nav_stem_ape
-
-> A pé
-
-_Nota: Grave isolada, limpa, para montagem dinâmica._
-
-138. **`nav_stem_bike`** — Stem / palavra solta — nav_stem_bike
-
-> De bicicleta
-
-_Nota: Grave isolada, limpa, para montagem dinâmica._
-
-139. **`nav_stem_car`** — Stem / palavra solta — nav_stem_car
-
-> De carro
-
-_Nota: Grave isolada, limpa, para montagem dinâmica._
-
-140. **`nav_stem_ate`** — Stem / palavra solta — nav_stem_ate
-
-> até
-
-_Nota: Grave isolada, limpa, para montagem dinâmica._
-
-141. **`nav_stem_metros`** — Stem / palavra solta — nav_stem_metros
-
-> metros
-
-_Nota: Grave isolada, limpa, para montagem dinâmica._
-
-142. **`nav_stem_km`** — Stem / palavra solta — nav_stem_km
-
-> quilômetros
-
-_Nota: Grave isolada, limpa, para montagem dinâmica._
-
-143. **`nav_stem_cerca`** — Stem / palavra solta — nav_stem_cerca
-
-> cerca de
-
-_Nota: Grave isolada, limpa, para montagem dinâmica._
-
-144. **`nav_stem_minutos`** — Stem / palavra solta — nav_stem_minutos
-
-> minutos
-
-_Nota: Grave isolada, limpa, para montagem dinâmica._
-
-145. **`nav_stem_daqui`** — Stem / palavra solta — nav_stem_daqui
-
-> Daqui a
-
-_Nota: Grave isolada, limpa, para montagem dinâmica._
-
-146. **`nav_stem_agora`** — Stem / palavra solta — nav_stem_agora
-
-> Agora
-
-_Nota: Grave isolada, limpa, para montagem dinâmica._
-
-147. **`nav_stem_chegou`** — Stem / palavra solta — nav_stem_chegou
-
-> Você chegou
-
-_Nota: Grave isolada, limpa, para montagem dinâmica._
-
-148. **`nav_stem_aqui`** — Stem / palavra solta — nav_stem_aqui
-
-> está aqui
-
-_Nota: Grave isolada, limpa, para montagem dinâmica._
-
-149. **`nav_stem_frente`** — Stem / palavra solta — nav_stem_frente
-
-> Siga em frente
-
-_Nota: Grave isolada, limpa, para montagem dinâmica._
-
-150. **`nav_stem_esq`** — Stem / palavra solta — nav_stem_esq
-
-> vire à esquerda
-
-_Nota: Grave isolada, limpa, para montagem dinâmica._
-
-151. **`nav_stem_dir`** — Stem / palavra solta — nav_stem_dir
-
-> vire à direita
-
-_Nota: Grave isolada, limpa, para montagem dinâmica._
-
-152. **`nav_stem_leve_esq`** — Stem / palavra solta — nav_stem_leve_esq
-
-> siga levemente à esquerda
-
-_Nota: Grave isolada, limpa, para montagem dinâmica._
-
-153. **`nav_stem_leve_dir`** — Stem / palavra solta — nav_stem_leve_dir
-
-> siga levemente à direita
-
-_Nota: Grave isolada, limpa, para montagem dinâmica._
-
-154. **`nav_stem_fechado_esq`** — Stem / palavra solta — nav_stem_fechado_esq
-
-> vire fechado à esquerda
-
-_Nota: Grave isolada, limpa, para montagem dinâmica._
-
-155. **`nav_stem_fechado_dir`** — Stem / palavra solta — nav_stem_fechado_dir
-
-> vire fechado à direita
-
-_Nota: Grave isolada, limpa, para montagem dinâmica._
-
-156. **`nav_stem_retorno`** — Stem / palavra solta — nav_stem_retorno
-
-> faça o retorno
-
-_Nota: Grave isolada, limpa, para montagem dinâmica._
-
-157. **`nav_stem_linha`** — Stem / palavra solta — nav_stem_linha
-
-> Linha direta. O traçado das ruas não carregou.
-
-_Nota: Grave isolada, limpa, para montagem dinâmica._
-
-158. **`nav_stem_surface_foot`** — Stem / palavra solta — nav_stem_surface_foot
-
-> A pé, nos dois sentidos, pelo calçadão e pelas ruas.
-
-_Nota: Grave isolada, limpa, para montagem dinâmica._
-
-159. **`nav_stem_surface_bike`** — Stem / palavra solta — nav_stem_surface_bike
-
-> De bicicleta, pelas ruas e ciclovias.
-
-_Nota: Grave isolada, limpa, para montagem dinâmica._
-
-160. **`nav_stem_surface_car`** — Stem / palavra solta — nav_stem_surface_car
-
-> De carro, na mão da via.
-
-_Nota: Grave isolada, limpa, para montagem dinâmica._
-
-161. **`nav_stem_faltam`** — Stem / palavra solta — nav_stem_faltam
-
-> Faltam
-
-_Nota: Grave isolada, limpa, para montagem dinâmica._
-
-
 ## Tela Marlin (orla)
 
-162. **`orla_marlin_long1`** — Piso
+129. **`orla_marlin_long1`** — Piso
 
 > A pedra é lisa e fica molhada de maresia e de respingo. Ande devagar, com o pé inteiro no chão. Não corra. Segure a criança pela mão. Um escorregão aqui machuca.
 
-163. **`orla_marlin_long2`** — Lixo
+130. **`orla_marlin_long2`** — Lixo
 
 > Garrafa, bituca, casca e sacola não ficam na pedra nem na fresta. O que você trouxe, você leva. Nada de deixar resto para o mar recolher.
 
-164. **`orla_marlin_long3`** — Patrimônio
+131. **`orla_marlin_long3`** — Patrimônio
 
 > O Marlin é patrimônio da cidade. Não escreva nome, não grave data, não arranque pedaço, não suba no peixe e não apoie nada que risque a pintura. Foto, sim. Dano, não.
 
