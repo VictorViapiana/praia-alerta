@@ -1590,6 +1590,14 @@ function MapScreen({
                       <li key={tip.title} className="rounded-xl border border-red-100 bg-red-50/80 px-2.5 py-2">
                         <p className="text-[12px] font-semibold leading-snug text-red-700">{tip.title}</p>
                         <p className="mt-0.5 text-[12px] leading-snug text-neutral-700">{tip.text}</p>
+                        <button
+                          type="button"
+                          onClick={() => speakGuara(`${tip.title}. ${tip.text}`)}
+                          className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold text-red-700/80"
+                        >
+                          <Volume2 className="h-3 w-3" />
+                          Ouvir
+                        </button>
                       </li>
                     ))}
                 </ul>
@@ -1603,6 +1611,14 @@ function MapScreen({
                       <li key={tip.title} className="rounded-xl border border-emerald-100 bg-emerald-50/80 px-2.5 py-2">
                         <p className="text-[12px] font-semibold leading-snug text-emerald-800">{tip.title}</p>
                         <p className="mt-0.5 text-[12px] leading-snug text-neutral-700">{tip.text}</p>
+                        <button
+                          type="button"
+                          onClick={() => speakGuara(`${tip.title}. ${tip.text}`)}
+                          className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-800/80"
+                        >
+                          <Volume2 className="h-3 w-3" />
+                          Ouvir
+                        </button>
                       </li>
                     ))}
                 </ul>

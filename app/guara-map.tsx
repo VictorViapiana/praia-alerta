@@ -100,6 +100,18 @@ export function GuaraMapChat({
               <p className="mt-1 text-[11px] leading-snug text-white/60">
                 Você está longe da Praia do Morro. Posso te levar até a orla.
               </p>
+              <button
+                type="button"
+                onClick={() =>
+                  speakGuara(
+                    "Você quer que eu te mostre a praia? Você está longe da Praia do Morro. Posso te levar até a orla.",
+                  )
+                }
+                className="mt-2 inline-flex items-center gap-1 rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-semibold text-cyan-50"
+              >
+                <Volume2 className="h-3 w-3" />
+                Ouvir
+              </button>
             </div>
           </div>
           <div className="mt-3 grid grid-cols-2 gap-2">
