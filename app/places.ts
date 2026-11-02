@@ -380,7 +380,7 @@ export const PLACES: Place[] = [
     about: "Prato feito pra fechar o dia na orla: camarão, barca do chef e mesa com brisa.",
     guaraTip: "Reserva pelo app evita fila no fim de semana — a barca do chef some cedo.",
     phone: "5527999100055",
-    gift: { title: "Entrada do chef", detail: "Entrada cortesia na primeira reserva pelo Praia Alerta.", code: "CHEF55" },
+    gift: { title: "Entrada do chef", detail: "Entrada cortesia na primeira reserva pelo Praia Alerta Guará.", code: "CHEF55" },
     offers: {
       dawn: { title: "Almoço antecipado", detail: "Mesa garantida das 12h às 13h.", code: "MESA55" },
       day: { title: "Executivo beira-mar", detail: "Prato + suco com preço de semana.", code: "EXEC55" },

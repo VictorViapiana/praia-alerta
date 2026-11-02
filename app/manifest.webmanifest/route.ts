@@ -6,9 +6,9 @@ export const revalidate = 0;
 
 /* ?v= busts launcher/favicon caches when the client re-adds the icon */
 const ICONS = [
-  { src: "/icons/icon-192.png?v=2", sizes: "192x192", type: "image/png", purpose: "any" },
-  { src: "/icons/icon-512.png?v=2", sizes: "512x512", type: "image/png", purpose: "any" },
-  { src: "/icons/maskable-512.png?v=2", sizes: "512x512", type: "image/png", purpose: "maskable" },
+  { src: "/icons/icon-192.png?v=3", sizes: "192x192", type: "image/png", purpose: "any" },
+  { src: "/icons/icon-512.png?v=3", sizes: "512x512", type: "image/png", purpose: "any" },
+  { src: "/icons/maskable-512.png?v=3", sizes: "512x512", type: "image/png", purpose: "maskable" },
 ];
 
 export function GET(request: NextRequest) {
@@ -17,11 +17,11 @@ export function GET(request: NextRequest) {
   const blocked = webApkWouldBeBlocked(userAgent, platformVersion);
 
   const manifest = {
-    id: "/alegretto",
-    name: "Praia Alerta Alegretto",
+    id: "/praia-alerta-guara",
+    name: "Praia Alerta Guará",
     // short_name curto: cabe no rótulo do Android (o nome longo some ou vira atalho sem texto)
-    short_name: "Praia Alerta",
-    description: "Guia e alerta da Praia do Morro — Guarapari, ES. Mapa, segurança e a orla no bolso.",
+    short_name: "Praia Guará",
+    description: "Guia e alerta da Praia do Morro — Guarapari, ES. Mapa, segurança e o Guará no bolso.",
     start_url: "/",
     scope: "/",
     display: blocked ? "browser" : "standalone",

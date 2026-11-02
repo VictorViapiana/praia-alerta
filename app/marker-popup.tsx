@@ -142,7 +142,7 @@ export function EscunaSheet({ onClose }: { onClose: () => void }) {
                       onClick={() => {
                         setCalledId(escuna.id);
                         const text = encodeURIComponent(
-                          `Oi! Quero saber do passeio ${escuna.name} pelo Praia Alerta Alegretto.`,
+                          `Oi! Quero saber do passeio ${escuna.name} pelo Praia Alerta Guará.`,
                         );
                         window.open(`https://wa.me/?text=${text}`, "_blank", "noopener,noreferrer");
                       }}
@@ -168,7 +168,7 @@ export function AmbulanteSheet({ vendor, onClose }: { vendor: Ambulante; onClose
   function callWhatsApp() {
     setCalled(true);
     const text = encodeURIComponent(
-      `Oi! Vi o ${vendor.name} no Praia Alerta Alegretto, na areia da Praia do Morro. Código ${giftCode}.`,
+      `Oi! Vi o ${vendor.name} no Praia Alerta Guará, na areia da Praia do Morro. Código ${giftCode}.`,
     );
     window.open(`https://wa.me/?text=${text}`, "_blank", "noopener,noreferrer");
   }

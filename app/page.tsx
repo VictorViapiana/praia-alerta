@@ -468,7 +468,7 @@ function GuaraIsland({ onReplay, onMission }: { onReplay: () => void; onMission:
           >
             <div className="flex items-center gap-2">
               <p className="pa-brand text-[13px] text-cyan-50 drop-shadow-[0_1px_2px_rgba(5,28,52,0.4)]">
-                Praia Alerta Alegretto
+                Praia Alerta Guará
               </p>
               {narrating ? (
                 <Equalizer />
@@ -2124,7 +2124,7 @@ function SosModal({ onClose }: { onClose: () => void }) {
         </h2>
         <p className="mx-auto mt-3 max-w-[16rem] text-sm leading-relaxed text-white/85">
           {sent
-            ? "A equipe Alegretto da Praia do Morro foi notificada. Fique visível e aguarde o posto."
+            ? "A equipe do Praia Alerta Guará foi notificada. Fique visível e aguarde o posto."
             : "Confirmando o ponto na areia antes de avisar o salva-vidas."}
         </p>
         <p className="mt-3 font-mono text-[11px] tracking-[0.16em] text-white/70">
@@ -2530,7 +2530,7 @@ export default function HomePage() {
         splashActive={splash}
       />
       <footer className="relative z-10 mt-6 hidden text-center sm:block">
-        <p className="pa-brand text-lg text-sky-950/80">Praia Alerta Alegretto</p>
+        <p className="pa-brand text-lg text-sky-950/80">Praia Alerta Guará</p>
         <p className="mt-1 text-[11px] uppercase tracking-[0.28em] text-white/40">
           Guarapari · Espírito Santo
         </p>

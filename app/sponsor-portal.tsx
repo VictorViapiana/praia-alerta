@@ -179,7 +179,7 @@ export function SponsorSheet({ place, onClose }: { place: Place; onClose: () => 
     setTab("ir");
     openWhatsApp(
       place.phone,
-      `Olá! Vim pelo Praia Alerta Alegretto e quero segurar uma mesa em ${place.name} pelos próximos 15 minutos. Nome na reserva: (seu nome).`,
+      `Olá! Vim pelo Praia Alerta Guará e quero segurar uma mesa em ${place.name} pelos próximos 15 minutos. Nome na reserva: (seu nome).`,
     );
   }
 
@@ -188,12 +188,12 @@ export function SponsorSheet({ place, onClose }: { place: Place; onClose: () => 
     const offerLine = offer ? ` Vi a oferta "${offer.title}" (código ${offer.code}).` : "";
     openWhatsApp(
       place.phone,
-      `Oi! Cheguei pelo Praia Alerta em ${place.name}.${offerLine}${giftLine}${extra ? ` ${extra}` : ""}`,
+      `Oi! Cheguei pelo Praia Alerta Guará em ${place.name}.${offerLine}${giftLine}${extra ? ` ${extra}` : ""}`,
     );
   }
 
   async function sharePlace() {
-    const text = `${place.name} na Praia do Morro — patrocinador do Praia Alerta Alegretto.`;
+    const text = `${place.name} na Praia do Morro — patrocinador do Praia Alerta Guará.`;
     try {
       if (navigator.share) {
         await navigator.share({ title: place.name, text });

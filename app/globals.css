@@ -1379,7 +1379,8 @@ html[data-sky="night"] .sky-sun-wrap {
 }
 
 .sx-bird {
-  width: min(46vw, 200px);
+  /* Guará de chapéu — um pouco maior pra ler "alegretto" no chapéu */
+  width: min(52vw, 228px);
   will-change: transform, opacity;
 }
 
