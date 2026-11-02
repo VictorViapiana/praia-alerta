@@ -925,60 +925,54 @@ for i, item in enumerate(lines, 1):
 
 # ——— ENTREGA ———
 pdf.add_page()
-block("Como salvar e entregar os áudios", size=16, bold=True, h=8, color=(12, 74, 110))
+block("Como gravar e entregar (passo a passo simples)", size=16, bold=True, h=8, color=(12, 74, 110))
 pdf.ln(2)
 block(
-    "1) Formato preferido\n"
-    "   - WAV (PCM) 48 kHz, mono, 24-bit  OU  44,1 kHz / 16-bit mono\n"
-    "   - Alternativa aceita: MP3 320 kbps, mono, 48 kHz\n"
-    "   - Sem compressão agressiva, sem music bed, sem efeito\n"
+    "Fluxo para quem vai gravar (não precisa ser estúdio nem saber de WAV):\n"
     "\n"
-    "2) Loudness / nível\n"
-    "   - Alvo: cerca de -16 LUFS integrados (fala para mobile)\n"
-    "   - Pico verdadeiro abaixo de -1 dBTP\n"
-    "   - Sem estalar no início/fim - deixe 100-150 ms de silêncio limpo no começo e no fim\n"
+    "1) Grave normal\n"
+    "   - Use o Gravador do celular, Notas de Voz (iPhone) ou Audacity no computador.\n"
+    "   - Quarto quieto, celular perto da boca, fale só o texto da linha Fala.\n"
+    "   - Não diga o número da fala nem o ID em voz alta.\n"
+    "   - Uma fala por vez. Se errar, grave de novo.\n"
     "\n"
-    "3) Nome dos arquivos (obrigatório)\n"
-    "   - Use exatamente o ID entre colchetes do roteiro\n"
-    "   - Padrão: guara__<ID>.wav\n"
-    "   - Exemplos:\n"
-    "        guara__home_intro.wav\n"
-    "        guara__tour_home_01.wav\n"
+    "2) Salve o arquivo com o nome certo (obrigatório)\n"
+    "   - Use exatamente o ID entre colchetes do roteiro.\n"
+    "   - Padrão: guara__<ID>  + a extensão que o celular der\n"
+    "   - Exemplos (qualquer extensão serve no envio):\n"
+    "        guara__home_intro.m4a\n"
+    "        guara__tour_home_01.mp3\n"
     "        guara__guide_marlin.wav\n"
-    "        guara__land_golfinho.wav\n"
-    "        guara__mare_tip_enchente.wav\n"
-    "   - Tudo em minúsculas, underline, sem acento no nome do arquivo\n"
-    "   - Um arquivo = uma fala (não junte várias falas no mesmo arquivo)\n"
+    "        guara__land_golfinho.m4a\n"
+    "   - Minúsculas, underline duplo depois de guara, sem acento no nome.\n"
+    "   - Um arquivo = uma fala (não junte várias no mesmo arquivo).\n"
     "\n"
-    "4) Organização das pastas\n"
-    "   Entregue um ZIP com esta estrutura:\n"
+    "3) Mande o pacote para a gente\n"
+    "   - Junte tudo num ZIP (pode ser tudo na raiz do ZIP).\n"
+    "   - Opcional: um 00_readme.txt com seu nome, data e como gravou.\n"
     "\n"
-    "   guara-dub-ptbr/\n"
-    "     00_readme.txt          (seu nome, data, microfone usado)\n"
-    "     01_home/\n"
-    "     02_tutorial_home/\n"
-    "     03_tutorial_mapa/\n"
-    "     04_chat_mapa/\n"
-    "     05_guia/\n"
-    "     06_marcos/\n"
-    "     07_rampa/\n"
-    "     08_mare/\n"
-    "     09_patrocinadores/\n"
-    "     10_orla_marlin/\n"
-    "     takes_extras/          (takes alternativos, se houver)\n"
+    "4) Nós convertemos para WAV e colocamos no app\n"
+    "   - Você NÃO precisa exportar em WAV.\n"
+    "   - MP3, M4A, AAC, CAF ou WAV — tudo bem.\n"
+    "   - A equipe converte para o formato do app (WAV) e sobe em public/guara/voice/.\n"
+    "   - O que não pode errar é o NOME bater com o ID do PDF.\n"
     "\n"
-    "   Os arquivos podem ficar todos na raiz do ZIP desde que o nome guara__<ID>.wav esteja correto.\n"
-    "\n"
-    "5) Takes\n"
-    "   - Preferimos 1 take limpo por fala\n"
-    "   - Se quiser oferecer alternativa de tom, salve como guara__<ID>__alt2.wav\n"
-    "\n"
-    "6) Checklist antes de enviar\n"
-    "   [ ] Todos os IDs do roteiro foram gravados (conte o total)\n"
-    "   [ ] Nomes batem com o ID (copiar/colar do PDF)\n"
-    "   [ ] Sem ruído de fundo / sem plosivas fortes\n"
-    "   [ ] Sem dizer o número da fala ou o ID em voz alta\n"
-    "   [ ] Arquivo 00_readme.txt com contato e data\n",
+    "Checklist rápido antes de enviar\n"
+    "   [ ] Todas as falas do roteiro foram gravadas (conte o total)\n"
+    "   [ ] Cada arquivo começa com guara__ e o ID certo\n"
+    "   [ ] Sem ruído forte de fundo\n"
+    "   [ ] Sem dizer o número ou o ID em voz alta\n",
+    size=10,
+    h=5,
+)
+
+pdf.ln(3)
+block("Dicas extras (opcional — se quiser caprichar)", size=12, bold=True, h=6, color=(12, 74, 110))
+pdf.ln(1)
+block(
+    "- Se souber exportar WAV: mono, 48 kHz (ou 44,1 kHz), sem música e sem efeito.\n"
+    "- Take alternativo: guara__<ID>__alt2.m4a (ou .wav / .mp3).\n"
+    "- Pastas por tema ajudam, mas não são obrigatórias se o nome estiver certo.\n",
     size=10,
     h=5,
 )
@@ -986,8 +980,15 @@ block(
 pdf.ln(3)
 block("Índice rápido de IDs (conferência)", size=11, bold=True, h=6)
 pdf.ln(1)
+block(
+    "Salve como guara__<ID>.m4a (ou .mp3 / .wav). Nós convertemos para WAV depois.",
+    size=9,
+    h=4,
+    color=(80, 80, 80),
+)
+pdf.ln(1)
 for idx, item in enumerate(lines, 1):
-    block(f"{idx:03d}  guara__{item['id']}.wav", size=8, h=4)
+    block(f"{idx:03d}  guara__{item['id']}", size=8, h=4)
 
 out1 = Path("/workspace/docs/roteiro-dublagem-guara.pdf")
 out2 = Path("/opt/cursor/artifacts/roteiro-dublagem-guara.pdf")
@@ -1006,7 +1007,12 @@ with md.open("w", encoding="utf-8") as f:
         f.write(f"{i}. **`{item['id']}`** — {item['context']}\n\n> {item['text']}\n\n")
         if item["notes"]:
             f.write(f"_Nota: {item['notes']}_\n\n")
-    f.write("\n## Entrega\n\nNome: `guara__<ID>.wav` — ver PDF final.\n")
+    f.write(
+        "\n## Entrega\n\n"
+        "1. Grave normal (celular ou Audacity).\n"
+        "2. Salve como `guara__<ID>.m4a` / `.mp3` / `.wav` (nome = ID do roteiro).\n"
+        "3. Mande o ZIP — a equipe converte para WAV e coloca no app.\n"
+    )
 
 ids_path = Path("/workspace/docs/roteiro-dublagem-guara-ids.txt")
 ids_path.write_text("\n".join(item["id"] for item in lines) + "\n", encoding="utf-8")

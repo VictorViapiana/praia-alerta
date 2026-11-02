@@ -568,4 +568,6 @@ _Nota: Grave o ritmo. Números e direção do vento mudam no app._
 
 ## Entrega
 
-Nome: `guara__<ID>.wav` — ver PDF final.
+1. Grave normal (celular ou Audacity).
+2. Salve como `guara__<ID>.m4a` / `.mp3` / `.wav` (nome = ID do roteiro).
+3. Mande o ZIP — a equipe converte para WAV e coloca no app.
