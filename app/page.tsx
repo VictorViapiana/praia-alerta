@@ -869,6 +869,7 @@ function MapScreen({
   const [flyTo, setFlyTo] = useState<{ id: number; lat: number; lng: number; zoom?: number; instant?: boolean } | null>(null);
   const [beachInvite, setBeachInvite] = useState(false);
   const [guaraOpen, setGuaraOpen] = useState(false);
+  const [mapTourOpen, setMapTourOpen] = useState(false);
   const beachInviteAsked = useRef(false);
   const [locating, setLocating] = useState(false);
   const [locateNote, setLocateNote] = useState<string | null>(null);
@@ -1666,11 +1667,12 @@ function MapScreen({
       />
       )}
 
+      {/* Câmera fica visível no tour (spotlight); some no passo dela. Soft prompts somem. */}
       {!driving && !sheetOpen && !cameraOpen && !searchOpen && !guaraOpen && (
         <CameraFab onOpen={() => setCameraOpen(true)} />
       )}
-      {!driving && !sheetOpen && !cameraOpen && !searchOpen && !guaraOpen && <NotifySoftPrompt ready={mapReady} />}
-      {!driving && !sheetOpen && !cameraOpen && !searchOpen && !guaraOpen && (
+      {!driving && !sheetOpen && !cameraOpen && !searchOpen && !guaraOpen && !mapTourOpen && <NotifySoftPrompt ready={mapReady} />}
+      {!driving && !sheetOpen && !cameraOpen && !searchOpen && !guaraOpen && !mapTourOpen && (
         <LocationSoftPrompt
           ready={mapReady}
           forceOpen={locSoftForce}
@@ -1687,7 +1689,7 @@ function MapScreen({
           onDismissed={() => setLocSoftForce(false)}
         />
       )}
-      {!driving && !sheetOpen && (
+      {!driving && !sheetOpen && !mapTourOpen && (
       <GuaraMapChat
         hidden={cameraOpen || searchOpen}
         beachInvite={beachInvite && !cameraOpen && !searchOpen}
@@ -1772,7 +1774,14 @@ function MapScreen({
       )}
       {!sheetOpen && <MapSos onTrigger={onSos} parked={driving} />}
       {cameraOpen && <TouristCamera onClose={() => setCameraOpen(false)} />}
-      {!sheetOpen && <GuaraOnboarding rootRef={mapRef} steps={MAP_STEPS} storageKey={MAP_TOUR_KEY} />}
+      {!sheetOpen && (
+        <GuaraOnboarding
+          rootRef={mapRef}
+          steps={MAP_STEPS}
+          storageKey={MAP_TOUR_KEY}
+          onActiveChange={setMapTourOpen}
+        />
+      )}
 
       {/* Sheets por cima de TODO o chrome do mapa (busca, FABs, Sol/Maré). */}
       <AnimatePresence>
