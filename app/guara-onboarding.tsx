@@ -1,12 +1,15 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useCallback, useEffect, useLayoutEffect, useState, type RefObject } from "react";
+import { useCallback, useLayoutEffect, useState, type RefObject } from "react";
 import { speakGuara, stopSpeaking } from "./voice";
 
 // v3: versões anteriores marcavam o passeio como visto ou não abriam na home
 export const HOME_TOUR_KEY = "hasSeenGuaraTutorial_v3";
 export const MAP_TOUR_KEY = "hasSeenGuaraMapTutorial_v3";
+
+/** Replay já consumido por storageKey — sobrevive ao remount ao ir/voltar do mapa. */
+const handledReplayByKey = new Map<string, number>();
 
 export type TourStep = {
   text: string;
@@ -53,37 +56,37 @@ export const MAP_STEPS: TourStep[] = [
     text: "Escreva aqui o nome de um quiosque, de um ambulante ou a palavra escuna. Eu levo o mapa até o ponto.",
     target: "map-search",
     guara: "small",
-    coach: "top-16 items-start",
+    coach: "top-20 items-start",
   },
   {
     text: "Se preferir, filtre. Quiosques, ambulantes, duchas, hotéis e sorvetes. Toque de novo no mesmo filtro para voltar à vista geral.",
     target: "map-filters",
     guara: "small",
-    coach: "top-16 items-start",
+    coach: "top-20 items-start",
   },
   {
     text: "Este botão abre a câmera com a moldura Eu amo Guarapari. A foto fica com você.",
     target: "map-camera",
     guara: "small",
-    coach: "top-16 items-start",
+    coach: "top-20 items-start",
   },
   {
     text: "Este círculo branco centraliza o mapa em você: calçadão embaixo dos pés, areia na frente.",
     target: "map-location",
     guara: "small",
-    coach: "bottom-[11rem] items-end",
+    coach: "top-24 items-start",
   },
   {
     text: "Aproxima com dois dedos. Os quiosques e os carrinhos nascem na areia. Toque no carrinho para ver o cardápio e chamar no WhatsApp.",
     target: null,
     guara: "small",
-    coach: "bottom-[11rem] items-end",
+    coach: "top-24 items-start",
   },
   {
     text: "É isso. A orla é sua. Bom passeio na Praia do Morro!",
     target: null,
     guara: "large",
-    coach: "bottom-[11rem] items-end",
+    coach: "top-24 items-start",
   },
 ];
 
@@ -135,10 +138,18 @@ function Spotlight({ hole }: { hole: Hole | null }) {
 }
 
 function coachPlace(hole: Hole | null): { top: number; left: number; right: number } {
-  if (!hole) return { top: 16, left: 12, right: 12 };
-  const above = hole.y > 230;
+  if (!hole) return { top: 72, left: 12, right: 12 };
+  // Alvos baixos (busca, filtros, câmera): fala no alto, longe dos FABs
+  if (hole.y > 200) {
+    const preferred = Math.min(hole.y - 220, 96);
+    return {
+      top: Math.max(64, preferred),
+      left: 12,
+      right: 64,
+    };
+  }
   return {
-    top: above ? Math.max(12, hole.y - 138) : hole.y + hole.height + 14,
+    top: hole.y + hole.height + 14,
     left: 12,
     right: 12,
   };
@@ -211,6 +222,7 @@ export function GuaraOnboarding({
   storageKey,
   replay = 0,
   reveal = true,
+  onActiveChange,
 }: {
   rootRef: RefObject<HTMLDivElement | null>;
   steps: TourStep[];
@@ -218,6 +230,7 @@ export function GuaraOnboarding({
   replay?: number;
   /** quando false, só pré-aquece; a UI do tour espera a splash sumir */
   reveal?: boolean;
+  onActiveChange?: (active: boolean) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
@@ -229,15 +242,22 @@ export function GuaraOnboarding({
 
   useLayoutEffect(() => {
     if (!reveal) return;
-    if (replay < 1 && readSeen(storageKey)) return;
+    const handled = handledReplayByKey.get(storageKey) ?? 0;
+    const isNewReplay = replay > handled;
+    if (isNewReplay) {
+      handledReplayByKey.set(storageKey, replay);
+      setStep(0);
+      setOpen(true);
+      return;
+    }
+    if (readSeen(storageKey)) return;
     setOpen(true);
   }, [reveal, storageKey, replay]);
 
   useLayoutEffect(() => {
-    if (replay < 1) return;
-    setStep(0);
-    setOpen(true);
-  }, [replay]);
+    onActiveChange?.(open && reveal);
+    return () => onActiveChange?.(false);
+  }, [open, reveal, onActiveChange]);
 
   const measure = useCallback(() => {
     const root = rootRef.current;
@@ -313,7 +333,7 @@ export function GuaraOnboarding({
           role="dialog"
           aria-modal="true"
           aria-label="Tutorial do Guará"
-          className="absolute inset-0 z-[80] cursor-pointer"
+          className="absolute inset-0 z-[120] cursor-pointer"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -326,7 +346,7 @@ export function GuaraOnboarding({
         >
           <Spotlight hole={hole} />
           {!current.target ? (
-            <div className="pointer-events-none absolute inset-0 z-[90] flex items-center justify-center px-6">
+            <div className="pointer-events-none absolute inset-0 z-[130] flex items-center justify-center px-6">
               <div className="pointer-events-none flex max-h-full w-full max-w-[19.5rem] flex-col items-center">
                 <CoachBubble
                   step={step}
@@ -355,7 +375,7 @@ export function GuaraOnboarding({
               </div>
             </div>
           ) : (
-            <div className="pointer-events-none absolute z-[90] flex items-end gap-2" style={coachPlace(hole)}>
+            <div className="pointer-events-none absolute z-[130] flex items-end gap-2" style={coachPlace(hole)}>
               <img
                 src="/guara.png?v=3"
                 alt="Guará"
