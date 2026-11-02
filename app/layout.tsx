@@ -65,7 +65,7 @@ export default function RootLayout({
     <html lang="pt-BR">
       <head>
         <link rel="preload" href="/logo-splash.png" as="image" type="image/png" />
-        <link rel="preload" href="/guara/chapeu-alegretto.webp" as="image" type="image/webp" />
+        <link rel="preload" href="/guara/chapeu-alegretto.webp?v=2" as="image" type="image/webp" />
         <link rel="preload" href="/pins/guara-mascot.webp" as="image" type="image/webp" />
         <link rel="preload" href="/guara-inteiro.png?v=1" as="image" type="image/png" />
         <link rel="preload" href="/guara/busca.webp" as="image" type="image/webp" />

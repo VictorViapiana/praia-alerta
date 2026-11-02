@@ -29,7 +29,7 @@ export function SplashScreen({ onWarm, onDone }: { onWarm?: () => void; onDone: 
     const warm = () => {
       if (warmRef.current) return;
       warmRef.current = true;
-      for (const src of ["/guara/chapeu-alegretto.webp", "/pins/guara-mascot.webp", "/guara.png?v=3"]) {
+      for (const src of ["/guara/chapeu-alegretto.webp?v=2", "/pins/guara-mascot.webp", "/guara.png?v=3"]) {
         const img = new Image();
         img.decoding = "async";
         img.src = src;
@@ -90,7 +90,7 @@ export function SplashScreen({ onWarm, onDone }: { onWarm?: () => void; onDone: 
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             className="sx-bird-img"
-            src="/guara/chapeu-alegretto.webp"
+            src="/guara/chapeu-alegretto.webp?v=2"
             alt=""
             width={939}
             height={1115}
