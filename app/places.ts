@@ -199,8 +199,8 @@ export const SHOWERS: ShowerSpot[] = [
   {
     id: "muro",
     mapKind: "duchas",
-    name: "Ducha do muro",
-    detail: "Av. Beira Mar · no muro perto do Quiosque 03",
+    name: "Ducha",
+    detail: "Av. Beira Mar · perto do Quiosque 03",
     lat: -20.658498,
     lng: -40.493471,
   },
