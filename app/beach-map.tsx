@@ -1070,36 +1070,36 @@ function MuroSulOverlay({ points }: { points: Array<[number, number]> }) {
       <Polyline
         positions={points}
         pathOptions={{
-          color: "#000000",
-          weight: 8,
-          opacity: 0.18,
+          color: "#0c0a09",
+          weight: 9,
+          opacity: 0.2,
           lineCap: "round",
           lineJoin: "round",
           className: "orla-muro-shadow",
         }}
         interactive={false}
       />
-      {/* Corpo do muro (concreto/pedra escura) */}
+      {/* Corpo do muro (pedra/concreto) */}
       <Polyline
         positions={points}
         pathOptions={{
-          color: "#1c1917",
-          weight: 5.5,
-          opacity: 0.92,
+          color: "#292524",
+          weight: 6.5,
+          opacity: 0.94,
           lineCap: "round",
           lineJoin: "round",
           className: "orla-muro-body",
         }}
         interactive={false}
       />
-      {/* Topo / grade — dash nativo, espaçamento uniforme */}
+      {/* Topo claro — dashArray nativo = espaçamento uniforme (ignora cliques irregulares) */}
       <Polyline
         positions={points}
         pathOptions={{
-          color: "#d6d3d1",
-          weight: 2.25,
-          opacity: 0.95,
-          dashArray: "5 7",
+          color: "#e7e5e4",
+          weight: 2.5,
+          opacity: 0.96,
+          dashArray: "4 6",
           lineCap: "butt",
           lineJoin: "round",
           className: "orla-muro-dash",
