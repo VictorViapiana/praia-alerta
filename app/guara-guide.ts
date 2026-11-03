@@ -331,7 +331,7 @@ export function answerGuara(raw: string, live: GuaraLive = { tide: null, weather
   if (has(text, "ducha sul", "chuveiro sul")) {
     const shower = SHOWERS[0];
     return {
-      answer: "A Ducha Sul fica no calçadão, no trecho sul. Lembra: a água só liga com moeda de 1 real.",
+      answer: "A Ducha Sul fica no calçadão, no trecho sul. Para ligar, use moeda de 1 real.",
       filter: "duchas",
       query: "",
       fly: { lat: shower.lat, lng: shower.lng },
@@ -343,7 +343,7 @@ export function answerGuara(raw: string, live: GuaraLive = { tide: null, weather
   if (has(text, "ducha norte", "chuveiro norte")) {
     const shower = SHOWERS[1];
     return {
-      answer: "A Ducha Norte fica no calçadão, no meio da orla. Leva moeda de 1 real — sem ela o jato não acorda.",
+      answer: "A Ducha Norte fica no calçadão, no meio da orla. Para ligar, use moeda de 1 real.",
       filter: "duchas",
       query: "",
       fly: { lat: shower.lat, lng: shower.lng },
@@ -355,7 +355,7 @@ export function answerGuara(raw: string, live: GuaraLive = { tide: null, weather
   if (has(text, "ducha costao", "ducha do costao", "chuveiro costao")) {
     const shower = SHOWERS[2] ?? SHOWERS[0];
     return {
-      answer: "A Ducha do Costão fica na Beira Mar, perto do costão. Portal da água: só abre com R$ 1.",
+      answer: "A Ducha fica na Beira Mar, perto do costão. Para ligar, coloque uma moeda de 1 real.",
       filter: "duchas",
       query: "",
       fly: { lat: shower.lat, lng: shower.lng },
@@ -368,7 +368,7 @@ export function answerGuara(raw: string, live: GuaraLive = { tide: null, weather
     const shower = SHOWERS[2] ?? SHOWERS[0];
     return {
       answer:
-        "São três duchas no calçadão: Sul, Norte e a do Costão. Em todas a água só liga com moeda de 1 real — não piche e não quebre. Te levo à do Costão.",
+        "São três duchas no calçadão: Sul, Norte e a perto do costão. Em todas, use moeda de 1 real. Não force, não piche e não quebre. Te levo até a Ducha.",
       filter: "duchas",
       query: "",
       fly: { lat: shower.lat, lng: shower.lng },

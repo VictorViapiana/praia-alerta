@@ -166,33 +166,33 @@ export type ShowerSpot = {
 export const SHOWER_RITUAL_STEPS = [
   {
     kind: "moeda" as const,
-    title: "A água só acorda com R$ 1",
-    text: "Essa ducha não liga no pedido — ela dança com uma moeda de 1 real. Sem a moedinha, o jato dorme. Guarda uma no bolso antes de sair do mar.",
+    title: "Use moeda de R$ 1",
+    text: "Para ligar a ducha, coloque uma moeda de 1 real no local indicado. Sem a moeda de R$ 1, a ducha não funciona. Leve uma moeda antes de sair da areia.",
   },
   {
     kind: "alerta" as const,
-    title: "Não force o slot",
-    text: "Não enfie pedra, tampinha nem moeda errada. Quem força o mecanismo quebra o banho de todo mundo na orla.",
+    title: "Não force a máquina",
+    text: "Não coloque pedra, tampinha nem outro objeto no lugar da moeda. Isso estraga o equipamento e deixa a ducha sem funcionar para os outros.",
   },
   {
     kind: "convivencia" as const,
-    title: "Não piche, não risque",
-    text: "A ducha não é muro. Tinta, caneta e gravura estragam o que é de todos. Foto, sim. Pichação, nunca.",
+    title: "Não piche e não risque",
+    text: "Não escreva, não risque e não pinte a ducha. Ela é de uso público — deixe como encontrou.",
   },
   {
     kind: "convivencia" as const,
-    title: "Não quebre o que te limpa",
-    text: "Chuveirinho, botão e tubo são da praia inteira. Quem quebra rouba o banho do próximo — e o Guará não esquece.",
+    title: "Não quebre a ducha",
+    text: "Não bata, não desmonte e não puxe o chuveiro com força. Se estiver quebrada, avise alguém do quiosque ou da orla.",
   },
   {
     kind: "festa" as const,
-    title: "Um jato, uma vez",
-    text: "Fila curta, respeito longo. Um de cada vez sob a água, sem empurrão. Sai do mar, gira a moeda, volta leve pra areia.",
+    title: "Um de cada vez",
+    text: "Espere sua vez, use a ducha e libere o espaço. Sem empurrão e sem demorar demais.",
   },
 ] as const;
 
 export const SHOWER_SPEAK =
-  "Nas duchas da Praia do Morro a água só liga com moeda de 1 real. Não force o slot, não piche, não quebre. Um de cada vez sob o jato — o banho é da orla inteira.";
+  "Nas duchas da Praia do Morro use moeda de 1 real. Não force a máquina, não piche e não quebre. Um de cada vez.";
 
 export const SHOWERS: ShowerSpot[] = [
   { id: "sul", mapKind: "duchas", name: "Ducha Sul", detail: "Calçadão · trecho sul", lat: -20.657464, lng: -40.492163 },
@@ -200,7 +200,7 @@ export const SHOWERS: ShowerSpot[] = [
   {
     id: "costao",
     mapKind: "duchas",
-    name: "Ducha do Costão",
+    name: "Ducha",
     detail: "Av. Beira Mar · perto do costão",
     lat: -20.653104,
     lng: -40.475772,

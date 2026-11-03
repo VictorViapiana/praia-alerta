@@ -188,7 +188,7 @@ export function useOrlaSentinel({
               "ducha",
               shower.id,
               `${shower.name} · moeda de R$ 1`,
-              `${SHOWER_SPEAK}\n\nAbra o app: o Guará abre o portal da água.`,
+              `${SHOWER_SPEAK}\n\nAbra o app: o Guará mostra como usar a ducha.`,
               `orla-ducha-${shower.id}`,
             );
           });
