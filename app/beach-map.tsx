@@ -1060,7 +1060,7 @@ const MURO_DOT_ICON = L.divIcon({
 
 /**
  * Guarda-corpo / para-peito — duas Polylines no mesmo caminho:
- * 1) corrimão fino contínuo (cinza-pedra)
+ * 1) corrimão fino contínuo (marrom madeira)
  * 2) pilastras com dash curto + vão longo
  * Toque em qualquer ponto abre o Guará (onTap).
  */
@@ -1093,26 +1093,26 @@ function MuroSulOverlay({
         }}
         eventHandlers={{ click: handleTap }}
       />
-      {/* Corrimão / barras horizontais — cinza pedra (não preto chapado) */}
+      {/* Corrimão / barras horizontais — marrom madeira */}
       <Polyline
         positions={points}
         pathOptions={{
-          color: "#7a736a",
-          weight: 2.25,
-          opacity: 0.92,
+          color: "#a67c52",
+          weight: 2.5,
+          opacity: 0.95,
           lineCap: "round",
           lineJoin: "round",
           className: "orla-muro-handrail",
         }}
         interactive={false}
       />
-      {/* Pilastras — tom um pouco mais escuro, ritmo de guarda-corpo */}
+      {/* Pilastras — marrom mais fechado, ritmo de guarda-corpo */}
       <Polyline
         positions={points}
         pathOptions={{
-          color: "#5c564e",
-          weight: 5.5,
-          opacity: 0.9,
+          color: "#6d4c35",
+          weight: 6,
+          opacity: 0.95,
           dashArray: "3 20",
           lineCap: "butt",
           lineJoin: "round",
