@@ -13,6 +13,7 @@ import {
   Sparkles,
   Star,
   UtensilsCrossed,
+  Volume2,
   Waves,
   Wifi,
   X,
@@ -23,6 +24,7 @@ import type { GuaraPoseId } from "./guara-poses";
 import type { PerkId, Place, SponsorOffer } from "./places";
 import { RouteChoice } from "./route-choice";
 import { hourInSaoPaulo, skyPhaseAt, type SkyPhase } from "./sky-phase";
+import { speakGuara } from "./voice";
 
 const spring = { type: "spring" as const, stiffness: 420, damping: 34, mass: 0.8 };
 const STAMP_KEY = "pa-sponsor-stamps-v1";
@@ -442,6 +444,16 @@ export function SponsorSheet({ place, onClose }: { place: Place; onClose: () => 
                     <p className="mt-1 text-[13px] leading-snug text-white/85">
                       {place.guaraTip ?? "Vale a visita — é casa de patrocinador da orla."}
                     </p>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        speakGuara(place.guaraTip ?? "Vale a visita — é casa de patrocinador da orla.")
+                      }
+                      className="mt-2 inline-flex items-center gap-1 rounded-full border border-amber-200/25 bg-amber-300/10 px-2.5 py-1 text-[11px] font-semibold text-amber-50"
+                    >
+                      <Volume2 className="h-3 w-3" />
+                      Ouvir
+                    </button>
                   </div>
                 </div>
 

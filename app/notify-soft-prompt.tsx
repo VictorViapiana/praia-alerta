@@ -69,7 +69,7 @@ export function NotifySoftPrompt({ ready }: { ready: boolean }) {
           <div className="min-w-0 flex-1">
             <p className="text-[13px] font-semibold leading-snug">Quer avisos da orla?</p>
             <p className="mt-1 text-[11px] leading-snug text-white/65">
-              O Guará fica de olho no Marlim, Golfinho, quiosques e rampa. Você escolhe — só ativamos a
+              O Guará fica de olho no Marlim, Golfinho, quiosques e rampas de acesso. Você escolhe — só ativamos a
               permissão do celular se você aceitar.
             </p>
           </div>

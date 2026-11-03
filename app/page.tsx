@@ -63,7 +63,7 @@ import {
 import { LocationSoftPrompt } from "./location-soft-prompt";
 import { RouteActionsProvider, RouteChoice } from "./route-choice";
 import { MARLIN_TOUR_SPEAK, MARLIN_TOUR_STEPS, useOrlaSentinel, type OrlaAlert } from "./orla-sentinel";
-import { RAMPA_PRINCIPAL, RAMPA_RULE, RAMPA_WARN } from "./rampas";
+import { RAMPA_PRINCIPAL, RAMPA_RULE, RAMPA_WARN, findRamp, isRampId } from "./rampas";
 import { speakGuara, stopSpeaking } from "./voice";
 import { NavDrive } from "./nav-drive";
 import { MissionModal, MissionTrigger } from "./mission-modal";
@@ -841,6 +841,7 @@ function MapScreen({
   onClose,
   onSos,
   rampAlert,
+  rampAlertId = null,
   onDismissRamp,
   focusSpot = null,
   focusNonce = 0,
@@ -849,6 +850,7 @@ function MapScreen({
   onClose: () => void;
   onSos: () => void;
   rampAlert: boolean;
+  rampAlertId?: string | null;
   onDismissRamp: () => void;
   focusSpot?: string | null;
   focusNonce?: number;
@@ -1267,15 +1269,16 @@ function MapScreen({
   }, []);
 
   const openRampTour = useCallback(
-    (forced = false, instant = false) => {
+    (forced = false, instant = false, rampId?: string | null) => {
+      const ramp = findRamp(rampId) ?? findRamp(rampAlertId) ?? RAMPA_PRINCIPAL;
       setCoach(false);
       setLandmarkTalkId(null);
-      setOpenId(RAMPA_PRINCIPAL.id);
-      setFlyTo({ id: Date.now(), lat: RAMPA_PRINCIPAL.lat, lng: RAMPA_PRINCIPAL.lng, zoom: 18, instant: instant || forced });
+      setOpenId(ramp.id);
+      setFlyTo({ id: Date.now(), lat: ramp.lat, lng: ramp.lng, zoom: 18, instant: instant || forced });
       setTipTour({
-        key: "rampa",
+        key: `rampa:${ramp.id}`,
         title: "Corredor da rampa",
-        subtitle: "Livre para ambulantes e banhistas",
+        subtitle: ramp.detail,
         steps: RAMP_TOUR_STEPS,
         speak: RAMPA_WARN,
         accent: "rose",
@@ -1286,7 +1289,7 @@ function MapScreen({
         },
       });
     },
-    [onDismissRamp, rampAlert],
+    [onDismissRamp, rampAlert, rampAlertId],
   );
 
   const openQuiosqueFocus = useCallback((id: string, instant = true) => {
@@ -1310,17 +1313,17 @@ function MapScreen({
     // Entrada por notificação / deep link: ícone já selecionado de cara.
     if (focusSpot === MARLIN.id || focusSpot === "marlin") openMarlinTour(true, true);
     else if (focusSpot === GOLFINHO.id || focusSpot === "golfinho") openGolfinhoTour(true, true);
-    else if (focusSpot === RAMPA_PRINCIPAL.id || focusSpot === "rampa") {
+    else if (isRampId(focusSpot)) {
       setRampTalk(true);
-      openRampTour(true, true);
+      openRampTour(true, true, focusSpot === "rampa" ? RAMPA_PRINCIPAL.id : focusSpot);
     } else if (isQuiosqueSpotId(focusSpot)) openQuiosqueFocus(focusSpot, true);
     onFocusSpotHandled?.();
   }, [focusSpot, focusNonce, onFocusSpotHandled, openGolfinhoTour, openMarlinTour, openQuiosqueFocus, openRampTour]);
 
   useEffect(() => {
-    if (!rampAlert || tipTour?.key === "rampa" || cameraOpen || searchOpen || driving) return;
-    openRampTour(true);
-  }, [rampAlert, tipTour?.key, cameraOpen, searchOpen, driving, openRampTour]);
+    if (!rampAlert || tipTour?.key?.startsWith("rampa") || cameraOpen || searchOpen || driving) return;
+    openRampTour(true, false, rampAlertId);
+  }, [rampAlert, rampAlertId, tipTour?.key, cameraOpen, searchOpen, driving, openRampTour]);
 
   const markOnMap = (mark: MapMark) => {
     setCoach(false);
@@ -1409,6 +1412,11 @@ function MapScreen({
                 setLandmarkTalkId(landmark.id);
                 return;
               }
+              if (isRampId(id)) {
+                setRampTalk(true);
+                openRampTour(false, false, id);
+                return;
+              }
               setTipTour(null);
               setLandmarkTalkId(null);
               setOpenId((current) => (current === id ? null : id));
@@ -1423,12 +1431,12 @@ function MapScreen({
               setOpenId(id);
               setSheetId(id);
             }}
-            onRampTap={() => {
+            onRampTap={(id) => {
               setCoach(false);
               setLandmarkTalkId(null);
               setTipTour(null);
               setRampTalk(true);
-              openRampTour(false);
+              openRampTour(false, false, id);
             }}
             onClear={() => {
               setOpenId(null);
@@ -1451,7 +1459,7 @@ function MapScreen({
             traveledLine={progress?.traveledLine ?? null}
             remainingLine={progress?.remainingLine ?? null}
             dayLayer={dayLayer}
-            rampAlert={rampAlert}
+            rampAlertId={rampAlertId}
           />
         ) : (
           <div className="h-full w-full bg-[#2c3832]" aria-hidden />
@@ -1590,6 +1598,14 @@ function MapScreen({
                       <li key={tip.title} className="rounded-xl border border-red-100 bg-red-50/80 px-2.5 py-2">
                         <p className="text-[12px] font-semibold leading-snug text-red-700">{tip.title}</p>
                         <p className="mt-0.5 text-[12px] leading-snug text-neutral-700">{tip.text}</p>
+                        <button
+                          type="button"
+                          onClick={() => speakGuara(`${tip.title}. ${tip.text}`)}
+                          className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold text-red-700/80"
+                        >
+                          <Volume2 className="h-3 w-3" />
+                          Ouvir
+                        </button>
                       </li>
                     ))}
                 </ul>
@@ -1603,6 +1619,14 @@ function MapScreen({
                       <li key={tip.title} className="rounded-xl border border-emerald-100 bg-emerald-50/80 px-2.5 py-2">
                         <p className="text-[12px] font-semibold leading-snug text-emerald-800">{tip.title}</p>
                         <p className="mt-0.5 text-[12px] leading-snug text-neutral-700">{tip.text}</p>
+                        <button
+                          type="button"
+                          onClick={() => speakGuara(`${tip.title}. ${tip.text}`)}
+                          className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-800/80"
+                        >
+                          <Volume2 className="h-3 w-3" />
+                          Ouvir
+                        </button>
                       </li>
                     ))}
                 </ul>
@@ -2238,7 +2262,7 @@ function Phone({
     (alert: OrlaAlert) => {
       if (alert.kind === "marlin") openSpotFromNotify(MARLIN.id);
       else if (alert.kind === "golfinho") openSpotFromNotify(GOLFINHO.id);
-      else if (alert.kind === "rampa") openSpotFromNotify(RAMPA_PRINCIPAL.id);
+      else if (alert.kind === "rampa") openSpotFromNotify(alert.id || RAMPA_PRINCIPAL.id);
       else if (alert.kind === "quiosque") openSpotFromNotify(alert.id);
     },
     [openSpotFromNotify],
@@ -2431,6 +2455,7 @@ function Phone({
               onClose={() => setMapOpen(false)}
               onSos={onSos}
               rampAlert={ramp.rampAlert}
+              rampAlertId={ramp.rampAlertId}
               onDismissRamp={ramp.dismissRamp}
               focusSpot={focusSpot}
               focusNonce={focusNonce}

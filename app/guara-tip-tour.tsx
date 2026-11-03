@@ -15,7 +15,6 @@ export function GuaraTipTour({
   subtitle,
   steps,
   stepIndex,
-  speakAll,
   accent = "ocean",
   onNext,
   onClose,
@@ -24,6 +23,7 @@ export function GuaraTipTour({
   subtitle?: string;
   steps: readonly GuaraTipStep[];
   stepIndex: number;
+  /** @deprecated Resumo completo fica no sheet do marco; Ouvir fala a tip do balão. */
   speakAll?: string;
   accent?: "ocean" | "teal" | "amber" | "rose";
   onNext: () => void;
@@ -120,16 +120,14 @@ export function GuaraTipTour({
           </div>
 
           <div className="mt-3 flex flex-wrap gap-2">
-            {speakAll ? (
-              <button
-                type="button"
-                onClick={() => speakGuara(speakAll)}
-                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[13px] font-semibold ${accentSoft}`}
-              >
-                <Volume2 className="h-3.5 w-3.5" />
-                Ouvir
-              </button>
-            ) : null}
+            <button
+              type="button"
+              onClick={() => speakGuara(`${step.title}. ${step.text}`)}
+              className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[13px] font-semibold ${accentSoft}`}
+            >
+              <Volume2 className="h-3.5 w-3.5" />
+              Ouvir
+            </button>
             <button
               type="button"
               onClick={() => {

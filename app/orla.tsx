@@ -15,6 +15,7 @@ import {
   Sun,
   Thermometer,
   Trash2,
+  Volume2,
   Wind,
 } from "lucide-react";
 import { useState } from "react";
@@ -34,6 +35,7 @@ import { isSunActive } from "./day-layers";
 import { GuaraPose } from "./guara-pose";
 import { mareGuaraPose, weatherGuaraPose } from "./guara-poses";
 import { CloseButton, closeTopClass, screenEnter } from "./nav-chrome";
+import { speakGuara } from "./voice";
 
 export type StoryId = "marlin" | "fotos" | "bandeiras";
 
@@ -292,6 +294,14 @@ export function MarlinScreen({ onClose }: { onClose: () => void }) {
                   <span className="text-[10px] uppercase tracking-[0.16em] text-white/40">{care.index}</span>
                   <h4 className="text-[15px] font-semibold leading-tight text-white">{care.title}</h4>
                   <p className="mt-1 text-[13px] leading-relaxed text-white/70">{care.text}</p>
+                  <button
+                    type="button"
+                    onClick={() => speakGuara(`${care.title}. ${care.text}`)}
+                    className="mt-2 inline-flex items-center gap-1 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[11px] font-semibold text-cyan-50"
+                  >
+                    <Volume2 className="h-3 w-3" />
+                    Ouvir com o Guará
+                  </button>
                 </span>
               </article>
             ))}
@@ -900,6 +910,14 @@ export function LiveMare() {
           <div className="min-w-0">
             <p className="text-[11px] uppercase tracking-[0.18em] text-rose-100/70">Dica do Guará</p>
             <p className="mt-1 text-sm leading-relaxed text-white/85">{guaraTip}</p>
+            <button
+              type="button"
+              onClick={() => speakGuara(guaraTip)}
+              className="mt-2 inline-flex items-center gap-1 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[11px] font-semibold text-rose-50"
+            >
+              <Volume2 className="h-3 w-3" />
+              Ouvir
+            </button>
           </div>
         </div>
       </div>
