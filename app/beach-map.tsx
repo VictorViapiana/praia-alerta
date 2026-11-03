@@ -1058,32 +1058,48 @@ const MURO_DOT_ICON = L.divIcon({
   html: `<span style="display:block;width:12px;height:12px;border-radius:999px;background:#f59e0b;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.55)"></span>`,
 });
 
-/** Linha do muro (array em `orla-muro.ts` → MURO_SUL_ATE_Q1). */
+/**
+ * Muro da orla — só Polyline (sem marcadores).
+ * Tracejado simétrico via `dashArray` (espaçamento em px ao longo da linha).
+ */
 function MuroSulOverlay({ points }: { points: Array<[number, number]> }) {
   if (points.length < 2) return null;
   return (
     <>
-      {/* Base escura (espessura de muro) */}
+      {/* Sombra suave na areia */}
       <Polyline
         positions={points}
         pathOptions={{
-          color: "#0f172a",
-          weight: 7,
-          opacity: 0.9,
+          color: "#000000",
+          weight: 8,
+          opacity: 0.18,
           lineCap: "round",
           lineJoin: "round",
-          className: "orla-muro-base",
+          className: "orla-muro-shadow",
         }}
         interactive={false}
       />
-      {/* Faixa clara tracejada por cima */}
+      {/* Corpo do muro (concreto/pedra escura) */}
       <Polyline
         positions={points}
         pathOptions={{
-          color: "#f8fafc",
-          weight: 3,
+          color: "#1c1917",
+          weight: 5.5,
+          opacity: 0.92,
+          lineCap: "round",
+          lineJoin: "round",
+          className: "orla-muro-body",
+        }}
+        interactive={false}
+      />
+      {/* Topo / grade — dash nativo, espaçamento uniforme */}
+      <Polyline
+        positions={points}
+        pathOptions={{
+          color: "#d6d3d1",
+          weight: 2.25,
           opacity: 0.95,
-          dashArray: "10 8",
+          dashArray: "5 7",
           lineCap: "butt",
           lineJoin: "round",
           className: "orla-muro-dash",
