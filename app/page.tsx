@@ -31,12 +31,15 @@ import { AmbulanteSheet, EscunaSheet, SponsorSheet } from "./marker-popup";
 import { FlagsLink, FotosScreen, LiveClima, LiveMare, MarlinScreen, OrlaCards, FlagsScreen, type StoryId } from "./orla";
 import {
   AMBULANTES,
+  findShower,
   GOLFINHO,
+  isShowerId,
   landmarkById,
   MARLIN,
   ORLA_LANDMARKS,
   PLACES,
   SHOWERS,
+  SHOWER_RITUAL_STEPS,
 } from "./places";
 import type { PinKind } from "./page-types";
 import { CameraFab, TouristCamera } from "./tourist-camera";
@@ -44,6 +47,7 @@ import { GuaraOnboarding, HOME_STEPS, HOME_TOUR_KEY, MAP_STEPS, MAP_TOUR_KEY } f
 import { GuaraMapChat } from "./guara-map";
 import { FAR_FROM_BEACH_M, HOME_PROMPTS, PRAIA_MORRO_VIEW, answerGuara } from "./guara-guide";
 import { GuaraTipTour, type GuaraTipStep } from "./guara-tip-tour";
+import { GuaraShowerRitual } from "./guara-shower-ritual";
 import { GuaraPose } from "./guara-pose";
 import {
   clearSpotFromUrl,
@@ -879,6 +883,7 @@ function MapScreen({
   const [rampTalk, setRampTalk] = useState(false);
   const [landmarkTalkId, setLandmarkTalkId] = useState<string | null>(null);
   const [tipTour, setTipTour] = useState<TipTourState | null>(null);
+  const [showerRitual, setShowerRitual] = useState<{ id: string; step: number } | null>(null);
   const [arrivalBanner, setArrivalBanner] = useState<string | null>(null);
   const [dayLayer, setDayLayer] = useState<DayLayer>("off");
   const [sunAvailable, setSunAvailable] = useState(() => isSunActive());
@@ -1235,6 +1240,7 @@ function MapScreen({
     setSheetId(null);
     setLandmarkTalkId(null);
     setRampTalk(false);
+    setShowerRitual(null);
     setOpenId(MARLIN.id);
     if (withFly) setFlyTo({ id: Date.now(), lat: MARLIN.lat, lng: MARLIN.lng, zoom: 18, instant });
     setTipTour({
@@ -1255,6 +1261,7 @@ function MapScreen({
     setSheetId(null);
     setRampTalk(false);
     setLandmarkTalkId(null);
+    setShowerRitual(null);
     setOpenId(GOLFINHO.id);
     if (withFly) setFlyTo({ id: Date.now(), lat: GOLFINHO.lat, lng: GOLFINHO.lng, zoom: 18, instant });
     setTipTour({
@@ -1273,6 +1280,7 @@ function MapScreen({
       const ramp = findRamp(rampId) ?? findRamp(rampAlertId) ?? RAMPA_PRINCIPAL;
       setCoach(false);
       setLandmarkTalkId(null);
+      setShowerRitual(null);
       setOpenId(ramp.id);
       setFlyTo({ id: Date.now(), lat: ramp.lat, lng: ramp.lng, zoom: 18, instant: instant || forced });
       setTipTour({
@@ -1291,6 +1299,20 @@ function MapScreen({
     },
     [onDismissRamp, rampAlert, rampAlertId],
   );
+
+  const openShowerRitual = useCallback((id: string, withFly = true, instant = false) => {
+    const shower = findShower(id) ?? SHOWERS[0];
+    setCoach(false);
+    setLandmarkTalkId(null);
+    setTipTour(null);
+    setRampTalk(false);
+    setOpenId(shower.id);
+    if (withFly) {
+      setFlyTo({ id: Date.now(), lat: shower.lat, lng: shower.lng, zoom: 18.2, instant });
+    }
+    setFilter("duchas");
+    setShowerRitual({ id: shower.id, step: 0 });
+  }, []);
 
   const openQuiosqueFocus = useCallback((id: string, instant = true) => {
     const place = PLACES.find((item) => item.id === id);
@@ -1316,9 +1338,20 @@ function MapScreen({
     else if (isRampId(focusSpot)) {
       setRampTalk(true);
       openRampTour(true, true, focusSpot === "rampa" ? RAMPA_PRINCIPAL.id : focusSpot);
+    } else if (isShowerId(focusSpot)) {
+      openShowerRitual(focusSpot === "ducha" || focusSpot === "duchas" ? "costao" : focusSpot, true, true);
     } else if (isQuiosqueSpotId(focusSpot)) openQuiosqueFocus(focusSpot, true);
     onFocusSpotHandled?.();
-  }, [focusSpot, focusNonce, onFocusSpotHandled, openGolfinhoTour, openMarlinTour, openQuiosqueFocus, openRampTour]);
+  }, [
+    focusSpot,
+    focusNonce,
+    onFocusSpotHandled,
+    openGolfinhoTour,
+    openMarlinTour,
+    openQuiosqueFocus,
+    openRampTour,
+    openShowerRitual,
+  ]);
 
   useEffect(() => {
     if (!rampAlert || tipTour?.key?.startsWith("rampa") || cameraOpen || searchOpen || driving) return;
@@ -1338,6 +1371,10 @@ function MapScreen({
     }
     if (mark.placeId === GOLFINHO.id) {
       openGolfinhoTour(false);
+      return;
+    }
+    if (isShowerId(mark.placeId)) {
+      openShowerRitual(mark.placeId, true, false);
       return;
     }
     const landmark = landmarkById(mark.placeId);
@@ -1404,6 +1441,10 @@ function MapScreen({
                 openGolfinhoTour(false);
                 return;
               }
+              if (isShowerId(id)) {
+                openShowerRitual(id, true, false);
+                return;
+              }
               const landmark = landmarkById(id);
               if (landmark) {
                 setOpenId(landmark.id);
@@ -1441,6 +1482,7 @@ function MapScreen({
             onClear={() => {
               setOpenId(null);
               setTipTour(null);
+              setShowerRitual(null);
               setLandmarkTalkId(null);
             }}
             onHold={holdPoint}
@@ -1558,7 +1600,29 @@ function MapScreen({
         />
       )}
 
-      {!driving && !tipTour && landmarkTalk && landmarkTalk.id !== GOLFINHO.id && !cameraOpen && !searchOpen && (
+      {!driving && showerRitual && !tipTour && !cameraOpen && !searchOpen && (
+        <GuaraShowerRitual
+          name={findShower(showerRitual.id)?.name ?? "Ducha"}
+          steps={SHOWER_RITUAL_STEPS}
+          stepIndex={showerRitual.step}
+          onNext={() =>
+            setShowerRitual((current) => {
+              if (!current) return null;
+              if (current.step >= SHOWER_RITUAL_STEPS.length - 1) {
+                stopSpeaking();
+                return null;
+              }
+              return { ...current, step: current.step + 1 };
+            })
+          }
+          onClose={() => {
+            stopSpeaking();
+            setShowerRitual(null);
+          }}
+        />
+      )}
+
+      {!driving && !tipTour && !showerRitual && landmarkTalk && landmarkTalk.id !== GOLFINHO.id && !cameraOpen && !searchOpen && (
         <motion.div
           role="dialog"
           aria-label={landmarkTalk.name}
@@ -1729,10 +1793,12 @@ function MapScreen({
           if (guide.openId !== undefined) {
             if (guide.openId === MARLIN.id) openMarlinTour(true);
             else if (guide.openId === GOLFINHO.id) openGolfinhoTour(true);
+            else if (guide.openId && isShowerId(guide.openId)) openShowerRitual(guide.openId, true, false);
             else if (landmarkById(guide.openId)) {
               setOpenId(guide.openId);
               setLandmarkTalkId(guide.openId);
               setTipTour(null);
+              setShowerRitual(null);
               setRampTalk(false);
             } else {
               setOpenId(guide.openId);
@@ -2263,6 +2329,7 @@ function Phone({
       if (alert.kind === "marlin") openSpotFromNotify(MARLIN.id);
       else if (alert.kind === "golfinho") openSpotFromNotify(GOLFINHO.id);
       else if (alert.kind === "rampa") openSpotFromNotify(alert.id || RAMPA_PRINCIPAL.id);
+      else if (alert.kind === "ducha") openSpotFromNotify(alert.id);
       else if (alert.kind === "quiosque") openSpotFromNotify(alert.id);
     },
     [openSpotFromNotify],

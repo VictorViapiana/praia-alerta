@@ -153,10 +153,68 @@ function kiosk(n: number, extra: Partial<Place> = {}): Place {
 
 const sponsorMenu = (items: MenuItem[]) => items;
 
-export const SHOWERS: { id: string; mapKind: PinKind; name: string; lat: number; lng: number }[] = [
-  { id: "sul", mapKind: "duchas", name: "Ducha Sul", lat: -20.657464, lng: -40.492163 },
-  { id: "norte", mapKind: "duchas", name: "Ducha Norte", lat: -20.652662, lng: -40.483176 },
+export type ShowerSpot = {
+  id: string;
+  mapKind: PinKind;
+  name: string;
+  detail: string;
+  lat: number;
+  lng: number;
+};
+
+/** Dicas do Guará — valem para todas as duchas públicas da orla. */
+export const SHOWER_RITUAL_STEPS = [
+  {
+    kind: "moeda" as const,
+    title: "A água só acorda com R$ 1",
+    text: "Essa ducha não liga no pedido — ela dança com uma moeda de 1 real. Sem a moedinha, o jato dorme. Guarda uma no bolso antes de sair do mar.",
+  },
+  {
+    kind: "alerta" as const,
+    title: "Não force o slot",
+    text: "Não enfie pedra, tampinha nem moeda errada. Quem força o mecanismo quebra o banho de todo mundo na orla.",
+  },
+  {
+    kind: "convivencia" as const,
+    title: "Não piche, não risque",
+    text: "A ducha não é muro. Tinta, caneta e gravura estragam o que é de todos. Foto, sim. Pichação, nunca.",
+  },
+  {
+    kind: "convivencia" as const,
+    title: "Não quebre o que te limpa",
+    text: "Chuveirinho, botão e tubo são da praia inteira. Quem quebra rouba o banho do próximo — e o Guará não esquece.",
+  },
+  {
+    kind: "festa" as const,
+    title: "Um jato, uma vez",
+    text: "Fila curta, respeito longo. Um de cada vez sob a água, sem empurrão. Sai do mar, gira a moeda, volta leve pra areia.",
+  },
+] as const;
+
+export const SHOWER_SPEAK =
+  "Nas duchas da Praia do Morro a água só liga com moeda de 1 real. Não force o slot, não piche, não quebre. Um de cada vez sob o jato — o banho é da orla inteira.";
+
+export const SHOWERS: ShowerSpot[] = [
+  { id: "sul", mapKind: "duchas", name: "Ducha Sul", detail: "Calçadão · trecho sul", lat: -20.657464, lng: -40.492163 },
+  { id: "norte", mapKind: "duchas", name: "Ducha Norte", detail: "Calçadão · meio da orla", lat: -20.652662, lng: -40.483176 },
+  {
+    id: "costao",
+    mapKind: "duchas",
+    name: "Ducha do Costão",
+    detail: "Av. Beira Mar · perto do costão",
+    lat: -20.653104,
+    lng: -40.475772,
+  },
 ];
+
+export function findShower(id: string | null | undefined) {
+  if (!id) return null;
+  return SHOWERS.find((shower) => shower.id === id) ?? null;
+}
+
+export function isShowerId(id: string | null | undefined) {
+  return Boolean(findShower(id)) || id === "ducha" || id === "duchas";
+}
 
 export const PLACES: Place[] = [
   kiosk(1),

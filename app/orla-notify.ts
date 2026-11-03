@@ -1,6 +1,6 @@
 /** Notificações locais da orla — via Service Worker (iOS PWA + Android/tablets). */
 
-export type OrlaSpotKind = "marlin" | "golfinho" | "quiosque" | "rampa";
+export type OrlaSpotKind = "marlin" | "golfinho" | "quiosque" | "rampa" | "ducha";
 
 export type OrlaNotifyPayload = {
   title: string;
@@ -230,6 +230,8 @@ export async function pushOrlaNotice(payload: OrlaNotifyPayload) {
 }
 
 export const MONUMENT_RADIUS_M = 200;
+/** Chegada na ducha: perto o bastante pra o Guará abrir o ritual da moeda. */
+export const SHOWER_RADIUS_M = 42;
 /** Passagem na orla: calçadão ↔ areia. 38 m era curto demais pro GPS + trajeto. */
 export const QUIOSQUE_RADIUS_M = 58;
 /** Saiu de verdade do quiosque — histerese menor que monumento pra rearmar entre vizinhos. */
