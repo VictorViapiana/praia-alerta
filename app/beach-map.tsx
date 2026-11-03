@@ -54,12 +54,7 @@ import {
 } from "./places";
 import type { PinKind } from "./page-types";
 import { HeadingBeam } from "./heading-beam";
-import {
-  MURO_RAIL_OFFSETS_M,
-  MURO_SUL_ATE_Q1,
-  muroPosts,
-  offsetPolyline,
-} from "./orla-muro";
+import { MURO_CAPTURE, MURO_SUL_ATE_Q1 } from "./orla-muro";
 import { RAMPA_NOTE, RAMPS, type RampAccess } from "./rampas";
 import { metersBetween } from "./walk-route";
 
@@ -178,7 +173,16 @@ function ReactPin({
   );
 }
 
-function MapReady({ onClear, onHold }: { onClear: () => void; onHold: (lat: number, lng: number) => void }) {
+function MapReady({
+  onClear,
+  onHold,
+  muroCapture = false,
+}: {
+  onClear: () => void;
+  onHold: (lat: number, lng: number) => void;
+  /** Durante captura do muro: clique só registra ponto (sem hold/clear). */
+  muroCapture?: boolean;
+}) {
   const map = useMap();
   const timer = useRef(0);
   const held = useRef(false);
@@ -188,6 +192,7 @@ function MapReady({ onClear, onHold }: { onClear: () => void; onHold: (lat: numb
 
   useMapEvents({
     mousedown(event) {
+      if (muroCapture) return;
       cancel();
       held.current = false;
       point.current = { x: event.containerPoint.x, y: event.containerPoint.y, lat: event.latlng.lat, lng: event.latlng.lng };
@@ -199,6 +204,7 @@ function MapReady({ onClear, onHold }: { onClear: () => void; onHold: (lat: numb
       }, 560);
     },
     mousemove(event) {
+      if (muroCapture) return;
       const spot = point.current;
       if (!spot) return;
       if (Math.hypot(event.containerPoint.x - spot.x, event.containerPoint.y - spot.y) > 12) cancel();
@@ -206,12 +212,17 @@ function MapReady({ onClear, onHold }: { onClear: () => void; onHold: (lat: numb
     mouseup: cancel,
     dragstart: cancel,
     contextmenu(event) {
+      if (muroCapture) {
+        event.originalEvent.preventDefault();
+        return;
+      }
       event.originalEvent.preventDefault();
       cancel();
       held.current = true;
       onHold(event.latlng.lat, event.latlng.lng);
     },
     click() {
+      if (muroCapture) return;
       if (held.current) {
         held.current = false;
         return;
@@ -1040,69 +1051,166 @@ function RampaPin({
   );
 }
 
-const MURO_POST_ICON = L.divIcon({
-  className: "orla-muro-post",
-  iconSize: [5, 14],
-  iconAnchor: [2.5, 14],
-  html: `<span style="display:block;width:5px;height:14px;border-radius:1px;background:linear-gradient(180deg,#4a4a50 0%,#1f1f22 45%,#0a0a0c 100%);box-shadow:0 1px 3px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.14)"></span>`,
+const MURO_DOT_ICON = L.divIcon({
+  className: "orla-muro-dot",
+  iconSize: [12, 12],
+  iconAnchor: [6, 6],
+  html: `<span style="display:block;width:12px;height:12px;border-radius:999px;background:#f59e0b;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.55)"></span>`,
 });
 
-/** Grade de metal do calçadão (começo da praia → Quiosque 01). */
-function MuroSulOverlay() {
-  const rails = useMemo(
-    () => MURO_RAIL_OFFSETS_M.map((offset) => offsetPolyline(MURO_SUL_ATE_Q1, offset)),
-    [],
-  );
-  const posts = useMemo(() => muroPosts(MURO_SUL_ATE_Q1, 5.5), []);
-  const shadow = useMemo(() => offsetPolyline(MURO_SUL_ATE_Q1, 0.7), []);
-
+/** Linha do muro (array em `orla-muro.ts` → MURO_SUL_ATE_Q1). */
+function MuroSulOverlay({ points }: { points: Array<[number, number]> }) {
+  if (points.length < 2) return null;
   return (
     <>
-      {/* Sombra na areia */}
+      {/* Base escura (espessura de muro) */}
       <Polyline
-        positions={shadow}
+        positions={points}
         pathOptions={{
-          color: "#000000",
-          weight: 4,
-          opacity: 0.16,
-          lineCap: "butt",
+          color: "#0f172a",
+          weight: 7,
+          opacity: 0.9,
+          lineCap: "round",
           lineJoin: "round",
-          className: "orla-muro-shadow",
+          className: "orla-muro-base",
         }}
         interactive={false}
       />
-      {/* Trilhos escuros (3) + corrimão claro no topo */}
-      {rails.map((rail, index) => {
-        const top = index === rails.length - 1;
-        return (
-          <Polyline
-            key={`rail-${index}`}
-            positions={rail}
-            pathOptions={{
-              color: top ? "#cfc8bc" : "#161618",
-              weight: top ? 2.6 : 1.7,
-              opacity: top ? 0.96 : 0.92,
-              lineCap: "butt",
-              lineJoin: "round",
-              className: top ? "orla-muro-handrail" : "orla-muro-rail",
-            }}
-            interactive={false}
-          />
-        );
-      })}
-      {/* Postes finos de metal */}
-      {posts.map((post, index) => (
-        <Marker
-          key={`post-${index}-${post[0].toFixed(5)}`}
-          position={post}
-          icon={MURO_POST_ICON}
-          interactive={false}
-          keyboard={false}
-          zIndexOffset={40}
-        />
-      ))}
+      {/* Faixa clara tracejada por cima */}
+      <Polyline
+        positions={points}
+        pathOptions={{
+          color: "#f8fafc",
+          weight: 3,
+          opacity: 0.95,
+          dashArray: "10 8",
+          lineCap: "butt",
+          lineJoin: "round",
+          className: "orla-muro-dash",
+        }}
+        interactive={false}
+      />
     </>
   );
+}
+
+/**
+ * TEMP — captura de toques para mapear o muro.
+ * Ativa com MURO_CAPTURE=true ou URL ?muro=1
+ * Cada clique: console.log + acumula ponto + desenha a linha ao vivo.
+ */
+function MuroCaptureTool({
+  points,
+  onChange,
+}: {
+  points: Array<[number, number]>;
+  onChange: (next: Array<[number, number]>) => void;
+}) {
+  useMapEvents({
+    click(event) {
+      const lat = Number(event.latlng.lat.toFixed(6));
+      const lng = Number(event.latlng.lng.toFixed(6));
+      const point: [number, number] = [lat, lng];
+      const next = [...points, point];
+      // Logs para o DevTools / terminal do Cursor
+      console.log("[MURO] ponto", next.length, { lat, lng });
+      console.log("[MURO] array", JSON.stringify(next));
+      console.log(
+        "[MURO] cole em orla-muro.ts:\n" +
+          next.map((p) => `  [${p[0]}, ${p[1]}],`).join("\n"),
+      );
+      (window as Window & { __MURO_POINTS?: Array<[number, number]> }).__MURO_POINTS = next;
+      onChange(next);
+    },
+  });
+
+  const snippet = points.map((p) => `  [${p[0]}, ${p[1]}],`).join("\n");
+  const hud =
+    typeof document !== "undefined"
+      ? createPortal(
+          <div className="pointer-events-auto fixed left-3 right-3 top-[max(4.5rem,env(safe-area-inset-top))] z-[4000] rounded-2xl border border-amber-300/80 bg-amber-50/95 p-3 text-[#1c1917] shadow-xl backdrop-blur-sm sm:left-[max(0.75rem,calc(50%-12rem))] sm:right-auto sm:w-[24rem]">
+            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-amber-800">
+              Captura do muro · {points.length} ponto(s)
+            </p>
+            <p className="mt-1 text-[12px] leading-snug text-stone-700">
+              Toque na divisão areia × calçadão, do sul até o Quiosque 01. Cada toque vira um ponto (veja o console).
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <button
+                type="button"
+                className="rounded-full bg-amber-500 px-3 py-1.5 text-[12px] font-bold text-white shadow"
+                onClick={() => {
+                  const text = snippet || "  // nenhum ponto ainda";
+                  void navigator.clipboard?.writeText(text);
+                  console.log("[MURO] copiado:\n" + text);
+                }}
+              >
+                Copiar array
+              </button>
+              <button
+                type="button"
+                className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-[12px] font-semibold text-stone-700"
+                onClick={() => {
+                  if (points.length === 0) return;
+                  const next = points.slice(0, -1);
+                  onChange(next);
+                  (window as Window & { __MURO_POINTS?: Array<[number, number]> }).__MURO_POINTS = next;
+                  console.log("[MURO] desfez último · restam", next.length);
+                }}
+              >
+                Desfazer
+              </button>
+              <button
+                type="button"
+                className="rounded-full border border-rose-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-rose-700"
+                onClick={() => {
+                  onChange([]);
+                  (window as Window & { __MURO_POINTS?: Array<[number, number]> }).__MURO_POINTS = [];
+                  console.log("[MURO] limpou pontos");
+                }}
+              >
+                Limpar
+              </button>
+            </div>
+            {points.length > 0 && (
+              <pre className="mt-2 max-h-28 overflow-auto rounded-xl bg-stone-900/95 p-2 text-[10px] leading-relaxed text-amber-100">
+                {snippet}
+              </pre>
+            )}
+          </div>,
+          document.body,
+        )
+      : null;
+
+  return (
+    <>
+      {points.map((p, i) => (
+        <Marker
+          key={`muro-cap-${i}-${p[0]}-${p[1]}`}
+          position={p}
+          icon={MURO_DOT_ICON}
+          interactive={false}
+          keyboard={false}
+          zIndexOffset={900}
+        />
+      ))}
+      {points.length >= 2 && <MuroSulOverlay points={points} />}
+      {hud}
+    </>
+  );
+}
+
+function useMuroCaptureEnabled() {
+  const [on, setOn] = useState(MURO_CAPTURE);
+  useEffect(() => {
+    try {
+      const q = new URLSearchParams(window.location.search);
+      if (q.get("muro") === "1") setOn(true);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+  return on;
 }
 
 function DayLayerOverlay({ layer }: { layer: DayLayer }) {
@@ -1525,6 +1633,9 @@ export function BeachMap({
   const track = driving && follow && Boolean(guideLine && guideLine.length > 1);
   const camera = track && guideLine ? bearingAhead(guideLine) : 0;
   const arrows = useMemo(() => (track && guideLine ? curveChevrons(guideLine, camera) : []), [track, guideLine, camera]);
+  const muroCapture = useMuroCaptureEnabled();
+  const [muroDraft, setMuroDraft] = useState<Array<[number, number]>>([]);
+  const muroPoints = muroCapture && muroDraft.length > 0 ? muroDraft : MURO_SUL_ATE_Q1;
   return (
     <MapContainer
       key={driving ? "drive" : "browse"}
@@ -1624,13 +1735,18 @@ export function BeachMap({
           zIndex={3}
         />
       )}
-      <MapReady onClear={onClear} onHold={onHold} />
+      <MapReady onClear={onClear} onHold={onHold} muroCapture={muroCapture} />
       {!driving && <FlyTo target={flyTo} />}
       <FollowNav active={track} line={guideLine} tick={followTick} />
       <FitRoute line={routeLine} active={!track} />
-      {!driving && (
+      {!driving && !muroCapture && (
         <Pane name="pa-muro-sul" style={{ zIndex: 420 }}>
-          <MuroSulOverlay />
+          <MuroSulOverlay points={muroPoints} />
+        </Pane>
+      )}
+      {!driving && muroCapture && (
+        <Pane name="pa-muro-capture" style={{ zIndex: 2000 }}>
+          <MuroCaptureTool points={muroDraft} onChange={setMuroDraft} />
         </Pane>
       )}
       {!driving && (
