@@ -1059,50 +1059,78 @@ const MURO_DOT_ICON = L.divIcon({
 });
 
 /**
- * Muro da orla — só Polyline (sem marcadores).
- * Tracejado simétrico via `dashArray` (espaçamento em px ao longo da linha).
+ * Grade da orla (como na foto):
+ * tubos prateados no vão + postes escuros ritmados (dashArray) + corrimão escuro contínuo.
+ * Só Polylines empilhadas — legível em qualquer zoom (sem offsets milimétricos).
  */
 function MuroSulOverlay({ points }: { points: Array<[number, number]> }) {
   if (points.length < 2) return null;
+
   return (
     <>
-      {/* Sombra suave na areia */}
+      {/* Sombra na areia */}
       <Polyline
         positions={points}
         pathOptions={{
           color: "#0c0a09",
-          weight: 9,
-          opacity: 0.2,
+          weight: 10,
+          opacity: 0.18,
           lineCap: "round",
           lineJoin: "round",
           className: "orla-muro-shadow",
         }}
         interactive={false}
       />
-      {/* Corpo do muro (pedra/concreto) */}
+      {/* Corpo metálico (os tubos horizontais prateados, vistos de cima) */}
       <Polyline
         positions={points}
         pathOptions={{
-          color: "#292524",
+          color: "#c5ccd3",
           weight: 6.5,
-          opacity: 0.94,
-          lineCap: "round",
+          opacity: 0.95,
+          lineCap: "butt",
           lineJoin: "round",
-          className: "orla-muro-body",
+          className: "orla-muro-silver",
         }}
         interactive={false}
       />
-      {/* Topo claro — dashArray nativo = espaçamento uniforme (ignora cliques irregulares) */}
+      {/* Brilho do metal */}
       <Polyline
         positions={points}
         pathOptions={{
-          color: "#e7e5e4",
-          weight: 2.5,
-          opacity: 0.96,
-          dashArray: "4 6",
+          color: "#e8eef2",
+          weight: 2.2,
+          opacity: 0.55,
           lineCap: "butt",
           lineJoin: "round",
-          className: "orla-muro-dash",
+          className: "orla-muro-shine",
+        }}
+        interactive={false}
+      />
+      {/* Postes escuros — dashArray simétrico: [poste][vão prateado]… */}
+      <Polyline
+        positions={points}
+        pathOptions={{
+          color: "#2a2622",
+          weight: 6.5,
+          opacity: 0.97,
+          dashArray: "3.5 13",
+          lineCap: "butt",
+          lineJoin: "round",
+          className: "orla-muro-posts",
+        }}
+        interactive={false}
+      />
+      {/* Corrimão / tampa de cima (escuro contínuo, como na foto) */}
+      <Polyline
+        positions={points}
+        pathOptions={{
+          color: "#3a342e",
+          weight: 2.4,
+          opacity: 0.98,
+          lineCap: "round",
+          lineJoin: "round",
+          className: "orla-muro-handrail",
         }}
         interactive={false}
       />
