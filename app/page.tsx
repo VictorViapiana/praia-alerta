@@ -1373,7 +1373,7 @@ function MapScreen({
       openGolfinhoTour(false);
       return;
     }
-    if (isShowerId(mark.placeId)) {
+    if (mark.placeId && isShowerId(mark.placeId)) {
       openShowerRitual(mark.placeId, true, false);
       return;
     }
