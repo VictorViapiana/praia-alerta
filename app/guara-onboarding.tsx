@@ -222,6 +222,7 @@ export function GuaraOnboarding({
   storageKey,
   replay = 0,
   reveal = true,
+  paused = false,
   onActiveChange,
 }: {
   rootRef: RefObject<HTMLDivElement | null>;
@@ -230,6 +231,8 @@ export function GuaraOnboarding({
   replay?: number;
   /** quando false, só pré-aquece; a UI do tour espera a splash sumir */
   reveal?: boolean;
+  /** Esconde o overlay sem marcar o tour como visto (ex.: ritual da ducha). */
+  paused?: boolean;
   onActiveChange?: (active: boolean) => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -255,9 +258,9 @@ export function GuaraOnboarding({
   }, [reveal, storageKey, replay]);
 
   useLayoutEffect(() => {
-    onActiveChange?.(open && reveal);
+    onActiveChange?.(open && reveal && !paused);
     return () => onActiveChange?.(false);
-  }, [open, reveal, onActiveChange]);
+  }, [open, reveal, paused, onActiveChange]);
 
   const measure = useCallback(() => {
     const root = rootRef.current;
@@ -327,7 +330,7 @@ export function GuaraOnboarding({
 
   return (
     <AnimatePresence>
-      {open && (
+      {open && !paused && (
         <motion.div
           key={storageKey}
           role="dialog"

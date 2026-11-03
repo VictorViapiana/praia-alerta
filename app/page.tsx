@@ -1873,6 +1873,7 @@ function MapScreen({
           rootRef={mapRef}
           steps={MAP_STEPS}
           storageKey={MAP_TOUR_KEY}
+          paused={Boolean(showerRitual || tipTour || landmarkTalk)}
           onActiveChange={setMapTourOpen}
         />
       )}

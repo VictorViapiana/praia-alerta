@@ -78,7 +78,7 @@ export function GuaraShowerRitual({
       role="dialog"
       aria-modal="true"
       aria-label={`${name} — avisos do Guará`}
-      className="absolute inset-0 z-[120] flex items-end justify-center overflow-hidden bg-[#0c4a6e] px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-12"
+      className="absolute inset-0 z-[140] flex items-end justify-center overflow-hidden bg-[#0c4a6e] px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-12"
       onClick={(event) => {
         if (event.target !== event.currentTarget) return;
         if (last) {
@@ -99,7 +99,7 @@ export function GuaraShowerRitual({
           stopSpeaking();
           onClose();
         }}
-        className="absolute right-3 top-[max(0.75rem,calc(env(safe-area-inset-top,0px)+0.35rem))] z-30 grid h-11 w-11 place-items-center rounded-full border border-white/45 bg-black/55 text-white shadow-[0_8px_24px_rgba(0,0,0,0.35)] backdrop-blur-md"
+        className="absolute right-3 top-[max(0.75rem,calc(env(safe-area-inset-top,0px)+0.35rem))] z-30 grid h-11 w-11 place-items-center rounded-full border border-white/45 bg-black/75 text-white shadow-[0_8px_24px_rgba(0,0,0,0.45)] backdrop-blur-md"
       >
         <X className="h-[18px] w-[18px]" strokeWidth={2.2} />
       </button>
