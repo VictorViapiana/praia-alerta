@@ -17,7 +17,7 @@ import {
   escunasPatrocinadoras,
   type Place,
 } from "./places";
-import { RAMPA_NOTE, RAMPA_PRINCIPAL } from "./rampas";
+import { RAMPA_NOTE, RAMPS } from "./rampas";
 import type { PinKind } from "./page-types";
 
 type MapFilter = "neutro" | PinKind;
@@ -179,22 +179,20 @@ function resultsFor(
         ]
       : [];
 
-  const rampBlob = fold(`${RAMPA_PRINCIPAL.name} ${RAMPA_PRINCIPAL.detail} rampa acesso corredor livre`);
-  const ramps: Hit[] =
-    query && rampBlob.includes(query)
-      ? [
-          {
-            key: RAMPA_PRINCIPAL.id,
-            name: RAMPA_PRINCIPAL.name,
-            hours: "Acesso à areia",
-            detail: RAMPA_NOTE,
-            sponsor: false,
-            lat: RAMPA_PRINCIPAL.lat,
-            lng: RAMPA_PRINCIPAL.lng,
-            placeId: RAMPA_PRINCIPAL.id,
-          },
-        ]
-      : [];
+  const ramps: Hit[] = query
+    ? RAMPS.filter((ramp) =>
+        fold(`${ramp.name} ${ramp.detail} rampa acesso corredor livre`).includes(query),
+      ).map((ramp) => ({
+        key: ramp.id,
+        name: ramp.name,
+        hours: "Acesso à areia",
+        detail: RAMPA_NOTE,
+        sponsor: false,
+        lat: ramp.lat,
+        lng: ramp.lng,
+        placeId: ramp.id,
+      }))
+    : [];
 
   const marlinBlob = fold(`${MARLIN.name} ${MARLIN.detail} peixe estatua simbolo orla`);
   const marlinHits: Hit[] =

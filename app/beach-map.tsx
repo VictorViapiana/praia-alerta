@@ -54,7 +54,7 @@ import {
 } from "./places";
 import type { PinKind } from "./page-types";
 import { HeadingBeam } from "./heading-beam";
-import { RAMPA_CORRIDOR, RAMPA_EDGE_LEFT, RAMPA_EDGE_RIGHT, RAMPA_NOTE, RAMPA_PRINCIPAL } from "./rampas";
+import { RAMPA_NOTE, RAMPS, type RampAccess } from "./rampas";
 import { metersBetween } from "./walk-route";
 
 declare module "leaflet" {
@@ -962,24 +962,34 @@ function UserDot({ heading, driving }: { heading: number; driving?: boolean }) {
   );
 }
 
-function RampaPin({ selected, onSelect, alert = false }: { selected: boolean; onSelect: () => void; alert?: boolean }) {
+function RampaPin({
+  ramp,
+  selected,
+  onSelect,
+  alert = false,
+}: {
+  ramp: RampAccess;
+  selected: boolean;
+  onSelect: () => void;
+  alert?: boolean;
+}) {
   return (
     <div className={`relative h-7 w-7 ${selected ? "pin-focus" : ""} ${alert ? "pin-alert rounded-full" : ""}`}>
       {selected && <span className="pin-focus-ring" aria-hidden />}
       {selected && (
         <div className="absolute bottom-[calc(100%+4px)] left-1/2 z-30 w-[220px] -translate-x-1/2">
           <div className="rounded-2xl border border-sky-100 bg-white px-2.5 py-2 text-left shadow-[0_12px_24px_rgba(15,23,42,0.2)]">
-            <p className="pa-brand-tight text-[13px] leading-tight text-[#0c4a6e]">{RAMPA_PRINCIPAL.name}</p>
-            <p className="mt-0.5 text-[11px] text-neutral-500">{RAMPA_PRINCIPAL.detail}</p>
+            <p className="pa-brand-tight text-[13px] leading-tight text-[#0c4a6e]">{ramp.name}</p>
+            <p className="mt-0.5 text-[11px] text-neutral-500">{ramp.detail}</p>
             <p className="mt-1 text-[12px] leading-snug text-neutral-700">{RAMPA_NOTE}</p>
-            <RouteChoice place={{ id: RAMPA_PRINCIPAL.id, lat: RAMPA_PRINCIPAL.lat, lng: RAMPA_PRINCIPAL.lng, name: RAMPA_PRINCIPAL.name }} tone="light" />
+            <RouteChoice place={{ id: ramp.id, lat: ramp.lat, lng: ramp.lng, name: ramp.name }} tone="light" />
           </div>
           <span className="mx-auto -mt-1 block h-2.5 w-2.5 rotate-45 border-b border-r border-sky-100 bg-white" />
         </div>
       )}
       <button
         type="button"
-        aria-label={RAMPA_PRINCIPAL.name}
+        aria-label={ramp.name}
         aria-pressed={selected}
         onPointerDown={(event) => event.stopPropagation()}
         onClick={(event) => {
@@ -1138,7 +1148,7 @@ function OrlaMarkers({
   user,
   heading,
   driving = false,
-  rampAlert = false,
+  rampAlertId = null,
 }: {
   filter: MapFilter;
   query: string;
@@ -1147,11 +1157,11 @@ function OrlaMarkers({
   onOpen: (id: string) => void;
   onOpenEscunas: () => void;
   onOpenVendor: (id: string) => void;
-  onRampTap: () => void;
+  onRampTap: (id: string) => void;
   user: { lat: number; lng: number } | null;
   heading: number;
   driving?: boolean;
-  rampAlert?: boolean;
+  rampAlertId?: string | null;
 }) {
   const map = useMap();
   const [zoom, setZoom] = useState(() => map.getZoom());
@@ -1167,7 +1177,7 @@ function OrlaMarkers({
   const showPlaces = zoom >= PLACE_ZOOM;
   // Ícone focado (notificação / deep link) aparece mesmo antes do zoom de lugares.
   const showFocused = Boolean(openId);
-  const showRamp = zoom >= 16 || openId === RAMPA_PRINCIPAL.id;
+  const showRamp = zoom >= 16 || RAMPS.some((ramp) => ramp.id === openId);
   const escunaPin = useMemo(() => escunaIcon(zoom), [zoom]);
   const vendorMode = filter === "ambulantes";
   const cartIcons = useMemo(
@@ -1305,37 +1315,44 @@ function OrlaMarkers({
             />
           </ReactPin>
         ))}
-      {showRamp && (
-        <>
-          <Polygon
-            positions={RAMPA_CORRIDOR}
-            pathOptions={{ stroke: false, fillColor: "#ffffff", fillOpacity: 0, className: "rampa-hit" }}
-            eventHandlers={{
-              click: (event) => {
-                event.originalEvent.stopPropagation();
-                onRampTap();
-              },
-            }}
-          />
-          <Polyline
-            positions={RAMPA_EDGE_LEFT}
-            pathOptions={{ color: "#16120e", weight: 3, opacity: 0.55, lineCap: "round" }}
-            interactive={false}
-          />
-          <Polyline
-            positions={RAMPA_EDGE_RIGHT}
-            pathOptions={{ color: "#16120e", weight: 3, opacity: 0.55, lineCap: "round" }}
-            interactive={false}
-          />
-          <ReactPin position={[RAMPA_PRINCIPAL.lat, RAMPA_PRINCIPAL.lng]} zIndexOffset={openId === RAMPA_PRINCIPAL.id ? 970 : 280} size={28} anchor="center">
-            <RampaPin
-              selected={openId === RAMPA_PRINCIPAL.id}
-              alert={rampAlert}
-              onSelect={() => onSelect(RAMPA_PRINCIPAL.id)}
+      {showRamp &&
+        RAMPS.map((ramp) => (
+          <Fragment key={ramp.id}>
+            <Polygon
+              positions={ramp.corridor}
+              pathOptions={{ stroke: false, fillColor: "#ffffff", fillOpacity: 0, className: "rampa-hit" }}
+              eventHandlers={{
+                click: (event) => {
+                  event.originalEvent.stopPropagation();
+                  onRampTap(ramp.id);
+                },
+              }}
             />
-          </ReactPin>
-        </>
-      )}
+            <Polyline
+              positions={ramp.edgeLeft}
+              pathOptions={{ color: "#16120e", weight: 3, opacity: 0.55, lineCap: "round" }}
+              interactive={false}
+            />
+            <Polyline
+              positions={ramp.edgeRight}
+              pathOptions={{ color: "#16120e", weight: 3, opacity: 0.55, lineCap: "round" }}
+              interactive={false}
+            />
+            <ReactPin
+              position={[ramp.lat, ramp.lng]}
+              zIndexOffset={openId === ramp.id ? 970 : 280}
+              size={28}
+              anchor="center"
+            >
+              <RampaPin
+                ramp={ramp}
+                selected={openId === ramp.id}
+                alert={rampAlertId === ramp.id}
+                onSelect={() => onSelect(ramp.id)}
+              />
+            </ReactPin>
+          </Fragment>
+        ))}
       {user && (
         <ReactPin position={[user.lat, user.lng]} zIndexOffset={1000} size={driving ? 44 : 36} anchor="center">
           <UserDot heading={heading} driving={driving} />
@@ -1371,7 +1388,7 @@ export function BeachMap({
   traveledLine = null,
   remainingLine = null,
   dayLayer = "off",
-  rampAlert = false,
+  rampAlertId = null,
 }: {
   filter: MapFilter;
   query: string;
@@ -1380,7 +1397,7 @@ export function BeachMap({
   onOpen: (id: string) => void;
   onOpenEscunas: () => void;
   onOpenVendor: (id: string) => void;
-  onRampTap: () => void;
+  onRampTap: (id: string) => void;
   onClear: () => void;
   onHold: (lat: number, lng: number) => void;
   flyTo: FlyTarget;
@@ -1398,7 +1415,7 @@ export function BeachMap({
   traveledLine?: [number, number][] | null;
   remainingLine?: [number, number][] | null;
   dayLayer?: DayLayer;
-  rampAlert?: boolean;
+  rampAlertId?: string | null;
 }) {
   const clean = basemap === "clean";
   const guideLine = remainingLine && remainingLine.length > 1 ? remainingLine : routeLine;
@@ -1546,7 +1563,7 @@ export function BeachMap({
           user={user}
           heading={heading}
           driving={driving}
-          rampAlert={rampAlert}
+          rampAlertId={rampAlertId}
         />
       )}
     </MapContainer>

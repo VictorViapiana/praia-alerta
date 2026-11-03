@@ -13,13 +13,13 @@ import {
   stashPendingSpot,
   type OrlaSpotKind,
 } from "./orla-notify";
-import { RAMPA_PRINCIPAL, RAMPA_RULE, RAMPA_WARN, insideRampCorridor } from "./rampas";
+import { RAMPA_RULE, RAMPA_WARN, rampAt } from "./rampas";
 import { metersBetween } from "./walk-route";
 
 export type OrlaAlert =
   | { kind: "marlin" }
   | { kind: "golfinho" }
-  | { kind: "rampa" }
+  | { kind: "rampa"; id: string }
   | { kind: "quiosque"; id: string; name: string };
 
 type ZoneKey = string;
@@ -48,7 +48,7 @@ async function notify(kind: OrlaSpotKind, spot: string, title: string, body: str
 }
 
 /**
- * Vigia a orla: Marlin/Golfinho (200 m), quiosques (passagem) e rampa (3 min).
+ * Vigia a orla: Marlin/Golfinho (200 m), quiosques (passagem) e rampas (3 min).
  * Quiosques: notifica SEMPRE ao entrar na zona (app aberto ou em segundo plano).
  */
 export function useOrlaSentinel({
@@ -60,11 +60,12 @@ export function useOrlaSentinel({
   mapOpen: boolean;
   onForegroundAlert: (alert: OrlaAlert) => void;
 }) {
-  const [rampAlert, setRampAlert] = useState(false);
+  const [rampAlertId, setRampAlertId] = useState<string | null>(null);
   const onAlert = useRef(onForegroundAlert);
   onAlert.current = onForegroundAlert;
 
   const inside = useRef<Set<ZoneKey>>(new Set());
+  const rampActiveId = useRef<string | null>(null);
   const rampSince = useRef<number | null>(null);
   const rampNotified = useRef(false);
   const rampDismissed = useRef(false);
@@ -83,23 +84,34 @@ export function useOrlaSentinel({
       }
     };
 
+    const resetRamp = () => {
+      rampActiveId.current = null;
+      rampSince.current = null;
+      rampNotified.current = false;
+      rampDismissed.current = false;
+      clearRampTimer();
+      setRampAlertId(null);
+      inside.current.delete("rampa");
+    };
+
     const fireRamp = () => {
-      if (rampDismissed.current) return;
+      const rampId = rampActiveId.current;
+      if (!rampId || rampDismissed.current) return;
       if (rampSince.current == null) return;
       if (Date.now() - rampSince.current < rampDwellMs()) return;
-      setRampAlert(true);
+      setRampAlertId(rampId);
       if (isAppVisible()) {
-        onAlert.current({ kind: "rampa" });
+        onAlert.current({ kind: "rampa", id: rampId });
         return;
       }
       if (rampNotified.current) return;
       rampNotified.current = true;
       void notify(
         "rampa",
-        RAMPA_PRINCIPAL.id,
+        rampId,
         "Rampa · 3 min no corredor",
         `${RAMPA_WARN}\n\n${RAMPA_RULE}`,
-        "orla-rampa",
+        `orla-${rampId}`,
       );
     };
 
@@ -184,18 +196,20 @@ export function useOrlaSentinel({
           );
         }
 
-        if (!insideRampCorridor(here)) {
-          rampSince.current = null;
-          rampNotified.current = false;
-          rampDismissed.current = false;
-          clearRampTimer();
-          setRampAlert(false);
-          inside.current.delete("rampa");
+        const hit = rampAt(here);
+        if (!hit) {
+          resetRamp();
           return;
         }
 
         if (!accuracyOkMonument) return;
 
+        // Trocou de rampa → reinicia a contagem de 3 min.
+        if (rampActiveId.current && rampActiveId.current !== hit.id) {
+          resetRamp();
+        }
+
+        rampActiveId.current = hit.id;
         inside.current.add("rampa");
         const now = Date.now();
         if (rampSince.current == null) {
@@ -216,10 +230,12 @@ export function useOrlaSentinel({
   }, [enabled]);
 
   return {
-    rampAlert,
+    rampAlertId,
+    /** Compat: true se qualquer rampa estiver em alerta. */
+    rampAlert: rampAlertId != null,
     dismissRamp() {
       rampDismissed.current = true;
-      setRampAlert(false);
+      setRampAlertId(null);
     },
   };
 }
@@ -233,6 +249,7 @@ export function useRampWatch(mapOpen: boolean, enabled = true) {
   });
   return {
     alert: ramp.rampAlert,
+    alertId: ramp.rampAlertId,
     dismiss: ramp.dismissRamp,
   };
 }
