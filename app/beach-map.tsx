@@ -1059,35 +1059,60 @@ const MURO_DOT_ICON = L.divIcon({
 });
 
 /**
- * Guarda-corpo da orla — duas Polylines no mesmo caminho:
- * 1) corrimão horizontal (fino, contínuo)
- * 2) pilastras verticais (mais grosso, dash curto + vão longo)
+ * Guarda-corpo / para-peito — duas Polylines no mesmo caminho:
+ * 1) corrimão fino contínuo (cinza-pedra)
+ * 2) pilastras com dash curto + vão longo
+ * Toque em qualquer ponto abre o Guará (onTap).
  */
-function MuroSulOverlay({ points }: { points: Array<[number, number]> }) {
+function MuroSulOverlay({
+  points,
+  onTap,
+}: {
+  points: Array<[number, number]>;
+  onTap?: () => void;
+}) {
   if (points.length < 2) return null;
+
+  const handleTap = (event: L.LeafletMouseEvent) => {
+    L.DomEvent.stopPropagation(event);
+    onTap?.();
+  };
 
   return (
     <>
-      {/* Linha base — corrimão / barras horizontais */}
+      {/* Área de toque (invisível, larga) */}
       <Polyline
         positions={points}
         pathOptions={{
-          color: "#1f1f1f",
-          weight: 2.5,
-          opacity: 0.95,
+          color: "#000000",
+          weight: 22,
+          opacity: 0,
+          lineCap: "round",
+          lineJoin: "round",
+          className: "orla-muro-hit",
+        }}
+        eventHandlers={{ click: handleTap }}
+      />
+      {/* Corrimão / barras horizontais — cinza pedra (não preto chapado) */}
+      <Polyline
+        positions={points}
+        pathOptions={{
+          color: "#7a736a",
+          weight: 2.25,
+          opacity: 0.92,
           lineCap: "round",
           lineJoin: "round",
           className: "orla-muro-handrail",
         }}
         interactive={false}
       />
-      {/* Linha superior — pilastras (traço curto, espaçamento longo) */}
+      {/* Pilastras — tom um pouco mais escuro, ritmo de guarda-corpo */}
       <Polyline
         positions={points}
         pathOptions={{
-          color: "#1f1f1f",
-          weight: 6,
-          opacity: 0.98,
+          color: "#5c564e",
+          weight: 5.5,
+          opacity: 0.9,
           dashArray: "3 20",
           lineCap: "butt",
           lineJoin: "round",
@@ -1587,6 +1612,7 @@ export function BeachMap({
   onOpenEscunas,
   onOpenVendor,
   onRampTap,
+  onMuroTap,
   onClear,
   onHold,
   flyTo,
@@ -1614,6 +1640,7 @@ export function BeachMap({
   onOpenEscunas: () => void;
   onOpenVendor: (id: string) => void;
   onRampTap: (id: string) => void;
+  onMuroTap?: () => void;
   onClear: () => void;
   onHold: (lat: number, lng: number) => void;
   flyTo: FlyTarget;
@@ -1746,7 +1773,7 @@ export function BeachMap({
       <FitRoute line={routeLine} active={!track} />
       {!driving && !muroCapture && (
         <Pane name="pa-muro-sul" style={{ zIndex: 420 }}>
-          <MuroSulOverlay points={muroPoints} />
+          <MuroSulOverlay points={muroPoints} onTap={onMuroTap} />
         </Pane>
       )}
       {!driving && muroCapture && (
