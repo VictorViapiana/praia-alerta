@@ -8,8 +8,11 @@
  * 4. Depois desligue MURO_CAPTURE = false e remova ?muro=1
  */
 
-/** TEMP — true = cada toque no mapa vira um ponto do muro (também via ?muro=1). */
-export const MURO_CAPTURE = true;
+/**
+ * TEMP — true = captura sempre ligada.
+ * Em produção deixe false e use a URL ?muro=1 para ativar só quando for mapear.
+ */
+export const MURO_CAPTURE = false;
 
 /**
  * Cole aqui os pontos capturados, na ordem: começo da praia → Quiosque 01.
