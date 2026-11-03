@@ -78,6 +78,8 @@ export const ORLA_ZOOM = 16;
 
 export type BasemapStyle = "satellite" | "clean";
 const PLACE_ZOOM = 17;
+/** Para-peito só de perto — de longe vira traço fino e polui o mapa. */
+const MURO_ZOOM = 17.5;
 
 function escunaIcon(zoom: number) {
   const intro = zoom < 18;
@@ -1063,6 +1065,7 @@ const MURO_DOT_ICON = L.divIcon({
  * 1) corrimão fino contínuo (marrom madeira)
  * 2) pilastras com dash curto + vão longo
  * Toque em qualquer ponto abre o Guará (onTap).
+ * Só aparece com zoom >= MURO_ZOOM.
  */
 function MuroSulOverlay({
   points,
@@ -1071,7 +1074,18 @@ function MuroSulOverlay({
   points: Array<[number, number]>;
   onTap?: () => void;
 }) {
-  if (points.length < 2) return null;
+  const map = useMap();
+  const [zoom, setZoom] = useState(() => map.getZoom());
+  useMapEvents({
+    zoom() {
+      setZoom(map.getZoom());
+    },
+    zoomend() {
+      setZoom(map.getZoom());
+    },
+  });
+
+  if (points.length < 2 || zoom < MURO_ZOOM) return null;
 
   const handleTap = (event: L.LeafletMouseEvent) => {
     L.DomEvent.stopPropagation(event);
