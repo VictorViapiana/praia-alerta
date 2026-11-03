@@ -16,6 +16,7 @@ import {
   PRACA_PAZ,
   QUADRA_AREIA,
   SHOWERS,
+  findShower,
 } from "./places";
 import type { PinKind } from "./page-types";
 
@@ -329,7 +330,7 @@ export function answerGuara(raw: string, live: GuaraLive = { tide: null, weather
   if (has(text, "pastel")) return { answer: "O Pastel do Morro ainda não entra no mapa. Só aparecem os ambulantes que estão na areia." };
 
   if (has(text, "ducha sul", "chuveiro sul")) {
-    const shower = SHOWERS[0];
+    const shower = findShower("sul") ?? SHOWERS[0];
     return {
       answer: "A Ducha Sul fica no calçadão, no trecho sul. Para ligar, use moeda de 1 real.",
       filter: "duchas",
@@ -340,8 +341,20 @@ export function answerGuara(raw: string, live: GuaraLive = { tide: null, weather
       route: { id: shower.id, lat: shower.lat, lng: shower.lng, name: shower.name },
     };
   }
+  if (has(text, "ducha muro", "ducha do muro", "chuveiro muro")) {
+    const shower = findShower("muro") ?? SHOWERS[0];
+    return {
+      answer: "A Ducha do muro fica na Beira Mar, no muro perto do Quiosque 03. Para ligar, use moeda de 1 real.",
+      filter: "duchas",
+      query: "",
+      fly: { lat: shower.lat, lng: shower.lng },
+      openId: shower.id,
+      sheet: null,
+      route: { id: shower.id, lat: shower.lat, lng: shower.lng, name: shower.name },
+    };
+  }
   if (has(text, "ducha norte", "chuveiro norte")) {
-    const shower = SHOWERS[1];
+    const shower = findShower("norte") ?? SHOWERS[0];
     return {
       answer: "A Ducha Norte fica no calçadão, no meio da orla. Para ligar, use moeda de 1 real.",
       filter: "duchas",
@@ -353,7 +366,7 @@ export function answerGuara(raw: string, live: GuaraLive = { tide: null, weather
     };
   }
   if (has(text, "ducha costao", "ducha do costao", "chuveiro costao")) {
-    const shower = SHOWERS[2] ?? SHOWERS[0];
+    const shower = findShower("costao") ?? SHOWERS[0];
     return {
       answer: "A Ducha fica na Beira Mar, perto do costão. Para ligar, coloque uma moeda de 1 real.",
       filter: "duchas",
@@ -365,10 +378,10 @@ export function answerGuara(raw: string, live: GuaraLive = { tide: null, weather
     };
   }
   if (has(text, "ducha", "chuveiro", "moeda")) {
-    const shower = SHOWERS[2] ?? SHOWERS[0];
+    const shower = findShower("costao") ?? SHOWERS[0];
     return {
       answer:
-        "São três duchas no calçadão: Sul, Norte e a perto do costão. Em todas, use moeda de 1 real. Não force, não piche e não quebre. Te levo até a Ducha.",
+        "São quatro duchas na orla: Sul, do muro, Norte e a perto do costão. Em todas, use moeda de 1 real. Não force, não piche e não quebre. Te levo até a Ducha.",
       filter: "duchas",
       query: "",
       fly: { lat: shower.lat, lng: shower.lng },

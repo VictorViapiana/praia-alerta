@@ -54,6 +54,7 @@ import {
 } from "./places";
 import type { PinKind } from "./page-types";
 import { HeadingBeam } from "./heading-beam";
+import { MURO_SUL_ATE_Q1 } from "./orla-muro";
 import { RAMPA_NOTE, RAMPS, type RampAccess } from "./rampas";
 import { metersBetween } from "./walk-route";
 
@@ -1034,6 +1035,53 @@ function RampaPin({
   );
 }
 
+/** Muro de pedra do calçadão (trecho sul → Q01 / ducha do muro). */
+function MuroSulOverlay() {
+  return (
+    <>
+      {/* Sombra / base */}
+      <Polyline
+        positions={MURO_SUL_ATE_Q1}
+        pathOptions={{
+          color: "#4a453c",
+          weight: 7,
+          opacity: 0.55,
+          lineCap: "butt",
+          lineJoin: "round",
+          className: "orla-muro-base",
+        }}
+        interactive={false}
+      />
+      {/* Corpo de pedra */}
+      <Polyline
+        positions={MURO_SUL_ATE_Q1}
+        pathOptions={{
+          color: "#c4b8a4",
+          weight: 4.5,
+          opacity: 0.92,
+          lineCap: "butt",
+          lineJoin: "round",
+          className: "orla-muro-stone",
+        }}
+        interactive={false}
+      />
+      {/* Topo claro do muro */}
+      <Polyline
+        positions={MURO_SUL_ATE_Q1}
+        pathOptions={{
+          color: "#ebe4d6",
+          weight: 1.6,
+          opacity: 0.95,
+          lineCap: "butt",
+          lineJoin: "round",
+          className: "orla-muro-cap",
+        }}
+        interactive={false}
+      />
+    </>
+  );
+}
+
 function DayLayerOverlay({ layer }: { layer: DayLayer }) {
   const map = useMap();
   const { data: tide } = useTide();
@@ -1557,6 +1605,11 @@ export function BeachMap({
       {!driving && <FlyTo target={flyTo} />}
       <FollowNav active={track} line={guideLine} tick={followTick} />
       <FitRoute line={routeLine} active={!track} />
+      {!driving && (
+        <Pane name="pa-muro-sul" style={{ zIndex: 420 }}>
+          <MuroSulOverlay />
+        </Pane>
+      )}
       {!driving && (
         <Pane name="pa-day-layers" style={{ zIndex: 450 }}>
           <DayLayerOverlay layer={dayLayer} />

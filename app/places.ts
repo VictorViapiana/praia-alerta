@@ -196,6 +196,14 @@ export const SHOWER_SPEAK =
 
 export const SHOWERS: ShowerSpot[] = [
   { id: "sul", mapKind: "duchas", name: "Ducha Sul", detail: "Calçadão · trecho sul", lat: -20.657464, lng: -40.492163 },
+  {
+    id: "muro",
+    mapKind: "duchas",
+    name: "Ducha do muro",
+    detail: "Av. Beira Mar · no muro perto do Quiosque 03",
+    lat: -20.658498,
+    lng: -40.493471,
+  },
   { id: "norte", mapKind: "duchas", name: "Ducha Norte", detail: "Calçadão · meio da orla", lat: -20.652662, lng: -40.483176 },
   {
     id: "costao",
