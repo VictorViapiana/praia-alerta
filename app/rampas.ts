@@ -46,33 +46,6 @@ function corridorNorthSouth(
   };
 }
 
-/**
- * Corredor E→O: pin no calçadão, faixa para a areia a oeste
- * (rampa norte / costão, Av. Beira Mar → areia).
- */
-function corridorEastWest(
-  lat: number,
-  lng: number,
-  halfM: number,
-  eastM: number,
-  westM: number,
-): Pick<RampAccess, "corridor" | "edgeLeft" | "edgeRight"> {
-  const corridor: [number, number][] = [
-    shift(lat, lng, halfM, eastM),
-    shift(lat, lng, -halfM, eastM),
-    shift(lat, lng, -halfM, -westM),
-    shift(lat, lng, halfM, -westM),
-  ];
-  const markEast = Math.min(4, eastM);
-  const markWest = -(westM - 2);
-  const markHalf = halfM - 0.4;
-  return {
-    corridor,
-    edgeLeft: [shift(lat, lng, markHalf, markEast), shift(lat, lng, markHalf, markWest)],
-    edgeRight: [shift(lat, lng, -markHalf, markEast), shift(lat, lng, -markHalf, markWest)],
-  };
-}
-
 function pointInRing(point: { lat: number; lng: number }, ring: [number, number][]) {
   let inside = false;
   for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
@@ -87,9 +60,14 @@ function pointInRing(point: { lat: number; lng: number }, ring: [number, number]
   return inside;
 }
 
-const principalGeom = corridorNorthSouth(-20.652309, -40.478881, 7, 4, 44);
-/** Rampa de acesso norte (−20.653700, −40.474761) — calçadão → areia. */
-const norteGeom = corridorEastWest(-20.6537, -40.474761, 6, 5, 38);
+/** Mesmas medidas nas duas: 14 m de largura · 4 m atrás do pin · 44 m reto à areia/mar. */
+const RAMP_HALF_M = 7;
+const RAMP_BACK_M = 4;
+const RAMP_TO_SEA_M = 44;
+
+const principalGeom = corridorNorthSouth(-20.652309, -40.478881, RAMP_HALF_M, RAMP_BACK_M, RAMP_TO_SEA_M);
+/** Rampa norte (−20.653700, −40.474761): mesmo tamanho, reto N→S até o mar. */
+const norteGeom = corridorNorthSouth(-20.6537, -40.474761, RAMP_HALF_M, RAMP_BACK_M, RAMP_TO_SEA_M);
 
 export const RAMPA_PRINCIPAL: RampAccess = {
   id: "rampa-principal",

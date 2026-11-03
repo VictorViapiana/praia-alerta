@@ -831,7 +831,7 @@ const RAMP_TOUR_STEPS: GuaraTipStep[] = [
   {
     kind: "convivencia",
     title: "Vai pra areia",
-    text: "Guarda-sol, cadeira e barraca ficam fora deste caminho. Liberte a rampa e o trânsito da orla flui.",
+    text: "Guarda-sol, cadeira e barraca ficam fora deste caminho. Libere a rampa e o trânsito da orla flui.",
   },
 ];
 
