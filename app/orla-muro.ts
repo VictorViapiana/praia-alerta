@@ -1,77 +1,102 @@
 /**
- * Grade de metal do calçadão — trecho sul da Praia do Morro.
- * Só do começo da praia até o Quiosque 01, colada na divisão areia × calçadão.
+ * Muro da orla — Praia do Morro (começo da praia → Quiosque 01).
  *
- * Âncora: Quiosque 01 (−20.659626, −40.494732). Não passa do Q1.
+ * Pontos capturados no mapa e limpos (sem volta / densificados a ~4 m).
+ * O tracejado visual vem do `dashArray` da Polyline — não de marcadores.
+ *
+ * Captura opcional: URL ?muro=1
  */
 
-const METERS_LAT = 1 / 111_320;
-
-function metersLng(lat: number) {
-  return 1 / (111_320 * Math.cos((lat * Math.PI) / 180));
-}
-
-function shift(lat: number, lng: number, northM: number, eastM: number): [number, number] {
-  return [lat + northM * METERS_LAT, lng + eastM * metersLng(lat)];
-}
+/** TEMP — true = captura sempre ligada. Prefira ?muro=1. */
+export const MURO_CAPTURE = false;
 
 /**
- * Divisão areia × calçadão, sul → Quiosque 01.
- * Pontos densos na borda do verde/pavimento — sem cortar areia nem água.
+ * Caminho do muro: sul → Quiosque 01.
+ * Formato [lat, lng]. Só usado como `positions` da Polyline.
  */
 export const MURO_SUL_ATE_Q1: Array<[number, number]> = [
-  [-20.661096, -40.495584], // começo da praia (acesso sul)
-  [-20.660896, -40.495423],
-  [-20.66072, -40.495262],
-  [-20.660544, -40.495128],
-  [-20.660368, -40.495021],
-  [-20.660193, -40.494913],
-  [-20.660017, -40.494833],
-  [-20.659867, -40.494769],
-  [-20.659741, -40.494736],
-  [-20.659626, -40.494731], // Quiosque 01 — para aqui
+  [-20.662303, -40.495426],
+  [-20.662271, -40.495408],
+  [-20.662237, -40.495399],
+  [-20.662201, -40.495396],
+  [-20.662166, -40.495399],
+  [-20.66213, -40.495399],
+  [-20.662094, -40.495399],
+  [-20.662058, -40.495402],
+  [-20.662022, -40.495403],
+  [-20.661987, -40.495406],
+  [-20.661951, -40.495407],
+  [-20.661915, -40.495407],
+  [-20.661879, -40.495412],
+  [-20.661843, -40.495412],
+  [-20.661808, -40.495415],
+  [-20.661773, -40.495415],
+  [-20.661738, -40.495423],
+  [-20.661702, -40.495429],
+  [-20.661667, -40.495431],
+  [-20.661631, -40.495434],
+  [-20.661595, -40.495436],
+  [-20.661559, -40.495434],
+  [-20.661524, -40.495431],
+  [-20.661488, -40.495431],
+  [-20.661452, -40.495429],
+  [-20.661416, -40.495426],
+  [-20.66138, -40.495423],
+  [-20.661345, -40.495421],
+  [-20.661309, -40.49542],
+  [-20.661273, -40.495415],
+  [-20.661237, -40.495415],
+  [-20.661202, -40.495408],
+  [-20.661166, -40.495406],
+  [-20.661131, -40.495402],
+  [-20.661096, -40.495395],
+  [-20.66106, -40.495388],
+  [-20.661025, -40.495379],
+  [-20.66099, -40.495373],
+  [-20.660955, -40.495367],
+  [-20.660919, -40.495365],
+  [-20.660883, -40.495364],
+  [-20.660847, -40.495364],
+  [-20.660811, -40.495361],
+  [-20.660777, -40.495352],
+  [-20.660742, -40.495347],
+  [-20.660708, -40.495334],
+  [-20.660674, -40.495322],
+  [-20.660639, -40.495314],
+  [-20.660605, -40.495301],
+  [-20.660573, -40.495284],
+  [-20.66054, -40.495273],
+  [-20.660505, -40.495265],
+  [-20.660473, -40.495248],
+  [-20.660438, -40.495242],
+  [-20.660404, -40.495228],
+  [-20.660371, -40.495215],
+  [-20.660337, -40.495201],
+  [-20.660304, -40.495187],
+  [-20.660271, -40.495171],
+  [-20.660239, -40.495154],
+  [-20.660207, -40.495138],
+  [-20.660178, -40.495116],
+  [-20.660147, -40.495096],
+  [-20.660113, -40.495082],
+  [-20.660082, -40.495065],
+  [-20.66005, -40.495048],
+  [-20.660021, -40.495027],
+  [-20.65999, -40.495008],
+  [-20.659964, -40.494982],
+  [-20.659934, -40.494962],
+  [-20.659905, -40.49494],
+  [-20.659882, -40.494911],
+  [-20.659855, -40.494887],
+  [-20.659833, -40.494856],
+  [-20.659826, -40.494821],
+  [-20.659807, -40.494789],
+  [-20.659786, -40.494758],
+  [-20.659773, -40.49469],
+  [-20.659741, -40.49467],
+  [-20.659706, -40.494664],
+  [-20.659671, -40.494666],
+  [-20.659653, -40.494672], // Quiosque 01
 ];
 
-export const MURO_SUL_NOTE = "Grade do calçadão no trecho sul — do começo da praia até o Quiosque 01.";
-
-/** Desloca a polyline na perpendicular (metros; + = esquerda no sentido do traçado). */
-export function offsetPolyline(points: Array<[number, number]>, meters: number): Array<[number, number]> {
-  if (points.length < 2) return points.map((p) => [p[0], p[1]] as [number, number]);
-  const out: Array<[number, number]> = [];
-  for (let i = 0; i < points.length; i++) {
-    const prev = points[Math.max(0, i - 1)];
-    const next = points[Math.min(points.length - 1, i + 1)];
-    const dLat = (next[0] - prev[0]) * 111_320;
-    const dLng = (next[1] - prev[1]) / metersLng(points[i][0]);
-    const len = Math.hypot(dLat, dLng) || 1;
-    const nNorth = (-dLng / len) * meters;
-    const nEast = (dLat / len) * meters;
-    out.push(shift(points[i][0], points[i][1], nNorth, nEast));
-  }
-  return out;
-}
-
-/** Postes ao longo do muro (~a cada `stepM` metros). */
-export function muroPosts(points: Array<[number, number]>, stepM = 5.5): Array<[number, number]> {
-  if (points.length < 2) return [];
-  const posts: Array<[number, number]> = [[points[0][0], points[0][1]]];
-  let carried = 0;
-  for (let i = 1; i < points.length; i++) {
-    const a = points[i - 1];
-    const b = points[i];
-    const seg = Math.hypot((b[0] - a[0]) * 111_320, (b[1] - a[1]) / metersLng(a[0]));
-    let t = stepM - carried;
-    while (t < seg - 0.4) {
-      const u = t / seg;
-      posts.push([a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u]);
-      t += stepM;
-    }
-    carried = seg - (t - stepM);
-  }
-  const last = points[points.length - 1];
-  posts.push([last[0], last[1]]);
-  return posts;
-}
-
-/** Trilhos: 3 barras escuras + corrimão claro no topo (offsets em m). */
-export const MURO_RAIL_OFFSETS_M = [-0.38, -0.12, 0.12, 0.38] as const;
+export const MURO_SUL_NOTE = "Muro da orla no trecho sul — do começo da praia até o Quiosque 01.";
