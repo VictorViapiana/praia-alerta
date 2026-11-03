@@ -344,7 +344,7 @@ export function answerGuara(raw: string, live: GuaraLive = { tide: null, weather
   if (has(text, "ducha muro", "ducha do muro", "chuveiro muro")) {
     const shower = findShower("muro") ?? SHOWERS[0];
     return {
-      answer: "A Ducha do muro fica na Beira Mar, no muro perto do Quiosque 03. Para ligar, use moeda de 1 real.",
+      answer: "A Ducha fica na Beira Mar, perto do Quiosque 03. Para ligar, use moeda de 1 real.",
       filter: "duchas",
       query: "",
       fly: { lat: shower.lat, lng: shower.lng },
@@ -381,7 +381,7 @@ export function answerGuara(raw: string, live: GuaraLive = { tide: null, weather
     const shower = findShower("costao") ?? SHOWERS[0];
     return {
       answer:
-        "São quatro duchas na orla: Sul, do muro, Norte e a perto do costão. Em todas, use moeda de 1 real. Não force, não piche e não quebre. Te levo até a Ducha.",
+        "São quatro duchas na orla: Sul, Beira Mar, Norte e a perto do costão. Em todas, use moeda de 1 real. Não force, não piche e não quebre. Te levo até a Ducha.",
       filter: "duchas",
       query: "",
       fly: { lat: shower.lat, lng: shower.lng },

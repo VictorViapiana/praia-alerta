@@ -54,7 +54,12 @@ import {
 } from "./places";
 import type { PinKind } from "./page-types";
 import { HeadingBeam } from "./heading-beam";
-import { MURO_SUL_ATE_Q1 } from "./orla-muro";
+import {
+  MURO_RAIL_OFFSETS_M,
+  MURO_SUL_ATE_Q1,
+  muroPosts,
+  offsetPolyline,
+} from "./orla-muro";
 import { RAMPA_NOTE, RAMPS, type RampAccess } from "./rampas";
 import { metersBetween } from "./walk-route";
 
@@ -1035,49 +1040,67 @@ function RampaPin({
   );
 }
 
-/** Muro de pedra do calçadão (trecho sul → Q01 / ducha do muro). */
+const MURO_POST_ICON = L.divIcon({
+  className: "orla-muro-post",
+  iconSize: [5, 14],
+  iconAnchor: [2.5, 14],
+  html: `<span style="display:block;width:5px;height:14px;border-radius:1px;background:linear-gradient(180deg,#4a4a50 0%,#1f1f22 45%,#0a0a0c 100%);box-shadow:0 1px 3px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.14)"></span>`,
+});
+
+/** Grade de metal do calçadão (começo da praia → Quiosque 01). */
 function MuroSulOverlay() {
+  const rails = useMemo(
+    () => MURO_RAIL_OFFSETS_M.map((offset) => offsetPolyline(MURO_SUL_ATE_Q1, offset)),
+    [],
+  );
+  const posts = useMemo(() => muroPosts(MURO_SUL_ATE_Q1, 5.5), []);
+  const shadow = useMemo(() => offsetPolyline(MURO_SUL_ATE_Q1, 0.7), []);
+
   return (
     <>
-      {/* Sombra / base */}
+      {/* Sombra na areia */}
       <Polyline
-        positions={MURO_SUL_ATE_Q1}
+        positions={shadow}
         pathOptions={{
-          color: "#4a453c",
-          weight: 7,
-          opacity: 0.55,
+          color: "#000000",
+          weight: 4,
+          opacity: 0.16,
           lineCap: "butt",
           lineJoin: "round",
-          className: "orla-muro-base",
+          className: "orla-muro-shadow",
         }}
         interactive={false}
       />
-      {/* Corpo de pedra */}
-      <Polyline
-        positions={MURO_SUL_ATE_Q1}
-        pathOptions={{
-          color: "#c4b8a4",
-          weight: 4.5,
-          opacity: 0.92,
-          lineCap: "butt",
-          lineJoin: "round",
-          className: "orla-muro-stone",
-        }}
-        interactive={false}
-      />
-      {/* Topo claro do muro */}
-      <Polyline
-        positions={MURO_SUL_ATE_Q1}
-        pathOptions={{
-          color: "#ebe4d6",
-          weight: 1.6,
-          opacity: 0.95,
-          lineCap: "butt",
-          lineJoin: "round",
-          className: "orla-muro-cap",
-        }}
-        interactive={false}
-      />
+      {/* Trilhos escuros (3) + corrimão claro no topo */}
+      {rails.map((rail, index) => {
+        const top = index === rails.length - 1;
+        return (
+          <Polyline
+            key={`rail-${index}`}
+            positions={rail}
+            pathOptions={{
+              color: top ? "#cfc8bc" : "#161618",
+              weight: top ? 2.6 : 1.7,
+              opacity: top ? 0.96 : 0.92,
+              lineCap: "butt",
+              lineJoin: "round",
+              className: top ? "orla-muro-handrail" : "orla-muro-rail",
+            }}
+            interactive={false}
+          />
+        );
+      })}
+      {/* Postes finos de metal */}
+      {posts.map((post, index) => (
+        <Marker
+          key={`post-${index}-${post[0].toFixed(5)}`}
+          position={post}
+          icon={MURO_POST_ICON}
+          interactive={false}
+          keyboard={false}
+          zIndexOffset={40}
+        />
+      ))}
     </>
   );
 }
