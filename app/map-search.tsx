@@ -130,7 +130,7 @@ function resultsFor(
             key: shower.id,
             name: shower.name,
             hours: "Pública",
-            detail: ["Ducha na areia", away].filter(Boolean).join(" · "),
+            detail: ["Moeda de R$ 1", shower.detail, away].filter(Boolean).join(" · "),
             sponsor: false,
             lat: shower.lat,
             lng: shower.lng,

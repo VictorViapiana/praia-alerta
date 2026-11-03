@@ -455,18 +455,38 @@ function FlyTo({ target }: { target: FlyTarget }) {
 function ShowerPin({
   name,
   faded,
+  selected = false,
+  alert = false,
+  onSelect,
 }: {
   name: string;
   faded: boolean;
+  selected?: boolean;
+  alert?: boolean;
+  onSelect?: () => void;
 }) {
   return (
-    <div className="relative h-6 w-6" style={{ opacity: faded ? 0.28 : 1 }}>
+    <div
+      className={`relative h-6 w-6 ${selected ? "pin-focus" : ""} ${alert ? "pin-alert rounded-full" : ""}`}
+      style={{ opacity: faded ? 0.28 : 1 }}
+    >
+      {selected && <span className="pin-focus-ring" aria-hidden />}
       <span className="absolute bottom-full left-1/2 mb-1 block w-max max-w-[10.5rem] -translate-x-1/2 truncate rounded-full border border-white bg-white px-2 py-1 text-center text-[12px] font-bold leading-none tracking-normal text-[#3c2a18] shadow-[0_2px_8px_rgba(0,0,0,0.55)]">
         {name}
       </span>
-      <span className="grid h-6 w-6 place-items-center rounded-full border-2 border-white bg-white text-[#0284c7] shadow-[0_0_0_1px_rgba(0,0,0,0.45),0_6px_12px_rgba(0,0,0,0.55)]">
+      <button
+        type="button"
+        aria-label={name}
+        aria-pressed={selected}
+        onPointerDown={(event) => event.stopPropagation()}
+        onClick={(event) => {
+          event.stopPropagation();
+          onSelect?.();
+        }}
+        className={`grid h-6 w-6 place-items-center rounded-full border-2 border-white bg-white text-[#0284c7] shadow-[0_0_0_1px_rgba(0,0,0,0.45),0_6px_12px_rgba(0,0,0,0.55)] ${selected ? "ring-2 ring-sky-200" : ""} ${alert ? "ring-2 ring-cyan-300" : ""}`}
+      >
         <ShowerHead className="h-3 w-3" strokeWidth={2.2} />
-      </span>
+      </button>
     </div>
   );
 }
@@ -1178,6 +1198,7 @@ function OrlaMarkers({
   // Ícone focado (notificação / deep link) aparece mesmo antes do zoom de lugares.
   const showFocused = Boolean(openId);
   const showRamp = zoom >= 16 || RAMPS.some((ramp) => ramp.id === openId);
+  const showShowerFocus = SHOWERS.some((shower) => shower.id === openId);
   const escunaPin = useMemo(() => escunaIcon(zoom), [zoom]);
   const vendorMode = filter === "ambulantes";
   const cartIcons = useMemo(
@@ -1214,14 +1235,25 @@ function OrlaMarkers({
 
   return (
     <>
-      {showPlaces &&
+      {(showPlaces || showShowerFocus) &&
         !vendorMode &&
         SHOWERS.map((shower) => {
           const nameHit = !query || fold(shower.name).includes(query);
           const inCategory = filter === "neutro" || filter === shower.mapKind;
+          const selected = openId === shower.id;
           return (
-            <ReactPin key={shower.id} position={[shower.lat, shower.lng]} zIndexOffset={12} size={24}>
-              <ShowerPin name={shower.name} faded={!nameHit || !inCategory} />
+            <ReactPin
+              key={shower.id}
+              position={[shower.lat, shower.lng]}
+              zIndexOffset={selected ? 960 : 12}
+              size={24}
+            >
+              <ShowerPin
+                name={shower.name}
+                faded={!nameHit || !inCategory}
+                selected={selected}
+                onSelect={() => onSelect(shower.id)}
+              />
             </ReactPin>
           );
         })}

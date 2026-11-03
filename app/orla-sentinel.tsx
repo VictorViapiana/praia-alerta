@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { GOLFINHO, MARLIN, MARLIN_SPEAK, MARLIN_TIPS, PLACES } from "./places";
+import { GOLFINHO, MARLIN, MARLIN_SPEAK, MARLIN_TIPS, PLACES, SHOWERS, SHOWER_SPEAK } from "./places";
 import {
   EXIT_HYSTERESIS_M,
   MONUMENT_RADIUS_M,
   QUIOSQUE_ACCURACY_M,
   QUIOSQUE_EXIT_HYSTERESIS_M,
   QUIOSQUE_RADIUS_M,
+  SHOWER_RADIUS_M,
   pushOrlaNotice,
   rampDwellMs,
   stashPendingSpot,
@@ -20,6 +21,7 @@ export type OrlaAlert =
   | { kind: "marlin" }
   | { kind: "golfinho" }
   | { kind: "rampa"; id: string }
+  | { kind: "ducha"; id: string }
   | { kind: "quiosque"; id: string; name: string };
 
 type ZoneKey = string;
@@ -48,7 +50,7 @@ async function notify(kind: OrlaSpotKind, spot: string, title: string, body: str
 }
 
 /**
- * Vigia a orla: Marlin/Golfinho (200 m), quiosques (passagem) e rampas (3 min).
+ * Vigia a orla: Marlin/Golfinho (200 m), duchas (moeda), quiosques e rampas (3 min).
  * Quiosques: notifica SEMPRE ao entrar na zona (app aberto ou em segundo plano).
  */
 export function useOrlaSentinel({
@@ -174,6 +176,23 @@ export function useOrlaSentinel({
             "orla-golfinho",
           );
         });
+
+        // Duchas públicas: ritual da moeda de R$ 1 + convivência.
+        for (const shower of SHOWERS) {
+          checkZone(`ducha:${shower.id}`, shower, SHOWER_RADIUS_M, () => {
+            if (visible) {
+              onAlert.current({ kind: "ducha", id: shower.id });
+              return;
+            }
+            void notify(
+              "ducha",
+              shower.id,
+              `${shower.name} · moeda de R$ 1`,
+              `${SHOWER_SPEAK}\n\nAbra o app: o Guará abre o portal da água.`,
+              `orla-ducha-${shower.id}`,
+            );
+          });
+        }
 
         // Passagem pelos quiosques: notifica cada um ao entrar na zona (mesmo com app aberto).
         for (const place of QUIOSQUES) {

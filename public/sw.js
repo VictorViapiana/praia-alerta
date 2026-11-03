@@ -1,4 +1,4 @@
-const CACHE = "praia-alerta-v63";
+const CACHE = "praia-alerta-v64";
 const PRECACHE = [
   "/",
   "/logo.png",

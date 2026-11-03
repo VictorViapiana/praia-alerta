@@ -330,15 +330,52 @@ export function answerGuara(raw: string, live: GuaraLive = { tide: null, weather
 
   if (has(text, "ducha sul", "chuveiro sul")) {
     const shower = SHOWERS[0];
-    return { answer: "A Ducha Sul fica no calçadão, no trecho sul da praia.", filter: "duchas", query: "", fly: { lat: shower.lat, lng: shower.lng }, openId: null, sheet: null, route: { id: shower.id, lat: shower.lat, lng: shower.lng, name: shower.name } };
+    return {
+      answer: "A Ducha Sul fica no calçadão, no trecho sul. Lembra: a água só liga com moeda de 1 real.",
+      filter: "duchas",
+      query: "",
+      fly: { lat: shower.lat, lng: shower.lng },
+      openId: shower.id,
+      sheet: null,
+      route: { id: shower.id, lat: shower.lat, lng: shower.lng, name: shower.name },
+    };
   }
   if (has(text, "ducha norte", "chuveiro norte")) {
     const shower = SHOWERS[1];
-    return { answer: "A Ducha Norte fica no calçadão, mais para o norte.", filter: "duchas", query: "", fly: { lat: shower.lat, lng: shower.lng }, openId: null, sheet: null, route: { id: shower.id, lat: shower.lat, lng: shower.lng, name: shower.name } };
+    return {
+      answer: "A Ducha Norte fica no calçadão, no meio da orla. Leva moeda de 1 real — sem ela o jato não acorda.",
+      filter: "duchas",
+      query: "",
+      fly: { lat: shower.lat, lng: shower.lng },
+      openId: shower.id,
+      sheet: null,
+      route: { id: shower.id, lat: shower.lat, lng: shower.lng, name: shower.name },
+    };
   }
-  if (has(text, "ducha", "chuveiro")) {
-    const shower = SHOWERS[0];
-    return { answer: "São duas duchas no calçadão: Sul e Norte. Estou na Ducha Sul. A Norte fica mais adiante.", filter: "duchas", query: "", fly: { lat: shower.lat, lng: shower.lng }, openId: null, sheet: null, route: { id: shower.id, lat: shower.lat, lng: shower.lng, name: shower.name } };
+  if (has(text, "ducha costao", "ducha do costao", "chuveiro costao")) {
+    const shower = SHOWERS[2] ?? SHOWERS[0];
+    return {
+      answer: "A Ducha do Costão fica na Beira Mar, perto do costão. Portal da água: só abre com R$ 1.",
+      filter: "duchas",
+      query: "",
+      fly: { lat: shower.lat, lng: shower.lng },
+      openId: shower.id,
+      sheet: null,
+      route: { id: shower.id, lat: shower.lat, lng: shower.lng, name: shower.name },
+    };
+  }
+  if (has(text, "ducha", "chuveiro", "moeda")) {
+    const shower = SHOWERS[2] ?? SHOWERS[0];
+    return {
+      answer:
+        "São três duchas no calçadão: Sul, Norte e a do Costão. Em todas a água só liga com moeda de 1 real — não piche e não quebre. Te levo à do Costão.",
+      filter: "duchas",
+      query: "",
+      fly: { lat: shower.lat, lng: shower.lng },
+      openId: shower.id,
+      sheet: null,
+      route: { id: shower.id, lat: shower.lat, lng: shower.lng, name: shower.name },
+    };
   }
 
   if (has(text, "farmacia")) return showSpot("farmacia", "A Farmácia da Orla fica na avenida, atrás da praia.", "parceiros", false);
