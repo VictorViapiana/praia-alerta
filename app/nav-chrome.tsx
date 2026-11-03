@@ -26,9 +26,10 @@ export function CloseButton({
         // `absolute` (não `relative`) — evita conflito com Tailwind e mantém o X no canto certo
         "pointer-events-auto absolute z-[90] grid h-11 w-11 place-items-center rounded-full border text-white touch-manipulation",
         "before:absolute before:-inset-3 before:content-['']",
+        // Fundo opaco: evita “X fantasma” de camadas/chrome atrás do botão.
         light
-          ? "border-white/45 bg-black/55 shadow-[0_8px_24px_rgba(0,0,0,0.35)] backdrop-blur-md"
-          : "border-white/30 bg-white/18 shadow-[0_8px_24px_rgba(0,0,0,0.28)] backdrop-blur-md",
+          ? "border-white/45 bg-black/70 shadow-[0_8px_24px_rgba(0,0,0,0.4)] backdrop-blur-md"
+          : "border-white/40 bg-[#0b3a5b]/92 shadow-[0_8px_24px_rgba(0,0,0,0.35)] backdrop-blur-md",
         className,
       ]
         .filter(Boolean)

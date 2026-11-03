@@ -1526,7 +1526,9 @@ function MapScreen({
         </div>
       )}
 
-      {!sheetOpen && <CloseButton onClose={onClose} light={!driving} className={closeTopClass} data-map-ui />}
+      {!sheetOpen && !showerRitual && !tipTour && !landmarkTalk && (
+        <CloseButton onClose={onClose} light={!driving} className={closeTopClass} data-map-ui />
+      )}
 
       {!driving && !sheetOpen && (
       <div
@@ -1755,12 +1757,14 @@ function MapScreen({
       />
       )}
 
-      {/* Câmera fica visível no tour (spotlight); some no passo dela. Soft prompts somem. */}
-      {!driving && !sheetOpen && !cameraOpen && !searchOpen && !guaraOpen && (
+      {/* Câmera / chat / soft prompts somem no ritual da ducha e nos tours. */}
+      {!driving && !sheetOpen && !cameraOpen && !searchOpen && !guaraOpen && !showerRitual && !tipTour && !landmarkTalk && (
         <CameraFab onOpen={() => setCameraOpen(true)} />
       )}
-      {!driving && !sheetOpen && !cameraOpen && !searchOpen && !guaraOpen && !mapTourOpen && <NotifySoftPrompt ready={mapReady} />}
-      {!driving && !sheetOpen && !cameraOpen && !searchOpen && !guaraOpen && !mapTourOpen && (
+      {!driving && !sheetOpen && !cameraOpen && !searchOpen && !guaraOpen && !mapTourOpen && !showerRitual && !tipTour && !landmarkTalk && (
+        <NotifySoftPrompt ready={mapReady} />
+      )}
+      {!driving && !sheetOpen && !cameraOpen && !searchOpen && !guaraOpen && !mapTourOpen && !showerRitual && !tipTour && !landmarkTalk && (
         <LocationSoftPrompt
           ready={mapReady}
           forceOpen={locSoftForce}
@@ -1779,7 +1783,7 @@ function MapScreen({
       )}
       {!driving && !sheetOpen && !mapTourOpen && (
       <GuaraMapChat
-        hidden={cameraOpen || searchOpen}
+        hidden={cameraOpen || searchOpen || Boolean(showerRitual) || Boolean(tipTour) || Boolean(landmarkTalk)}
         beachInvite={beachInvite && !cameraOpen && !searchOpen}
         onOpenChange={setGuaraOpen}
         onAcceptBeach={showPraiaDoMorro}
@@ -1869,6 +1873,7 @@ function MapScreen({
           rootRef={mapRef}
           steps={MAP_STEPS}
           storageKey={MAP_TOUR_KEY}
+          paused={Boolean(showerRitual || tipTour || landmarkTalk)}
           onActiveChange={setMapTourOpen}
         />
       )}

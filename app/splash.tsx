@@ -1,11 +1,14 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { useEffect, useRef } from "react";
 
 /**
  * Splash simples e linda — horizonte, Guará e marca.
  * Só transform/opacity. Desmonta ao fim.
+ *
+ * Árvore DOM idêntica no SSR e no cliente — preferência de reduced-motion
+ * só altera os timers (lida no effect), nunca o markup.
  */
 
 const WARM_MS = 1400;
@@ -15,7 +18,6 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 export function SplashScreen({ onWarm, onDone }: { onWarm?: () => void; onDone: () => void }) {
   const doneRef = useRef(false);
   const warmRef = useRef(false);
-  const reduce = useReducedMotion();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -23,6 +25,9 @@ export function SplashScreen({ onWarm, onDone }: { onWarm?: () => void; onDone: 
     if (freeze !== null && freeze !== "" && !Number.isNaN(Number(freeze))) {
       return undefined;
     }
+
+    const reduce =
+      typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const timers: number[] = [];
 
@@ -44,24 +49,11 @@ export function SplashScreen({ onWarm, onDone }: { onWarm?: () => void; onDone: 
       onDone();
     };
 
-    if (reduce) {
-      timers.push(window.setTimeout(warm, 40));
-      timers.push(window.setTimeout(finish, 380));
-    } else {
-      timers.push(window.setTimeout(warm, WARM_MS));
-      timers.push(window.setTimeout(finish, DONE_MS));
-    }
+    timers.push(window.setTimeout(warm, reduce ? 40 : WARM_MS));
+    timers.push(window.setTimeout(finish, reduce ? 380 : DONE_MS));
 
     return () => timers.forEach((id) => window.clearTimeout(id));
-  }, [onDone, onWarm, reduce]);
-
-  if (reduce) {
-    return (
-      <div className="sx-splash" role="img" aria-label="Abrindo Praia Alerta Guará">
-        <div className="sx-wash" />
-      </div>
-    );
-  }
+  }, [onDone, onWarm]);
 
   return (
     <motion.div
