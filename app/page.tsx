@@ -68,6 +68,7 @@ import { LocationSoftPrompt } from "./location-soft-prompt";
 import { RouteActionsProvider, RouteChoice } from "./route-choice";
 import { MARLIN_TOUR_SPEAK, MARLIN_TOUR_STEPS, useOrlaSentinel, type OrlaAlert } from "./orla-sentinel";
 import { RAMPA_PRINCIPAL, RAMPA_RULE, RAMPA_WARN, findRamp, isRampId } from "./rampas";
+import { MURO_TALK_SPEAK, MURO_TALK_SUBTITLE, MURO_TALK_TEXT, MURO_TALK_TITLE } from "./orla-muro";
 import { speakGuara, stopSpeaking } from "./voice";
 import { NavDrive } from "./nav-drive";
 import { MissionModal, MissionTrigger } from "./mission-modal";
@@ -817,6 +818,14 @@ type TipTourState = {
   onDone?: () => void;
 };
 
+const MURO_TOUR_STEPS: GuaraTipStep[] = [
+  {
+    kind: "aviso",
+    title: "Para-peito",
+    text: MURO_TALK_TEXT,
+  },
+];
+
 const RAMP_TOUR_STEPS: GuaraTipStep[] = [
   {
     kind: "aviso",
@@ -1300,6 +1309,24 @@ function MapScreen({
     [onDismissRamp, rampAlert, rampAlertId],
   );
 
+  const openMuroTalk = useCallback(() => {
+    setCoach(false);
+    setLandmarkTalkId(null);
+    setShowerRitual(null);
+    setRampTalk(false);
+    setSheetId(null);
+    setTipTour({
+      key: "muro",
+      title: MURO_TALK_TITLE,
+      subtitle: MURO_TALK_SUBTITLE,
+      steps: MURO_TOUR_STEPS,
+      speak: MURO_TALK_SPEAK,
+      accent: "amber",
+      step: 0,
+    });
+    speakGuara(MURO_TALK_SPEAK);
+  }, []);
+
   const openShowerRitual = useCallback((id: string, withFly = true, instant = false) => {
     const shower = findShower(id) ?? SHOWERS[0];
     setCoach(false);
@@ -1479,6 +1506,7 @@ function MapScreen({
               setRampTalk(true);
               openRampTour(false, false, id);
             }}
+            onMuroTap={openMuroTalk}
             onClear={() => {
               setOpenId(null);
               setTipTour(null);

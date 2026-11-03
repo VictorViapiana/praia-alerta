@@ -100,3 +100,9 @@ export const MURO_SUL_ATE_Q1: Array<[number, number]> = [
 ];
 
 export const MURO_SUL_NOTE = "Muro da orla no trecho sul — do começo da praia até o Quiosque 01.";
+
+export const MURO_TALK_TITLE = "Para-peito da orla";
+export const MURO_TALK_SUBTITLE = "Trecho sul · até o Quiosque 01";
+export const MURO_TALK_TEXT =
+  "Esse é o para-peito da Praia do Morro, por aqui não dá para acessar a areia!";
+export const MURO_TALK_SPEAK = MURO_TALK_TEXT;
