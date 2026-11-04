@@ -1067,7 +1067,7 @@ export const SALVA_VIDAS: OrlaLandmark = {
 export const ACADEMIA_ORLA: OrlaLandmark = {
   id: "academia-orla",
   name: "Academia da Orla",
-  short: "Treino",
+  short: "Academia",
   detail: "Aparelhos no calçadão · perto do Quiosque 17",
   lat: -20.653159,
   lng: -40.484793,

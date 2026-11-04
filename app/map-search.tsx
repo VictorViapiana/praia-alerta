@@ -240,7 +240,7 @@ function resultsFor(
               park: "Parque",
               banheiro: "Banheiro",
               esporte: "Esporte",
-              academia: "Treino",
+              academia: "Academia",
               praca: "Praça",
               acesso: "Acesso",
               abrigo: "Bancos",

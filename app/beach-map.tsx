@@ -824,7 +824,7 @@ const LANDMARK_BOX: Record<LandmarkTone, number> = {
   abrigo: 28,
   praca: 28,
   playground: 28,
-  academia: 22,
+  academia: 28,
   banheiro: 40,
   esporte: 40,
   salva: 40,
@@ -857,35 +857,19 @@ function CourtMark() {
   );
 }
 
-/** Barra cromada + sol da orla — pin pequeno, distinto dos quiosques. */
+/** Halter clássico — legível no pin pequeno: dá pra ler “academia” de longe. */
 function AcademiaMark() {
   return (
-    <svg viewBox="0 0 32 32" className="h-[18px] w-[18px]" aria-hidden>
-      <defs>
-        <linearGradient id="pa-academia-bar" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#fef3c7" />
-          <stop offset="45%" stopColor="#f59e0b" />
-          <stop offset="100%" stopColor="#b45309" />
-        </linearGradient>
-        <radialGradient id="pa-academia-sun" cx="50%" cy="40%" r="55%">
-          <stop offset="0%" stopColor="#fff7ed" />
-          <stop offset="55%" stopColor="#fbbf24" />
-          <stop offset="100%" stopColor="#ea580c" />
-        </radialGradient>
-      </defs>
-      <circle cx="16" cy="11" r="7.2" fill="url(#pa-academia-sun)" opacity="0.95" />
-      <path d="M6.2 22.5h19.6" stroke="url(#pa-academia-bar)" strokeWidth="2.4" strokeLinecap="round" />
-      <path d="M9 14.2v8.6M23 14.2v8.6" stroke="url(#pa-academia-bar)" strokeWidth="2.1" strokeLinecap="round" />
-      <path d="M11.2 17.4h9.6" stroke="#78350f" strokeWidth="1.35" strokeLinecap="round" opacity="0.85" />
-      <circle cx="9" cy="13.2" r="1.55" fill="#fef3c7" stroke="#92400e" strokeWidth="0.7" />
-      <circle cx="23" cy="13.2" r="1.55" fill="#fef3c7" stroke="#92400e" strokeWidth="0.7" />
-      <path
-        d="M13.4 20.2c.7-2.4 4.5-2.4 5.2 0"
-        fill="none"
-        stroke="#7c2d12"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-      />
+    <svg viewBox="0 0 32 32" className="h-[22px] w-[22px]" aria-hidden>
+      {/* pesos esquerdos */}
+      <rect x="2.2" y="9.2" width="4.2" height="13.6" rx="1.4" fill="#9a3412" />
+      <rect x="5.2" y="11.2" width="3.2" height="9.6" rx="1.1" fill="#c2410c" />
+      {/* barra */}
+      <rect x="7.8" y="14.2" width="16.4" height="3.6" rx="1.8" fill="#7c2d12" />
+      <rect x="9.2" y="14.85" width="13.6" height="1.1" rx="0.55" fill="#fdba74" opacity="0.85" />
+      {/* pesos direitos */}
+      <rect x="23.6" y="11.2" width="3.2" height="9.6" rx="1.1" fill="#c2410c" />
+      <rect x="25.6" y="9.2" width="4.2" height="13.6" rx="1.4" fill="#9a3412" />
     </svg>
   );
 }
@@ -997,7 +981,7 @@ function AcademiaPin({
   onSelect: () => void;
 }) {
   return (
-    <div className={`relative h-[22px] w-[22px] ${selected ? "pin-focus" : ""}`}>
+    <div className={`relative h-7 w-7 ${selected ? "pin-focus" : ""}`}>
       {selected && <span className="pin-focus-ring" aria-hidden />}
       {selected && (
         <div className="absolute bottom-[calc(100%+6px)] left-1/2 z-30 w-[210px] -translate-x-1/2">
@@ -1018,14 +1002,13 @@ function AcademiaPin({
           event.stopPropagation();
           onSelect();
         }}
-        className={`relative grid h-[22px] w-[22px] place-items-center overflow-hidden rounded-full border border-[#b45309] bg-gradient-to-b from-[#fff7ed] to-[#fdba74] shadow-[0_3px_8px_rgba(180,83,9,0.45),inset_0_1px_0_rgba(255,255,255,0.75)] ${selected ? "ring-2 ring-amber-200 scale-110" : ""}`}
+        className={`relative grid h-7 w-7 place-items-center overflow-hidden rounded-full border-2 border-[#9a3412] bg-white shadow-[0_4px_10px_rgba(154,52,18,0.4)] ${selected ? "ring-2 ring-amber-200 scale-110" : ""}`}
         style={selected ? { animation: "pa-academia-pulse 1.6s ease-in-out infinite" } : undefined}
       >
-        <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.7),transparent_55%)]" />
         <AcademiaMark />
       </button>
       <span
-        className="pointer-events-none absolute top-full left-1/2 mt-0.5 -translate-x-1/2 whitespace-nowrap text-[8px] font-extrabold uppercase tracking-[0.08em] text-[#92400e]"
+        className="pointer-events-none absolute top-full left-1/2 mt-0.5 -translate-x-1/2 whitespace-nowrap text-[9px] font-extrabold leading-none text-[#9a3412]"
         style={{ textShadow: "0 0 3px #fff, 0 0 6px #fff, 1px 0 0 #fff, -1px 0 0 #fff, 0 1px 0 #fff, 0 -1px 0 #fff" }}
       >
         {landmark.short}
