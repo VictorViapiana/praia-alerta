@@ -206,6 +206,15 @@ function cx(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(" ");
 }
 
+/** Pulso ao completar SOS (Android/Chrome; iOS Safari não expõe Vibration API). */
+function pulseEmergency() {
+  try {
+    navigator.vibrate?.([45, 35, 70, 40, 120]);
+  } catch {
+    /* WebView pode rejeitar */
+  }
+}
+
 function speakPortuguese(text: string, onEnd: () => void) {
   speakGuara(text, onEnd);
 }
@@ -724,7 +733,7 @@ function MapSos({ onTrigger, parked = false }: { onTrigger: () => void; parked?:
       if (next >= 1) {
         frame.current = 0;
         origin.current = null;
-        navigator.vibrate?.(28);
+        pulseEmergency();
         onTrigger();
         setProgress(0);
         return;
@@ -2183,7 +2192,7 @@ function SosSlider({ onTrigger }: { onTrigger: () => void }) {
     if (limit > 0 && x.get() >= limit * 0.9) {
       triggered.current = true;
       void animate(x, limit, { type: "spring", stiffness: 520, damping: 32 });
-      navigator.vibrate?.(28);
+      pulseEmergency();
       onTrigger();
       return;
     }
