@@ -3,10 +3,12 @@ import { Linking, Pressable, StyleSheet, Text, TextInput, View } from "react-nat
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import * as Location from "expo-location";
 import { GuaraPose } from "../components/guara/GuaraPose";
 import { useApp } from "../context/AppContext";
 import type { RootStackParamList } from "../navigation/types";
 import { pulseEmergency } from "../utils/haptics";
+import { pushOrlaNotice } from "../data/orla-notify";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Sos">;
 
@@ -14,11 +16,35 @@ export function SosScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const { closeSos } = useApp();
   const [sent, setSent] = useState(false);
+  const [calling, setCalling] = useState(false);
   const [note, setNote] = useState("");
+  const [attached, setAttached] = useState(false);
+  const [coords, setCoords] = useState("Localizando…");
+  const [protocol, setProtocol] = useState("");
 
   useEffect(() => {
     void pulseEmergency();
-    const id = setTimeout(() => setSent(true), 1100);
+    void (async () => {
+      try {
+        const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+        const { latitude, longitude } = pos.coords;
+        setCoords(`${Math.abs(latitude).toFixed(3)}° ${latitude < 0 ? "S" : "N"} · ${Math.abs(longitude).toFixed(3)}° ${longitude < 0 ? "W" : "E"}`);
+      } catch {
+        setCoords("20.671° S · 40.497° W");
+      }
+    })();
+    const id = setTimeout(() => {
+      setSent(true);
+      setProtocol(`SOS-${String(Date.now()).slice(-6)}`);
+      void pushOrlaNotice({
+        title: "Emergência na orla",
+        body: "Um alerta crítico foi acionado no Praia Alerta Guará.",
+        tag: "sos",
+        spot: "sos",
+        kind: "rampa",
+        renotify: true,
+      });
+    }, 1100);
     return () => clearTimeout(id);
   }, []);
 
@@ -40,7 +66,8 @@ export function SosScreen({ navigation }: Props) {
             ? "A equipe do Praia Alerta Guará foi notificada. Fique visível e aguarde o posto."
             : "Confirmando o ponto na areia antes de avisar o salva-vidas."}
         </Text>
-        <Text style={styles.coords}>20.671° S · 40.497° W</Text>
+        <Text style={styles.coords}>{coords}</Text>
+        {sent && protocol ? <Text style={styles.protocol}>{protocol}</Text> : null}
 
         {sent && (
           <TextInput
@@ -50,14 +77,27 @@ export function SosScreen({ navigation }: Props) {
             placeholderTextColor="rgba(255,255,255,0.45)"
             multiline
             style={styles.note}
+            editable={!attached}
+            onSubmitEditing={() => {
+              if (note.trim()) setAttached(true);
+            }}
           />
         )}
+        {sent && !attached && note.trim() ? (
+          <Pressable style={styles.attach} onPress={() => setAttached(true)}>
+            <Text style={styles.attachText}>Anexar observação</Text>
+          </Pressable>
+        ) : null}
+        {attached ? <Text style={styles.attached}>Observação registrada no protocolo.</Text> : null}
 
         <Pressable
           style={styles.call}
-          onPress={() => void Linking.openURL("tel:193")}
+          onPress={() => {
+            setCalling(true);
+            void Linking.openURL("tel:193");
+          }}
         >
-          <Text style={styles.callText}>Ligar para o posto</Text>
+          <Text style={styles.callText}>{calling ? "Conectando ao posto…" : "Ligar para o posto"}</Text>
         </Pressable>
         <Pressable style={styles.cancel} onPress={dismiss}>
           <Text style={styles.cancelText}>Cancelar alerta</Text>
@@ -79,10 +119,36 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 18,
   },
-  eyebrow: { color: "rgba(255,255,255,0.8)", fontSize: 11, fontWeight: "700", letterSpacing: 3, textTransform: "uppercase" },
-  title: { marginTop: 8, color: "#fff", fontSize: 34, fontStyle: "italic", fontWeight: "700", textAlign: "center" },
-  copy: { marginTop: 12, color: "rgba(255,255,255,0.85)", textAlign: "center", maxWidth: 280, lineHeight: 20 },
-  coords: { marginTop: 12, color: "rgba(255,255,255,0.7)", fontFamily: "Courier", fontSize: 11, letterSpacing: 2 },
+  eyebrow: {
+    color: "rgba(255,255,255,0.8)",
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 3,
+    textTransform: "uppercase",
+  },
+  title: {
+    marginTop: 8,
+    color: "#fff",
+    fontSize: 34,
+    fontStyle: "italic",
+    fontWeight: "700",
+    textAlign: "center",
+  },
+  copy: {
+    marginTop: 12,
+    color: "rgba(255,255,255,0.85)",
+    textAlign: "center",
+    maxWidth: 280,
+    lineHeight: 20,
+  },
+  coords: {
+    marginTop: 12,
+    color: "rgba(255,255,255,0.7)",
+    fontFamily: "Courier",
+    fontSize: 11,
+    letterSpacing: 2,
+  },
+  protocol: { marginTop: 6, color: "#fecaca", fontWeight: "900", letterSpacing: 1 },
   note: {
     marginTop: 18,
     width: "100%",
@@ -95,6 +161,9 @@ const styles = StyleSheet.create({
     padding: 12,
     textAlignVertical: "top",
   },
+  attach: { marginTop: 8 },
+  attachText: { color: "#fff", fontWeight: "700", textDecorationLine: "underline" },
+  attached: { marginTop: 8, color: "rgba(255,255,255,0.75)", fontSize: 12 },
   call: {
     marginTop: 22,
     width: "100%",

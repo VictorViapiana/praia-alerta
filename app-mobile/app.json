@@ -49,6 +49,12 @@
         {
           "locationWhenInUsePermission": "Mostrar você no mapa da Praia do Morro."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#0284c7"
+        }
       ]
     ]
   }

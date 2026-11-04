@@ -22,17 +22,15 @@ Depois:
 cd app-mobile && npx expo start --android
 ```
 
-## O que você vai ver
+## O que você vai ver (Fase 2.1)
 
-1. Splash do Guará  
-2. Home com cards (Maré, Clima, Criança, Alertas) + slider de Emergência  
-3. **Mapa híbrido** da Praia do Morro com:
-   - guarda-corpo (dupla polyline madeira + pilastras tracejadas)
-   - corredores das rampas
-   - pins (quiosques, duchas, ambulantes, landmarks, academia)
-   - filtros + camadas Sol/Maré
-   - hold SOS com **vibração nativa** (iOS e Android via `expo-haptics`)
-   - FAB do Guará
+1. Splash + onboarding do Guará  
+2. Home com Q&A, Nossa Missão, cards e SOS  
+3. **Mapa híbrido** com muro, rampas, pins, Sol/Maré, filtros  
+4. Ritual da ducha, tip tours, fichas de patrocinador  
+5. Rotas estilo Waze (preview, polyline, câmera, seta GPS)  
+6. Notificações da orla + soft prompts  
+7. SOS com coordenadas + criança perdida (wizard)
 
 ## Estrutura
 
