@@ -436,8 +436,19 @@ export function MapScreen({ navigation }: Props) {
         steps={app.tipTour?.steps ?? []}
         stepIndex={app.tipTour?.stepIndex ?? 0}
         accent={app.tipTour?.accent}
-        onNext={app.tipNext}
-        onClose={app.tipClose}
+        onNext={() => {
+          const cur = app.tipTour;
+          if (cur && cur.stepIndex >= cur.steps.length - 1) {
+            app.tipClose();
+            app.setSelectedId(null);
+            return;
+          }
+          app.tipNext();
+        }}
+        onClose={() => {
+          app.tipClose();
+          app.setSelectedId(null);
+        }}
       />
 
       <ShowerRitualModal
@@ -457,11 +468,12 @@ export function MapScreen({ navigation }: Props) {
         onAccept={() => {
           void writeLocationSoftChoice("accepted");
           setLocPrompt(false);
-          void Location.requestForegroundPermissionsAsync();
+          runLocate();
         }}
         onDecline={() => {
           void writeLocationSoftChoice("declined");
           setLocPrompt(false);
+          setLocateNote("Sem localização — toque de novo se mudar de ideia.");
         }}
       />
       <SoftPrompt
