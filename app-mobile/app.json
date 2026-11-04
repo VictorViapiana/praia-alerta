@@ -1,0 +1,55 @@
+{
+  "expo": {
+    "name": "Praia Alerta Guará",
+    "slug": "praia-alerta-guara",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "scheme": "praiaalerta",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0b2a48"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "br.com.praiaalerta.guara",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Usamos sua localização para mostrar você na orla da Praia do Morro e acionar emergência com precisão.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Usamos sua localização para avisos da orla e emergência.",
+        "UIBackgroundModes": ["location"]
+      }
+    },
+    "android": {
+      "package": "br.com.praiaalerta.guara",
+      "adaptiveIcon": {
+        "backgroundColor": "#0b2a48",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "VIBRATE",
+        "CALL_PHONE"
+      ],
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-font",
+      "expo-splash-screen",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Mostrar você no mapa da Praia do Morro."
+        }
+      ]
+    ]
+  }
+}
