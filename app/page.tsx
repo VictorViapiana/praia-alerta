@@ -735,7 +735,7 @@ function MapSos({ onTrigger, parked = false }: { onTrigger: () => void; parked?:
 
   return (
     <div
-      className="absolute left-3 z-[70]"
+      className="pa-no-callout absolute left-3 z-[70]"
       style={{
         top: parked
           ? "max(10.4rem, calc(env(safe-area-inset-top, 0px) + 8.6rem))"
@@ -749,6 +749,8 @@ function MapSos({ onTrigger, parked = false }: { onTrigger: () => void; parked?:
         onContextMenu={(event) => event.preventDefault()}
         onPointerDown={(event) => {
           if (event.button !== 0) return;
+          // Impede menu de seleção/copiar do iOS ao segurar.
+          event.preventDefault();
           origin.current = { x: event.clientX, y: event.clientY };
           event.currentTarget.setPointerCapture(event.pointerId);
           tick(performance.now());
@@ -762,9 +764,9 @@ function MapSos({ onTrigger, parked = false }: { onTrigger: () => void; parked?:
         }}
         onPointerUp={cancel}
         onPointerCancel={cancel}
-        className="relative grid h-14 w-14 place-items-center overflow-hidden rounded-full border border-red-100/30 bg-black/55 text-white shadow-[0_12px_28px_rgba(0,0,0,0.4)] backdrop-blur-md"
+        className="pa-no-callout relative grid h-14 w-14 place-items-center overflow-hidden rounded-full border border-red-100/30 bg-black/55 text-white shadow-[0_12px_28px_rgba(0,0,0,0.4)] backdrop-blur-md"
       >
-        <svg className="absolute inset-0 -rotate-90" viewBox="0 0 56 56" aria-hidden>
+        <svg className="pointer-events-none absolute inset-0 -rotate-90" viewBox="0 0 56 56" aria-hidden>
           <circle cx="28" cy="28" r="24" fill="none" stroke="rgba(255,255,255,0.16)" strokeWidth="3" />
           <circle
             cx="28"
@@ -786,7 +788,7 @@ function MapSos({ onTrigger, parked = false }: { onTrigger: () => void; parked?:
           className={`relative z-[1] h-10 w-10 ${progress > 0 ? "scale-110" : ""} transition-transform`}
         />
       </button>
-      <span className="mt-1 block text-center text-[9px] font-semibold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]">
+      <span className="pa-no-callout mt-1 block text-center text-[9px] font-semibold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]">
         {progress > 0 ? "Segure" : "Emergência"}
       </span>
     </div>

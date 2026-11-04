@@ -23,7 +23,8 @@ export function GuaraPose({ pose, className = "", alt = "", width, height, prior
       draggable={false}
       decoding={priority ? "sync" : "async"}
       loading={priority ? "eager" : "lazy"}
-      className={`pointer-events-none select-none object-contain ${className}`}
+      className={`pa-no-callout pointer-events-none select-none object-contain ${className}`}
+      style={{ WebkitTouchCallout: "none" }}
     />
   );
 }
