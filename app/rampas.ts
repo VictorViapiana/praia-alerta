@@ -75,8 +75,9 @@ function corridorAlongBearing(
     at(forwardM, -halfM),
     at(forwardM, halfM),
   ];
-  const markStart = Math.min(12, forwardM * 0.25);
-  const markEnd = forwardM - 2;
+  // Traço visível quase desde o pin até a ponta na areia/mar.
+  const markStart = Math.min(2, forwardM * 0.05);
+  const markEnd = forwardM - 1;
   const markHalf = halfM - 0.4;
   return {
     corridor,
@@ -105,10 +106,13 @@ const RAMP_BACK_M = 4;
 const RAMP_TO_SEA_M = 44;
 
 /**
- * Rampa norte: rumo ~155° (SSE) — calçadão → areia na diagonal da foto
- * (não reto N→S; alinhado à passagem real perto do costão).
+ * Rampa norte: do calçadão PARA O OCEANO (sudoeste ~225°).
+ * Na ponta do costão a orla corre NW–SE; o mar fica a SW do pin.
+ * 155° (SSE) ia ao longo da areia — errado. 180° (N→S) também não.
+ * Corredor longo (~88 m) pra atravessar a areia até a água.
  */
-const NORTE_BEARING_DEG = 155;
+const NORTE_BEARING_DEG = 225;
+const NORTE_TO_SEA_M = 88;
 
 const principalGeom = corridorNorthSouth(-20.652309, -40.478881, RAMP_HALF_M, RAMP_BACK_M, RAMP_TO_SEA_M);
 const norteGeom = corridorAlongBearing(
@@ -116,7 +120,7 @@ const norteGeom = corridorAlongBearing(
   -40.474761,
   RAMP_HALF_M,
   RAMP_BACK_M,
-  RAMP_TO_SEA_M,
+  NORTE_TO_SEA_M,
   NORTE_BEARING_DEG,
 );
 

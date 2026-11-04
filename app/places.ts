@@ -220,8 +220,9 @@ export const SHOWERS: ShowerSpot[] = [
     mapKind: "duchas",
     name: "Ducha",
     detail: "Calçadão · perto do Quiosque 09",
-    lat: -20.655521,
-    lng: -40.489546,
+    // Ao lado do Q09 (leste, na areia) — o "9" do pin fica livre.
+    lat: -20.65555,
+    lng: -40.4892,
   },
   {
     id: "q11",
