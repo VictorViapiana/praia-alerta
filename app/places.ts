@@ -220,10 +220,10 @@ export const SHOWERS: ShowerSpot[] = [
     mapKind: "duchas",
     name: "Ducha",
     detail: "Calçadão · perto do Quiosque 09",
-    // Base Google Maps (-20.655521, -40.489546); ~12 m a oeste/sudoeste
-    // pra o pin não cobrir o "9" do Quiosque — sem ir pro meio da areia.
-    lat: -20.65558,
-    lng: -40.48966,
+    // Real: Google Maps -20.655521,-40.489546 (~8 m do pin Q09).
+    // Offset mínimo a oeste (~8 m) só pra não cobrir o "9" — NUNCA a leste (areia).
+    lat: -20.65553,
+    lng: -40.48962,
   },
   {
     id: "q11",
