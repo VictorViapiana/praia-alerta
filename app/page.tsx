@@ -32,6 +32,9 @@ import { FlagsLink, FotosScreen, LiveClima, LiveMare, MarlinScreen, OrlaCards, F
 import {
   AMBULANTES,
   findShower,
+  ACADEMIA_ORLA,
+  ACADEMIA_TOUR_SPEAK,
+  ACADEMIA_TOUR_STEPS,
   GOLFINHO,
   isShowerId,
   landmarkById,
@@ -1284,6 +1287,30 @@ function MapScreen({
     });
   }, []);
 
+  const openAcademiaTour = useCallback((withFly = true, instant = false) => {
+    setCoach(false);
+    setFilter("neutro");
+    setQuery("");
+    setSheetId(null);
+    setRampTalk(false);
+    setLandmarkTalkId(null);
+    setShowerRitual(null);
+    setOpenId(ACADEMIA_ORLA.id);
+    if (withFly) {
+      setFlyTo({ id: Date.now(), lat: ACADEMIA_ORLA.lat, lng: ACADEMIA_ORLA.lng, zoom: 18, instant });
+    }
+    setTipTour({
+      key: "academia-orla",
+      title: ACADEMIA_ORLA.name,
+      subtitle: "Treino no calçadão · preserve o ferro da praia",
+      steps: ACADEMIA_TOUR_STEPS,
+      speak: ACADEMIA_TOUR_SPEAK,
+      accent: "amber",
+      step: 0,
+    });
+    speakGuara(ACADEMIA_TOUR_SPEAK);
+  }, []);
+
   const openRampTour = useCallback(
     (forced = false, instant = false, rampId?: string | null) => {
       const ramp = findRamp(rampId) ?? findRamp(rampAlertId) ?? RAMPA_PRINCIPAL;
@@ -1362,7 +1389,9 @@ function MapScreen({
     // Entrada por notificação / deep link: ícone já selecionado de cara.
     if (focusSpot === MARLIN.id || focusSpot === "marlin") openMarlinTour(true, true);
     else if (focusSpot === GOLFINHO.id || focusSpot === "golfinho") openGolfinhoTour(true, true);
-    else if (isRampId(focusSpot)) {
+    else if (focusSpot === ACADEMIA_ORLA.id || focusSpot === "academia" || focusSpot === "treino") {
+      openAcademiaTour(true, true);
+    } else if (isRampId(focusSpot)) {
       setRampTalk(true);
       openRampTour(true, true, focusSpot === "rampa" ? RAMPA_PRINCIPAL.id : focusSpot);
     } else if (isShowerId(focusSpot)) {
@@ -1373,6 +1402,7 @@ function MapScreen({
     focusSpot,
     focusNonce,
     onFocusSpotHandled,
+    openAcademiaTour,
     openGolfinhoTour,
     openMarlinTour,
     openQuiosqueFocus,
@@ -1398,6 +1428,10 @@ function MapScreen({
     }
     if (mark.placeId === GOLFINHO.id) {
       openGolfinhoTour(false);
+      return;
+    }
+    if (mark.placeId === ACADEMIA_ORLA.id) {
+      openAcademiaTour(false);
       return;
     }
     if (mark.placeId && isShowerId(mark.placeId)) {
@@ -1466,6 +1500,10 @@ function MapScreen({
               }
               if (id === GOLFINHO.id) {
                 openGolfinhoTour(false);
+                return;
+              }
+              if (id === ACADEMIA_ORLA.id) {
+                openAcademiaTour(false);
                 return;
               }
               if (isShowerId(id)) {
@@ -1652,7 +1690,7 @@ function MapScreen({
         />
       )}
 
-      {!driving && !tipTour && !showerRitual && landmarkTalk && landmarkTalk.id !== GOLFINHO.id && !cameraOpen && !searchOpen && (
+      {!driving && !tipTour && !showerRitual && landmarkTalk && landmarkTalk.id !== GOLFINHO.id && landmarkTalk.id !== ACADEMIA_ORLA.id && !cameraOpen && !searchOpen && (
         <motion.div
           role="dialog"
           aria-label={landmarkTalk.name}
@@ -1672,6 +1710,7 @@ function MapScreen({
                     park: "Parque",
                     banheiro: "Banheiro",
                     esporte: "Esporte",
+                    academia: "Academia",
                     praca: "Praça",
                     acesso: "Acesso",
                     abrigo: "Bancos",
@@ -1825,6 +1864,7 @@ function MapScreen({
           if (guide.openId !== undefined) {
             if (guide.openId === MARLIN.id) openMarlinTour(true);
             else if (guide.openId === GOLFINHO.id) openGolfinhoTour(true);
+            else if (guide.openId === ACADEMIA_ORLA.id) openAcademiaTour(true);
             else if (guide.openId && isShowerId(guide.openId)) openShowerRitual(guide.openId, true, false);
             else if (landmarkById(guide.openId)) {
               setOpenId(guide.openId);

@@ -403,6 +403,18 @@ body[data-pa-surface="sheet"] {
   will-change: transform;
 }
 
+@keyframes pa-academia-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0 rgba(245, 158, 11, 0));
+  }
+  50% {
+    transform: scale(1.08);
+    filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.65));
+  }
+}
+
 .pin-focus-ring {
   position: absolute;
   inset: -5px;
@@ -444,6 +456,9 @@ body[data-pa-surface="sheet"] {
   .pin-focus-ring,
   .pin-alert {
     animation: none;
+  }
+  button[style*="pa-academia-pulse"] {
+    animation: none !important;
   }
 }
 

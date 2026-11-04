@@ -1,5 +1,6 @@
 import { fold, type TideNow, type WeatherNow } from "./coast";
 import {
+  ACADEMIA_ORLA,
   AMBULANTES,
   ARENA_03,
   BANCOS_MARLIN,
@@ -329,34 +330,23 @@ export function answerGuara(raw: string, live: GuaraLive = { tide: null, weather
   if (has(text, "agua de coco", "coco")) return { answer: "Água de coco não está na areia neste momento. Na faixa, agora, eu vejo milho, picolé, açaí e caldo de cana." };
   if (has(text, "pastel")) return { answer: "O Pastel do Morro ainda não entra no mapa. Só aparecem os ambulantes que estão na areia." };
 
-  if (has(text, "ducha sul", "chuveiro sul")) {
-    const shower = findShower("sul") ?? SHOWERS[0];
+  if (has(text, "academia", "exercicio", "exercícios", "treino", "musculacao", "musculação", "calistenia", "aparelho")) {
     return {
-      answer: "A Ducha Sul fica no calçadão, no trecho sul. Para ligar, use moeda de 1 real.",
-      filter: "duchas",
+      answer:
+        "A Academia da Orla fica no calçadão, perto do Quiosque 17. Aparelhos de ferro sob o sol — um de cada vez, sem forçar, sem varal e sem lixo. Te levo até lá.",
+      filter: "neutro",
       query: "",
-      fly: { lat: shower.lat, lng: shower.lng },
-      openId: shower.id,
+      fly: { lat: ACADEMIA_ORLA.lat, lng: ACADEMIA_ORLA.lng },
+      openId: ACADEMIA_ORLA.id,
       sheet: null,
-      route: { id: shower.id, lat: shower.lat, lng: shower.lng, name: shower.name },
+      route: { id: ACADEMIA_ORLA.id, lat: ACADEMIA_ORLA.lat, lng: ACADEMIA_ORLA.lng, name: ACADEMIA_ORLA.name },
     };
   }
-  if (has(text, "ducha muro", "ducha do muro", "chuveiro muro")) {
+
+  if (has(text, "ducha muro", "ducha do muro", "chuveiro muro", "ducha quiosque 03", "ducha q03")) {
     const shower = findShower("muro") ?? SHOWERS[0];
     return {
       answer: "A Ducha fica na Beira Mar, perto do Quiosque 03. Para ligar, use moeda de 1 real.",
-      filter: "duchas",
-      query: "",
-      fly: { lat: shower.lat, lng: shower.lng },
-      openId: shower.id,
-      sheet: null,
-      route: { id: shower.id, lat: shower.lat, lng: shower.lng, name: shower.name },
-    };
-  }
-  if (has(text, "ducha norte", "chuveiro norte")) {
-    const shower = findShower("norte") ?? SHOWERS[0];
-    return {
-      answer: "A Ducha Norte fica no calçadão, no meio da orla. Para ligar, use moeda de 1 real.",
       filter: "duchas",
       query: "",
       fly: { lat: shower.lat, lng: shower.lng },
@@ -377,11 +367,34 @@ export function answerGuara(raw: string, live: GuaraLive = { tide: null, weather
       route: { id: shower.id, lat: shower.lat, lng: shower.lng, name: shower.name },
     };
   }
-  if (has(text, "ducha", "chuveiro", "moeda")) {
-    const shower = findShower("costao") ?? SHOWERS[0];
+  if (has(text, "ducha sul", "chuveiro sul")) {
+    const shower = findShower("muro") ?? SHOWERS[0];
     return {
-      answer:
-        "São quatro duchas na orla: Sul, Beira Mar, Norte e a perto do costão. Em todas, use moeda de 1 real. Não force, não piche e não quebre. Te levo até a Ducha.",
+      answer: "No trecho sul, a ducha fica na Beira Mar perto do Quiosque 03. Para ligar, use moeda de 1 real.",
+      filter: "duchas",
+      query: "",
+      fly: { lat: shower.lat, lng: shower.lng },
+      openId: shower.id,
+      sheet: null,
+      route: { id: shower.id, lat: shower.lat, lng: shower.lng, name: shower.name },
+    };
+  }
+  if (has(text, "ducha norte", "chuveiro norte")) {
+    const shower = findShower("q20") ?? SHOWERS[0];
+    return {
+      answer: "No meio da orla, tem ducha no calçadão perto do Quiosque 20. Para ligar, use moeda de 1 real.",
+      filter: "duchas",
+      query: "",
+      fly: { lat: shower.lat, lng: shower.lng },
+      openId: shower.id,
+      sheet: null,
+      route: { id: shower.id, lat: shower.lat, lng: shower.lng, name: shower.name },
+    };
+  }
+  if (has(text, "ducha", "chuveiro", "moeda")) {
+    const shower = findShower("q17") ?? SHOWERS[0];
+    return {
+      answer: `Tem ${SHOWERS.length} duchas no calçadão, da Beira Mar até o costão. Em todas, use moeda de 1 real. Não force, não piche e não quebre. Te levo até a mais próxima do Quiosque 17.`,
       filter: "duchas",
       query: "",
       fly: { lat: shower.lat, lng: shower.lng },

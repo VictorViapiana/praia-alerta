@@ -194,8 +194,11 @@ export const SHOWER_RITUAL_STEPS = [
 export const SHOWER_SPEAK =
   "Nas duchas da Praia do Morro use moeda de 1 real. Não force a máquina, não piche e não quebre. Um de cada vez.";
 
+/**
+ * Duchas públicas da orla — só coords Google Maps (nenhuma posição inventada).
+ * Sul → norte ao longo da Av. Beira Mar / calçadão.
+ */
 export const SHOWERS: ShowerSpot[] = [
-  { id: "sul", mapKind: "duchas", name: "Ducha Sul", detail: "Calçadão · trecho sul", lat: -20.657464, lng: -40.492163 },
   {
     id: "muro",
     mapKind: "duchas",
@@ -204,14 +207,85 @@ export const SHOWERS: ShowerSpot[] = [
     lat: -20.658498,
     lng: -40.493471,
   },
-  { id: "norte", mapKind: "duchas", name: "Ducha Norte", detail: "Calçadão · meio da orla", lat: -20.652662, lng: -40.483176 },
+  {
+    id: "q06",
+    mapKind: "duchas",
+    name: "Ducha",
+    detail: "Calçadão · perto do Quiosque 06",
+    lat: -20.656579,
+    lng: -40.491082,
+  },
+  {
+    id: "q09",
+    mapKind: "duchas",
+    name: "Ducha",
+    detail: "Calçadão · perto do Quiosque 09",
+    lat: -20.655521,
+    lng: -40.489546,
+  },
+  {
+    id: "q11",
+    mapKind: "duchas",
+    name: "Ducha",
+    detail: "Calçadão · perto do Quiosque 11",
+    lat: -20.654757,
+    lng: -40.488111,
+  },
+  {
+    id: "q14",
+    mapKind: "duchas",
+    name: "Ducha",
+    detail: "Calçadão · perto do Quiosque 14",
+    lat: -20.653898,
+    lng: -40.486285,
+  },
+  {
+    id: "q17",
+    mapKind: "duchas",
+    name: "Ducha",
+    detail: "Calçadão · perto do Quiosque 17",
+    lat: -20.653077,
+    lng: -40.484335,
+  },
+  {
+    id: "q20",
+    mapKind: "duchas",
+    name: "Ducha",
+    detail: "Calçadão · perto do Quiosque 20",
+    lat: -20.65262,
+    lng: -40.482817,
+  },
+  {
+    id: "bv",
+    mapKind: "duchas",
+    name: "Ducha",
+    detail: "Calçadão · perto do Banheiro V",
+    lat: -20.652294,
+    lng: -40.480377,
+  },
+  {
+    id: "q24",
+    mapKind: "duchas",
+    name: "Ducha",
+    detail: "Calçadão · perto do Quiosque 24",
+    lat: -20.652522,
+    lng: -40.477927,
+  },
+  {
+    id: "q25",
+    mapKind: "duchas",
+    name: "Ducha",
+    detail: "Calçadão · perto do Quiosque 25",
+    lat: -20.652687,
+    lng: -40.476968,
+  },
   {
     id: "costao",
     mapKind: "duchas",
     name: "Ducha",
     detail: "Av. Beira Mar · perto do costão",
-    lat: -20.653104,
-    lng: -40.475772,
+    lat: -20.653095,
+    lng: -40.475793,
   },
 ];
 
@@ -638,6 +712,7 @@ export type LandmarkTone =
   | "park"
   | "banheiro"
   | "esporte"
+  | "academia"
   | "praca"
   | "acesso"
   | "abrigo"
@@ -984,6 +1059,52 @@ export const SALVA_VIDAS: OrlaLandmark = {
   search: "salva vidas salva-vidas posto guarda bombeiro resgate bandeira",
 };
 
+/**
+ * Academia ao ar livre no calçadão, perto do Quiosque 17 (coords Google Maps).
+ * Ícone próprio, menor que quiosque — toque abre o Guará com dicas de uso e convivência.
+ */
+export const ACADEMIA_ORLA: OrlaLandmark = {
+  id: "academia-orla",
+  name: "Academia da Orla",
+  short: "Treino",
+  detail: "Aparelhos no calçadão · perto do Quiosque 17",
+  lat: -20.653159,
+  lng: -40.484793,
+  tone: "academia",
+  cover: "/guarapari/academia-orla.jpg",
+  tips: [
+    {
+      kind: "alerta",
+      title: "Aço + sal = cuidado",
+      text: "O equipamento é público e já enfrenta sol e maresia. Não force, não balance com peso extra e não use como brinquedo — um puxão bruto quebra o aparelho para todo mundo.",
+    },
+    {
+      kind: "alerta",
+      title: "Sol a pino",
+      text: "Não tem sombra no aparelho. Hidrate, use protetor e faça pausa. Se a cabeça girar, pare — a orla espera você vivo, não “zerado”.",
+    },
+    {
+      kind: "convivencia",
+      title: "Um aparelho, uma pessoa",
+      text: "Espere a vez, faça sua série e liberte. Não reserve máquina com toalha, bolsa ou chinelo enquanto toma água no quiosque.",
+    },
+    {
+      kind: "convivencia",
+      title: "Não é varal nem bicicletário",
+      text: "Não pendure roupa, cooler nem bike no ferro. Não escreva, não risque e não deixe lixo sob o aparelho.",
+    },
+    {
+      kind: "convivencia",
+      title: "Criança com adulto",
+      text: "Os aparelhos não são playground. Criança só com responsável por perto — e sem subir no topo da barra.",
+    },
+  ],
+  speak:
+    "Academia da Orla, no calçadão perto do Quiosque 17. Use com cuidado: o aço enfrenta sol e sal. Um de cada vez, sem forçar, sem varal, sem lixo. Criança só com adulto. Treino bom é treino que deixa o aparelho intacto para o próximo.",
+  search:
+    "academia academia da orla exercicio exercícios treino musculação barra calistenia aparelho fitness ginástica ao ar livre quiosque 17",
+};
+
 /** Estátua do Golfinho no largo do costão, ao lado do píer (coords Google Maps). */
 export const GOLFINHO: OrlaLandmark = {
   id: "golfinho",
@@ -1029,6 +1150,7 @@ export const ORLA_LANDMARKS: OrlaLandmark[] = [
   BANHEIRO_VI,
   ARENA_03,
   QUADRA_AREIA,
+  ACADEMIA_ORLA,
   BANCOS_MARLIN,
   BANCOS_NORTE,
   PLAYGROUND,
@@ -1038,6 +1160,14 @@ export const ORLA_LANDMARKS: OrlaLandmark[] = [
   GOLFINHO,
   PARQUE_PESCARIA,
 ];
+
+/** Passos do Guará no toque da academia (mesmo conteúdo das tips, ritmo de tour). */
+export const ACADEMIA_TOUR_STEPS = ACADEMIA_ORLA.tips.map((tip) => ({
+  title: tip.title,
+  text: tip.text,
+  kind: tip.kind,
+}));
+export const ACADEMIA_TOUR_SPEAK = ACADEMIA_ORLA.speak;
 
 export function landmarkById(id: string | null | undefined) {
   if (!id) return null;

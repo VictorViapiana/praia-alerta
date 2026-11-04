@@ -476,23 +476,28 @@ function ShowerPin({
   faded,
   selected = false,
   alert = false,
+  showLabel = false,
   onSelect,
 }: {
   name: string;
   faded: boolean;
   selected?: boolean;
   alert?: boolean;
+  /** Com muitas duchas, o rótulo só aparece no foco / filtro. */
+  showLabel?: boolean;
   onSelect?: () => void;
 }) {
   return (
     <div
-      className={`relative h-6 w-6 ${selected ? "pin-focus" : ""} ${alert ? "pin-alert rounded-full" : ""}`}
+      className={`relative h-5 w-5 ${selected ? "pin-focus" : ""} ${alert ? "pin-alert rounded-full" : ""}`}
       style={{ opacity: faded ? 0.28 : 1 }}
     >
       {selected && <span className="pin-focus-ring" aria-hidden />}
-      <span className="absolute bottom-full left-1/2 mb-1 block w-max max-w-[10.5rem] -translate-x-1/2 truncate rounded-full border border-white bg-white px-2 py-1 text-center text-[12px] font-bold leading-none tracking-normal text-[#3c2a18] shadow-[0_2px_8px_rgba(0,0,0,0.55)]">
-        {name}
-      </span>
+      {(selected || showLabel) && (
+        <span className="absolute bottom-full left-1/2 mb-1 block w-max max-w-[10.5rem] -translate-x-1/2 truncate rounded-full border border-white bg-white px-2 py-1 text-center text-[11px] font-bold leading-none tracking-normal text-[#3c2a18] shadow-[0_2px_8px_rgba(0,0,0,0.55)]">
+          {name}
+        </span>
+      )}
       <button
         type="button"
         aria-label={name}
@@ -502,9 +507,9 @@ function ShowerPin({
           event.stopPropagation();
           onSelect?.();
         }}
-        className={`grid h-6 w-6 place-items-center rounded-full border-2 border-white bg-white text-[#0284c7] shadow-[0_0_0_1px_rgba(0,0,0,0.45),0_6px_12px_rgba(0,0,0,0.55)] ${selected ? "ring-2 ring-sky-200" : ""} ${alert ? "ring-2 ring-cyan-300" : ""}`}
+        className={`grid h-5 w-5 place-items-center rounded-full border-2 border-white bg-gradient-to-b from-sky-50 to-sky-200 text-[#0284c7] shadow-[0_0_0_1px_rgba(0,0,0,0.4),0_4px_10px_rgba(2,132,199,0.45)] ${selected ? "ring-2 ring-sky-200" : ""} ${alert ? "ring-2 ring-cyan-300" : ""}`}
       >
-        <ShowerHead className="h-3 w-3" strokeWidth={2.2} />
+        <ShowerHead className="h-2.5 w-2.5" strokeWidth={2.4} />
       </button>
     </div>
   );
@@ -750,6 +755,15 @@ const LANDMARK_STYLE = {
     iconBg: "from-orange-400 to-amber-800",
     Icon: null,
   },
+  academia: {
+    border: "border-[#b45309]",
+    ring: "ring-amber-200",
+    bubble: "border-amber-100",
+    title: "text-[#78350f]",
+    label: "text-[#92400e]",
+    iconBg: "from-amber-300 to-orange-700",
+    Icon: null,
+  },
   praca: {
     border: "border-[#7c3aed]",
     ring: "ring-violet-200",
@@ -810,6 +824,7 @@ const LANDMARK_BOX: Record<LandmarkTone, number> = {
   abrigo: 28,
   praca: 28,
   playground: 28,
+  academia: 22,
   banheiro: 40,
   esporte: 40,
   salva: 40,
@@ -842,6 +857,39 @@ function CourtMark() {
   );
 }
 
+/** Barra cromada + sol da orla — pin pequeno, distinto dos quiosques. */
+function AcademiaMark() {
+  return (
+    <svg viewBox="0 0 32 32" className="h-[18px] w-[18px]" aria-hidden>
+      <defs>
+        <linearGradient id="pa-academia-bar" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#fef3c7" />
+          <stop offset="45%" stopColor="#f59e0b" />
+          <stop offset="100%" stopColor="#b45309" />
+        </linearGradient>
+        <radialGradient id="pa-academia-sun" cx="50%" cy="40%" r="55%">
+          <stop offset="0%" stopColor="#fff7ed" />
+          <stop offset="55%" stopColor="#fbbf24" />
+          <stop offset="100%" stopColor="#ea580c" />
+        </radialGradient>
+      </defs>
+      <circle cx="16" cy="11" r="7.2" fill="url(#pa-academia-sun)" opacity="0.95" />
+      <path d="M6.2 22.5h19.6" stroke="url(#pa-academia-bar)" strokeWidth="2.4" strokeLinecap="round" />
+      <path d="M9 14.2v8.6M23 14.2v8.6" stroke="url(#pa-academia-bar)" strokeWidth="2.1" strokeLinecap="round" />
+      <path d="M11.2 17.4h9.6" stroke="#78350f" strokeWidth="1.35" strokeLinecap="round" opacity="0.85" />
+      <circle cx="9" cy="13.2" r="1.55" fill="#fef3c7" stroke="#92400e" strokeWidth="0.7" />
+      <circle cx="23" cy="13.2" r="1.55" fill="#fef3c7" stroke="#92400e" strokeWidth="0.7" />
+      <path
+        d="M13.4 20.2c.7-2.4 4.5-2.4 5.2 0"
+        fill="none"
+        stroke="#7c2d12"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 function DolphinMark() {
   return (
     <svg viewBox="0 0 64 64" className="h-8 w-8" aria-hidden>
@@ -866,6 +914,7 @@ function DolphinMark() {
 function LandmarkGlyph({ tone, box }: { tone: Exclude<LandmarkTone, "golfinho">; box: number }) {
   if (tone === "abrigo") return <BenchMark />;
   if (tone === "esporte") return <CourtMark />;
+  if (tone === "academia") return <AcademiaMark />;
   const Icon = LANDMARK_STYLE[tone].Icon;
   if (!Icon) return null;
   const glyph = box <= 28 ? "h-[18px] w-[18px]" : box <= 40 ? "h-6 w-6" : "h-[18px] w-[18px]";
@@ -890,6 +939,9 @@ function LandmarkPin({
 }) {
   if (landmark.tone === "golfinho") {
     return <GolfinhoPin landmark={landmark} selected={selected} onSelect={onSelect} />;
+  }
+  if (landmark.tone === "academia") {
+    return <AcademiaPin landmark={landmark} selected={selected} onSelect={onSelect} />;
   }
   const style = LANDMARK_STYLE[landmark.tone];
   const box = LANDMARK_BOX[landmark.tone];
@@ -927,6 +979,53 @@ function LandmarkPin({
       </button>
       <span
         className={`pointer-events-none absolute top-full left-1/2 mt-0.5 -translate-x-1/2 whitespace-nowrap font-bold leading-none ${label} ${style.label}`}
+        style={{ textShadow: "0 0 3px #fff, 0 0 6px #fff, 1px 0 0 #fff, -1px 0 0 #fff, 0 1px 0 #fff, 0 -1px 0 #fff" }}
+      >
+        {landmark.short}
+      </span>
+    </div>
+  );
+}
+
+function AcademiaPin({
+  landmark,
+  selected,
+  onSelect,
+}: {
+  landmark: OrlaLandmark;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <div className={`relative h-[22px] w-[22px] ${selected ? "pin-focus" : ""}`}>
+      {selected && <span className="pin-focus-ring" aria-hidden />}
+      {selected && (
+        <div className="absolute bottom-[calc(100%+6px)] left-1/2 z-30 w-[210px] -translate-x-1/2">
+          <div className="rounded-2xl border border-amber-100 bg-white px-2.5 py-2 text-left shadow-[0_12px_24px_rgba(120,53,15,0.22)]">
+            <p className="pa-brand-tight text-[13px] leading-tight text-[#78350f]">{landmark.name}</p>
+            <p className="mt-0.5 text-[11px] text-neutral-500">{landmark.detail}</p>
+            <RouteChoice place={{ id: landmark.id, lat: landmark.lat, lng: landmark.lng, name: landmark.name }} tone="light" />
+          </div>
+          <span className="mx-auto -mt-1 block h-2.5 w-2.5 rotate-45 border-b border-r border-amber-100 bg-white" />
+        </div>
+      )}
+      <button
+        type="button"
+        aria-label={landmark.name}
+        aria-pressed={selected}
+        onPointerDown={(event) => event.stopPropagation()}
+        onClick={(event) => {
+          event.stopPropagation();
+          onSelect();
+        }}
+        className={`relative grid h-[22px] w-[22px] place-items-center overflow-hidden rounded-full border border-[#b45309] bg-gradient-to-b from-[#fff7ed] to-[#fdba74] shadow-[0_3px_8px_rgba(180,83,9,0.45),inset_0_1px_0_rgba(255,255,255,0.75)] ${selected ? "ring-2 ring-amber-200 scale-110" : ""}`}
+        style={selected ? { animation: "pa-academia-pulse 1.6s ease-in-out infinite" } : undefined}
+      >
+        <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.7),transparent_55%)]" />
+        <AcademiaMark />
+      </button>
+      <span
+        className="pointer-events-none absolute top-full left-1/2 mt-0.5 -translate-x-1/2 whitespace-nowrap text-[8px] font-extrabold uppercase tracking-[0.08em] text-[#92400e]"
         style={{ textShadow: "0 0 3px #fff, 0 0 6px #fff, 1px 0 0 #fff, -1px 0 0 #fff, 0 1px 0 #fff, 0 -1px 0 #fff" }}
       >
         {landmark.short}
@@ -1469,12 +1568,13 @@ function OrlaMarkers({
               key={shower.id}
               position={[shower.lat, shower.lng]}
               zIndexOffset={selected ? 960 : 12}
-              size={24}
+              size={20}
             >
               <ShowerPin
                 name={shower.name}
                 faded={!nameHit || !inCategory}
                 selected={selected}
+                showLabel={filter === "duchas"}
                 onSelect={() => onSelect(shower.id)}
               />
             </ReactPin>
