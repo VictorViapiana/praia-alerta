@@ -112,7 +112,8 @@ const RAMP_TO_SEA_M = 44;
  * Corredor longo (~88 m) pra atravessar a areia até a água.
  */
 const NORTE_BEARING_DEG = 225;
-const NORTE_TO_SEA_M = 88;
+/** Só a passagem na areia — para antes de ir fundo no mar. */
+const NORTE_TO_SEA_M = 28;
 
 const principalGeom = corridorNorthSouth(-20.652309, -40.478881, RAMP_HALF_M, RAMP_BACK_M, RAMP_TO_SEA_M);
 const norteGeom = corridorAlongBearing(
