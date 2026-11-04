@@ -49,7 +49,8 @@ import type { RootStackParamList } from "../navigation/types";
 import type { WalkPoint, WalkRoute } from "../data/walk-route";
 import { SHOWER_RITUAL_STEPS } from "../data/places";
 import type { GuaraGuide } from "../data/guara-guide";
-import { PRAIA_MORRO_VIEW } from "../data/guara-guide";
+import { FAR_FROM_BEACH_M, PRAIA_MORRO_VIEW } from "../data/guara-guide";
+import { metersBetween } from "../utils/geo";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Map">;
 
@@ -68,6 +69,8 @@ export function MapScreen({ navigation }: Props) {
   const [muroTalk, setMuroTalk] = useState(false);
   const [locating, setLocating] = useState(false);
   const [locateNote, setLocateNote] = useState<string | null>(null);
+  const [beachInvite, setBeachInvite] = useState(false);
+  const beachInviteAsked = useRef(false);
 
   const liveHeading = app.nav?.active ? navTrack.fix?.heading ?? heading : heading;
   const liveLat = app.nav?.active ? navTrack.fix?.lat ?? fix?.lat ?? null : fix?.lat ?? null;
@@ -217,6 +220,11 @@ export function MapScreen({ navigation }: Props) {
     openSelectedExperience(app.selectedId);
   }, [app.selectedId, openSelectedExperience]);
 
+  const showPraiaDoMorro = useCallback(() => {
+    setBeachInvite(false);
+    mapRef.current?.animateTo(PRAIA_MORRO_VIEW.lat, PRAIA_MORRO_VIEW.lng, 0.0055);
+  }, []);
+
   const runLocate = useCallback(() => {
     setLocating(true);
     setLocateNote(null);
@@ -231,7 +239,15 @@ export function MapScreen({ navigation }: Props) {
         const pos = await Location.getCurrentPositionAsync({
           accuracy: Location.Accuracy.Balanced,
         });
-        mapRef.current?.animateTo(pos.coords.latitude, pos.coords.longitude, 0.0045);
+        const next = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        const far =
+          metersBetween(next, { lat: PRAIA_MORRO_VIEW.lat, lng: PRAIA_MORRO_VIEW.lng }) >=
+          FAR_FROM_BEACH_M;
+        if (far && !beachInviteAsked.current) {
+          beachInviteAsked.current = true;
+          setBeachInvite(true);
+        }
+        mapRef.current?.animateTo(next.lat, next.lng, 0.0045);
       } catch {
         setLocateNote("Este aparelho não informou a localização.");
       } finally {
@@ -292,7 +308,10 @@ export function MapScreen({ navigation }: Props) {
 
       {!app.nav?.active && !app.routeTarget && (
         <MapChrome
-          onOpenGuara={() => app.setGuaraOpen(true)}
+          onOpenGuara={() => {
+            setBeachInvite(false);
+            app.setGuaraOpen(true);
+          }}
           onOpenSos={() => {
             app.openSos();
             navigation.navigate("Sos");
@@ -301,6 +320,9 @@ export function MapScreen({ navigation }: Props) {
           onOpenCamera={() => navigation.navigate("Camera")}
           locating={locating}
           locateNote={locateNote}
+          beachInvite={beachInvite && !app.searchOpen && !app.tipTour && !app.showerRitual}
+          onAcceptBeach={showPraiaDoMorro}
+          onDeclineBeach={() => setBeachInvite(false)}
         />
       )}
 

@@ -14,6 +14,9 @@ type Props = {
   onOpenCamera: () => void;
   locating?: boolean;
   locateNote?: string | null;
+  beachInvite?: boolean;
+  onAcceptBeach?: () => void;
+  onDeclineBeach?: () => void;
 };
 
 /** Chrome do mapa alinhado ao web: título, localizar, satélite/limpo, busca embaixo, câmera. */
@@ -24,6 +27,9 @@ export function MapChrome({
   onOpenCamera,
   locating = false,
   locateNote = null,
+  beachInvite = false,
+  onAcceptBeach,
+  onDeclineBeach,
 }: Props) {
   const insets = useSafeAreaInsets();
   const {
@@ -103,13 +109,37 @@ export function MapChrome({
         </View>
       </Pressable>
 
-      <Pressable
-        onPress={onOpenGuara}
-        style={[styles.guaraFab, { bottom: insets.bottom + 168 }]}
-        accessibilityLabel="Abrir Guará"
-      >
-        <GuaraPose pose="bust" size={54} />
-      </Pressable>
+      {beachInvite ? (
+        <View style={[styles.beachInvite, { bottom: insets.bottom + 168 }]}>
+          <View style={styles.beachRow}>
+            <GuaraPose pose="bust" size={40} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.beachEyebrow}>Guará</Text>
+              <Text style={styles.beachTitle}>Você quer que eu te mostre a praia?</Text>
+              <Text style={styles.beachSub}>
+                Você está longe da Praia do Morro. Posso te levar até a orla.
+              </Text>
+            </View>
+          </View>
+          <View style={styles.beachActions}>
+            <Pressable style={styles.beachNo} onPress={onDeclineBeach}>
+              <Text style={styles.beachNoText}>Não</Text>
+            </Pressable>
+            <Pressable style={styles.beachYes} onPress={onAcceptBeach}>
+              <Text style={styles.beachYesText}>Sim</Text>
+            </Pressable>
+          </View>
+        </View>
+      ) : (
+        <Pressable
+          onPress={onOpenGuara}
+          style={[styles.guaraFab, { bottom: insets.bottom + 168 }]}
+          accessibilityLabel="Falar com o Guará"
+        >
+          <GuaraPose pose="bust" size={32} />
+          <Text style={styles.guaraFabText}>Guará</Text>
+        </Pressable>
+      )}
 
       {/* Busca + filtros — ancorados embaixo como no web */}
       <View style={[styles.bottom, { paddingBottom: insets.bottom + 10 }]} pointerEvents="box-none">
@@ -280,12 +310,16 @@ const styles = StyleSheet.create({
   guaraFab: {
     position: "absolute",
     left: 16,
-    width: 64,
-    height: 64,
-    borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.95)",
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    gap: 6,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.3)",
+    backgroundColor: "rgba(0,0,0,0.55)",
+    paddingVertical: 4,
+    paddingLeft: 4,
+    paddingRight: 12,
     shadowColor: "#000",
     shadowOpacity: 0.35,
     shadowRadius: 12,
@@ -293,6 +327,49 @@ const styles = StyleSheet.create({
     elevation: 8,
     zIndex: 50,
   },
+  guaraFabText: { color: "#fff", fontSize: 11, fontWeight: "700" },
+  beachInvite: {
+    position: "absolute",
+    left: 16,
+    right: 88,
+    maxWidth: 280,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.25)",
+    backgroundColor: "rgba(16,32,40,0.94)",
+    padding: 12,
+    gap: 10,
+    zIndex: 50,
+  },
+  beachRow: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
+  beachEyebrow: {
+    color: "rgba(165,243,252,0.75)",
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 1.4,
+    textTransform: "uppercase",
+  },
+  beachTitle: { color: "#fff", fontSize: 13, fontWeight: "700", marginTop: 4, lineHeight: 18 },
+  beachSub: { color: "rgba(255,255,255,0.6)", fontSize: 11, marginTop: 4, lineHeight: 15 },
+  beachActions: { flexDirection: "row", gap: 8 },
+  beachNo: {
+    flex: 1,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.2)",
+    backgroundColor: "rgba(255,255,255,0.1)",
+    paddingVertical: 10,
+    alignItems: "center",
+  },
+  beachNoText: { color: "rgba(255,255,255,0.9)", fontWeight: "700", fontSize: 12 },
+  beachYes: {
+    flex: 1,
+    borderRadius: 999,
+    backgroundColor: "#e11d48",
+    paddingVertical: 10,
+    alignItems: "center",
+  },
+  beachYesText: { color: "#fff", fontWeight: "700", fontSize: 12 },
   bottom: {
     position: "absolute",
     left: 12,
