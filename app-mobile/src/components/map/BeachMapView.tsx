@@ -16,27 +16,48 @@ import { toLatLngList } from "../../utils/geo";
 export type BeachMapHandle = {
   fitRoute: (route: WalkRoute) => void;
   animateTo: (lat: number, lng: number, delta?: number) => void;
-  followUser: (lat: number, lng: number, heading: number | null) => void;
+  followUser: (lat: number, lng: number, heading: number | null, navigating?: boolean) => void;
 };
 
 type Props = {
   onMuroPress?: () => void;
   previewRoute?: WalkRoute | null;
   heading?: number | null;
+  userLat?: number | null;
+  userLng?: number | null;
+  moving?: boolean;
+  traveled?: Array<[number, number]>;
+  remaining?: Array<[number, number]>;
 };
 
 export const BeachMapView = forwardRef<BeachMapHandle, Props>(function BeachMapView(
-  { onMuroPress, previewRoute = null, heading = null },
+  {
+    onMuroPress,
+    previewRoute = null,
+    heading = null,
+    userLat = null,
+    userLng = null,
+    moving = false,
+    traveled,
+    remaining,
+  },
   ref,
 ) {
   const mapRef = useRef<MapView>(null);
   const { filter, searchQuery, selectedId, setSelectedId, dayLayer, tide, nav } = useApp();
-  const { fix } = useUserLocation(true);
+  const { fix } = useUserLocation(!nav?.active);
   const [region, setRegion] = useState<Region>({
     ...mapTheme.center,
     ...mapTheme.initialDelta,
   });
   const centeredOnce = useRef(false);
+  const lastFollow = useRef(0);
+  const navStartedAt = useRef(0);
+  const wasNavigating = useRef(false);
+
+  const lat = userLat ?? fix?.lat ?? null;
+  const lng = userLng ?? fix?.lng ?? null;
+  const navigating = Boolean(nav?.active);
 
   useImperativeHandle(ref, () => ({
     fitRoute(route) {
@@ -46,52 +67,66 @@ export const BeachMapView = forwardRef<BeachMapHandle, Props>(function BeachMapV
         animated: true,
       });
     },
-    animateTo(lat, lng, delta = 0.006) {
+    animateTo(la, ln, delta = 0.006) {
       mapRef.current?.animateToRegion(
-        { latitude: lat, longitude: lng, latitudeDelta: delta, longitudeDelta: delta * 0.7 },
-        600,
+        { latitude: la, longitude: ln, latitudeDelta: delta, longitudeDelta: delta * 0.7 },
+        650,
       );
     },
-    followUser(lat, lng, hdg) {
+    followUser(la, ln, hdg, navMode = false) {
       mapRef.current?.animateCamera(
         {
-          center: { latitude: lat, longitude: lng },
+          center: { latitude: la, longitude: ln },
           heading: hdg ?? 0,
-          pitch: 45,
-          zoom: 17.5,
+          pitch: navMode ? 55 : 0,
+          zoom: navMode ? 18.2 : 16.5,
         },
-        { duration: 500 },
+        { duration: navMode ? 450 : 700 },
       );
     },
   }));
 
   useEffect(() => {
-    if (!fix || centeredOnce.current || !mapRef.current) return;
-    const nearBeach =
-      Math.abs(fix.lat - mapTheme.center.latitude) < 0.08 &&
-      Math.abs(fix.lng - mapTheme.center.longitude) < 0.08;
-    if (!nearBeach) return;
-    centeredOnce.current = true;
-    mapRef.current.animateToRegion(
-      { latitude: fix.lat, longitude: fix.lng, ...mapTheme.closeDelta },
-      700,
-    );
-  }, [fix]);
+    if (navigating && !wasNavigating.current) {
+      navStartedAt.current = Date.now();
+    }
+    if (!navigating) navStartedAt.current = 0;
+    wasNavigating.current = navigating;
+  }, [navigating]);
 
   useEffect(() => {
-    if (!nav?.active || !fix) return;
+    if (!lat || !lng || centeredOnce.current || navigating) return;
+    const nearBeach =
+      Math.abs(lat - mapTheme.center.latitude) < 0.08 &&
+      Math.abs(lng - mapTheme.center.longitude) < 0.08;
+    if (!nearBeach) return;
+    centeredOnce.current = true;
+    mapRef.current?.animateToRegion(
+      { latitude: lat, longitude: lng, ...mapTheme.closeDelta },
+      700,
+    );
+  }, [lat, lng, navigating]);
+
+  // Após enquadrar a rota inteira, segue o usuário em perspectiva (estilo Waze).
+  useEffect(() => {
+    if (!navigating || lat == null || lng == null) return;
+    const sinceStart = Date.now() - navStartedAt.current;
+    if (sinceStart < 1800) return;
+    const now = Date.now();
+    if (now - lastFollow.current < 700) return;
+    lastFollow.current = now;
     mapRef.current?.animateCamera(
       {
-        center: { latitude: fix.lat, longitude: fix.lng },
+        center: { latitude: lat, longitude: lng },
         heading: heading ?? 0,
-        pitch: 50,
-        zoom: 18,
+        pitch: 55,
+        zoom: 18.2,
       },
-      { duration: 400 },
+      { duration: 420 },
     );
-  }, [nav?.active, fix?.lat, fix?.lng, heading]);
+  }, [navigating, lat, lng, heading]);
 
-  const drawn = nav?.active ? nav.route : previewRoute;
+  const drawn = navigating ? nav?.route ?? null : previewRoute;
 
   return (
     <View style={styles.fill}>
@@ -109,23 +144,32 @@ export const BeachMapView = forwardRef<BeachMapHandle, Props>(function BeachMapV
         mapType="hybrid"
         userInterfaceStyle="light"
         followsUserLocation={false}
+        toolbarEnabled={false}
       >
         <DayLayerOverlay dayLayer={dayLayer} tide={tide.data} />
         <RampCorridors />
         <MuroPolylines latitudeDelta={region.latitudeDelta} onPress={onMuroPress} />
-        <RouteLayer route={drawn} active={Boolean(nav?.active)} />
-        <MapPins
-          filter={filter}
-          query={searchQuery}
-          selectedId={selectedId}
-          onSelect={setSelectedId}
+        <RouteLayer
+          route={drawn}
+          active={navigating}
+          traveled={navigating ? traveled : undefined}
+          remaining={navigating ? remaining : undefined}
         />
-        {fix ? (
+        {!navigating && (
+          <MapPins
+            filter={filter}
+            query={searchQuery}
+            selectedId={selectedId}
+            onSelect={setSelectedId}
+          />
+        )}
+        {lat != null && lng != null ? (
           <UserArrow
-            latitude={fix.lat}
-            longitude={fix.lng}
+            latitude={lat}
+            longitude={lng}
             heading={heading}
-            navigating={Boolean(nav?.active)}
+            navigating={navigating}
+            moving={moving || navigating}
           />
         ) : null}
       </MapView>

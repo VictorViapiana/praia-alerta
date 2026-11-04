@@ -42,6 +42,7 @@ import {
 } from "../data/orla-notify";
 import { useOrlaSentinel } from "../hooks/useOrlaSentinel";
 import { useUserLocation } from "../hooks/useUserLocation";
+import { useNavTracking } from "../hooks/useNavTracking";
 import type { RootStackParamList } from "../navigation/types";
 import type { WalkPoint, WalkRoute } from "../data/walk-route";
 import { SHOWER_RITUAL_STEPS } from "../data/places";
@@ -54,13 +55,28 @@ export function MapScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const mapRef = useRef<BeachMapHandle>(null);
   const app = useApp();
-  const { fix } = useUserLocation(true);
+  const { fix } = useUserLocation(!app.nav?.active);
+  const navTrack = useNavTracking(Boolean(app.nav?.active), app.nav?.route ?? null);
   const [heading, setHeading] = useState<number | null>(null);
   const [locPrompt, setLocPrompt] = useState(false);
   const [notifyPrompt, setNotifyPrompt] = useState(false);
   const [mapTour, setMapTour] = useState<{ on: boolean; i: number }>({ on: false, i: 0 });
   const [previewRoute, setPreviewRoute] = useState<WalkRoute | null>(null);
   const [muroTalk, setMuroTalk] = useState(false);
+
+  const liveHeading = app.nav?.active ? navTrack.fix?.heading ?? heading : heading;
+  const liveLat = app.nav?.active ? navTrack.fix?.lat ?? fix?.lat ?? null : fix?.lat ?? null;
+  const liveLng = app.nav?.active ? navTrack.fix?.lng ?? fix?.lng ?? null : fix?.lng ?? null;
+
+  // Chegada: encerra navegação perto do destino.
+  useEffect(() => {
+    if (!app.nav?.active) return;
+    if (navTrack.remainingMeters > 28) return;
+    if ((navTrack.progress?.offMeters ?? 0) > 40) return;
+    app.stopNav();
+    setPreviewRoute(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [app.nav?.active, navTrack.remainingMeters, navTrack.progress?.offMeters]);
 
   const place = PLACES.find((p) => p.id === app.selectedId) ?? null;
   const shower = SHOWERS.find((s) => s.id === app.selectedId) ?? null;
@@ -203,7 +219,12 @@ export function MapScreen({ navigation }: Props) {
       <BeachMapView
         ref={mapRef}
         previewRoute={previewRoute}
-        heading={heading}
+        heading={liveHeading}
+        userLat={liveLat}
+        userLng={liveLng}
+        moving={Boolean(navTrack.fix?.moving)}
+        traveled={navTrack.traveledLine}
+        remaining={navTrack.remainingLine}
         onMuroPress={() => {
           setMuroTalk(true);
           app.openTipTour({
@@ -214,7 +235,7 @@ export function MapScreen({ navigation }: Props) {
         }}
       />
 
-      {!app.nav?.active && (
+      {!app.nav?.active && !app.routeTarget && (
         <MapChrome
           onOpenGuara={() => app.setGuaraOpen(true)}
           onOpenSos={() => {
@@ -224,26 +245,34 @@ export function MapScreen({ navigation }: Props) {
         />
       )}
 
-      <Pressable style={[styles.back, { top: insets.top + 8 }]} onPress={() => navigation.goBack()}>
-        <Text style={styles.backText}>‹ Home</Text>
-      </Pressable>
+      {!app.nav?.active && (
+        <Pressable style={[styles.back, { top: insets.top + 8 }]} onPress={() => navigation.goBack()}>
+          <Text style={styles.backText}>‹ Home</Text>
+        </Pressable>
+      )}
 
       {app.nav?.active && (
         <NavHud
           mode={app.nav.mode}
           route={app.nav.route}
-          stepIndex={app.nav.stepIndex}
-          remainingMeters={app.nav.route.meters}
+          destinationName={app.nav.destination.name}
+          remainingMeters={navTrack.remainingMeters}
+          remainingSeconds={navTrack.remainingSeconds}
+          etaLabel={navTrack.etaLabel}
+          maneuver={navTrack.maneuver}
           onStop={() => {
             app.stopNav();
             setPreviewRoute(null);
           }}
-          onNextStep={app.navNextStep}
         />
       )}
 
       {/* Ficha rápida / landmark não-sponsor */}
-      {(landmark || ramp || (place && !place.isSponsor) || shower) && !showSponsor && !app.showerRitual && (
+      {!app.nav?.active &&
+        !app.routeTarget &&
+        (landmark || ramp || (place && !place.isSponsor) || shower) &&
+        !showSponsor &&
+        !app.showerRitual && (
         <View style={[styles.sheet, { paddingBottom: insets.bottom + 16 }]}>
           <Text style={styles.sheetTitle}>
             {place?.name ?? shower?.name ?? landmark?.name ?? ramp?.name}
@@ -274,7 +303,7 @@ export function MapScreen({ navigation }: Props) {
         </View>
       )}
 
-      {place && place.isSponsor && (
+      {!app.nav?.active && !app.routeTarget && place && place.isSponsor && (
         <SponsorSheet
           kind="place"
           place={place}
@@ -285,7 +314,7 @@ export function MapScreen({ navigation }: Props) {
           }
         />
       )}
-      {vendor && (
+      {!app.nav?.active && !app.routeTarget && vendor && (
         <SponsorSheet
           kind="vendor"
           vendor={vendor}
@@ -295,7 +324,9 @@ export function MapScreen({ navigation }: Props) {
           }
         />
       )}
-      {(app.selectedId === ESCUNA_POINT.id || app.selectedId === "escunas") && (
+      {!app.nav?.active &&
+        !app.routeTarget &&
+        (app.selectedId === ESCUNA_POINT.id || app.selectedId === "escunas") && (
         <SponsorSheet
           kind="escuna"
           onClose={() => app.setSelectedId(null)}
@@ -310,7 +341,7 @@ export function MapScreen({ navigation }: Props) {
         />
       )}
 
-      {app.routeTarget && (
+      {app.routeTarget && !app.nav?.active && (
         <RoutePreviewSheet
           visible
           from={origin}
@@ -325,9 +356,11 @@ export function MapScreen({ navigation }: Props) {
           }}
           onStart={(mode, route) => {
             const dest = app.routeTarget!;
+            app.setSelectedId(null);
             app.startNav(mode, route, dest);
             setPreviewRoute(route);
-            mapRef.current?.fitRoute(route);
+            // Enquadra a rota inteira; o follow em perspectiva começa ~1.8s depois.
+            requestAnimationFrame(() => mapRef.current?.fitRoute(route));
           }}
         />
       )}
