@@ -1,0 +1,4 @@
+# Expo nativo — isolado do deploy do MVP web (Next.js)
+app-mobile
+app-mobile/**
+README-MOBILE.md

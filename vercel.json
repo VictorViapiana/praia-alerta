@@ -1,0 +1,7 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "installCommand": "npm install",
+  "buildCommand": "npm run build",
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- app public package.json package-lock.json next.config.ts tsconfig.json proxy.ts vercel.json .vercelignore postcss.config.mjs"
+}
