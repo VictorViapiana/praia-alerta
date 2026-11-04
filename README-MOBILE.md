@@ -22,15 +22,16 @@ Depois:
 cd app-mobile && npx expo start --android
 ```
 
-## O que você vai ver (Fase 2.1)
+## O que você vai ver (Fase 2.1+)
 
 1. Splash + onboarding do Guará  
-2. Home com Q&A, Nossa Missão, cards e SOS  
-3. **Mapa híbrido** com muro, rampas, pins, Sol/Maré, filtros  
-4. Ritual da ducha, tip tours, fichas de patrocinador  
+2. Home com Q&A, Nossa Missão, stories (Marlin/Fotos/Bandeiras), câmera e SOS  
+3. **Mapa híbrido** com muro, rampas, pins, Sol/Maré, busca ranqueada  
+4. Ritual da ducha, tip tours, portal de patrocinador  
 5. Rotas estilo Waze (preview, polyline, câmera, seta GPS)  
-6. Notificações da orla + soft prompts  
-7. SOS com coordenadas + criança perdida (wizard)
+6. Notificações da orla (toque abre o spot) + soft prompts  
+7. SOS + criança perdida (wizard com 2º contato)  
+8. **Painel do ambulante** Online/Offline → pin ao vivo na areia
 
 ## Estrutura
 

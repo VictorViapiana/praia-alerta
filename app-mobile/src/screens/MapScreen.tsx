@@ -43,6 +43,8 @@ import {
 import { useOrlaSentinel } from "../hooks/useOrlaSentinel";
 import { useUserLocation } from "../hooks/useUserLocation";
 import { useNavTracking } from "../hooks/useNavTracking";
+import { useNotifyOpen } from "../hooks/useNotifyOpen";
+import { useAmbulanteLive } from "../context/AmbulanteLiveContext";
 import type { RootStackParamList } from "../navigation/types";
 import type { WalkPoint, WalkRoute } from "../data/walk-route";
 import { SHOWER_RITUAL_STEPS } from "../data/places";
@@ -55,6 +57,7 @@ export function MapScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const mapRef = useRef<BeachMapHandle>(null);
   const app = useApp();
+  const liveVendors = useAmbulanteLive();
   const { fix } = useUserLocation(!app.nav?.active);
   const navTrack = useNavTracking(Boolean(app.nav?.active), app.nav?.route ?? null);
   const [heading, setHeading] = useState<number | null>(null);
@@ -80,9 +83,21 @@ export function MapScreen({ navigation }: Props) {
 
   const place = PLACES.find((p) => p.id === app.selectedId) ?? null;
   const shower = SHOWERS.find((s) => s.id === app.selectedId) ?? null;
-  const vendor = AMBULANTES.find((v) => v.id === app.selectedId) ?? null;
+  const vendor =
+    liveVendors.vendors.find((v) => v.id === app.selectedId) ??
+    AMBULANTES.find((v) => v.id === app.selectedId) ??
+    null;
   const landmark = landmarkById(app.selectedId);
   const ramp = RAMPS.find((r) => r.id === app.selectedId) ?? null;
+
+  useNotifyOpen(
+    useCallback(
+      (spot) => {
+        app.setSelectedId(spot);
+      },
+      [app],
+    ),
+  );
 
   const origin: WalkPoint = useMemo(
     () =>

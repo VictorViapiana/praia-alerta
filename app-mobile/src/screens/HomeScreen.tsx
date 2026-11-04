@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Map as MapIcon, Waves, Sun, Baby, ShieldAlert } from "lucide-react-native";
+import { Camera, Map as MapIcon, ShoppingBag, Waves, Sun, Baby, ShieldAlert } from "lucide-react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { GuaraChat } from "../components/guara/GuaraChat";
 import { MissionModal } from "../components/guara/MissionModal";
@@ -14,6 +14,7 @@ import { SosSlider } from "../components/overlays/SosSlider";
 import { HOME_STEPS, HOME_TOUR_KEY } from "../data/onboarding";
 import { storageGet, storageSet } from "../utils/storage";
 import type { GuaraGuide } from "../data/guara-guide";
+import { FLAGS } from "../data/orla-stories";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Home">;
 
@@ -101,6 +102,36 @@ export function HomeScreen({ navigation }: Props) {
             <Text style={styles.mapSub}>Orla ao vivo · pins · muro · rotas</Text>
           </View>
         </Pressable>
+
+        <Pressable
+          style={styles.flagChip}
+          onPress={() => navigation.navigate("Story", { id: "bandeiras" })}
+        >
+          <View style={[styles.flagDot, { backgroundColor: FLAGS.find((f) => f.now)?.cloth ?? "#facc15" }]} />
+          <Text style={styles.flagChipText}>Bandeira amarela agora · ver sinalização</Text>
+        </Pressable>
+
+        <View style={styles.storyRow}>
+          <Pressable style={styles.storyCard} onPress={() => navigation.navigate("Story", { id: "marlin" })}>
+            <Image source={require("../assets/guarapari/marlin-rochas.png")} style={styles.storyImg} />
+            <Text style={styles.storyTitle}>Marlin Azul</Text>
+          </Pressable>
+          <Pressable style={styles.storyCard} onPress={() => navigation.navigate("Story", { id: "fotos" })}>
+            <Image source={require("../assets/guarapari/praia-verao.jpg")} style={styles.storyImg} />
+            <Text style={styles.storyTitle}>Fotos da orla</Text>
+          </Pressable>
+        </View>
+
+        <View style={styles.extraRow}>
+          <Pressable style={styles.extra} onPress={() => navigation.navigate("Camera")}>
+            <Camera color="#fde68a" size={18} />
+            <Text style={styles.extraText}>Eu amo Guarapari</Text>
+          </Pressable>
+          <Pressable style={styles.extra} onPress={() => navigation.navigate("AmbulantePortal")}>
+            <ShoppingBag color="#fdba74" size={18} />
+            <Text style={styles.extraText}>Sou ambulante</Text>
+          </Pressable>
+        </View>
 
         <Text style={styles.section}>Serviços da praia</Text>
         <View style={styles.grid}>
@@ -201,6 +232,52 @@ const styles = StyleSheet.create({
   },
   mapTitle: { color: "#0f172a", fontWeight: "800", fontSize: 16 },
   mapSub: { color: "#475569", fontSize: 12, marginTop: 2 },
+  flagChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: "rgba(253,224,71,0.18)",
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: "rgba(253,224,71,0.35)",
+  },
+  flagDot: { width: 14, height: 14, borderRadius: 4 },
+  flagChipText: { color: "#fef9c3", fontWeight: "700", fontSize: 13, flex: 1 },
+  storyRow: { flexDirection: "row", gap: 10 },
+  storyCard: {
+    flex: 1,
+    height: 140,
+    borderRadius: 22,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.2)",
+  },
+  storyImg: { ...StyleSheet.absoluteFill, width: "100%", height: "100%" },
+  storyTitle: {
+    position: "absolute",
+    left: 10,
+    bottom: 10,
+    color: "#fff",
+    fontWeight: "900",
+    fontSize: 15,
+    textShadowColor: "rgba(0,0,0,0.6)",
+    textShadowRadius: 8,
+  },
+  extraRow: { flexDirection: "row", gap: 10 },
+  extra: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "rgba(15,23,42,0.4)",
+    borderRadius: 16,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
+  },
+  extraText: { color: "#fff", fontWeight: "800", fontSize: 12, flex: 1 },
   section: {
     color: "rgba(255,255,255,0.75)",
     fontSize: 12,

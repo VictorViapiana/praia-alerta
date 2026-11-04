@@ -1,6 +1,7 @@
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AppProvider } from "./src/context/AppContext";
+import { AmbulanteLiveProvider } from "./src/context/AmbulanteLiveContext";
 import { RootNavigator } from "./src/navigation/RootNavigator";
 
 /**
@@ -11,8 +12,10 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <AppProvider>
-        <StatusBar style="light" />
-        <RootNavigator />
+        <AmbulanteLiveProvider>
+          <StatusBar style="light" />
+          <RootNavigator />
+        </AmbulanteLiveProvider>
       </AppProvider>
     </SafeAreaProvider>
   );

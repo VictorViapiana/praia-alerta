@@ -25,6 +25,9 @@ type Report = {
   parentesco: string;
   cpf: string;
   telefone: string;
+  outroNome: string;
+  outroTelefone: string;
+  citado: string;
 };
 
 const EMPTY: Report = {
@@ -40,6 +43,9 @@ const EMPTY: Report = {
   parentesco: "",
   cpf: "",
   telefone: "",
+  outroNome: "",
+  outroTelefone: "",
+  citado: "",
 };
 
 const IDADES = ["Até 2", "3 a 5", "6 a 8", "9 a 12", "Não sei"];
@@ -206,6 +212,10 @@ export function CriancaScreen({ navigation }: Props) {
             )}
             <TextInput style={styles.input} placeholder="Telefone com DDD" placeholderTextColor="rgba(255,255,255,0.35)" keyboardType="phone-pad" value={report.telefone} onChangeText={(v) => set("telefone", maskPhone(v))} />
             <TextInput style={styles.input} placeholder="CPF" placeholderTextColor="rgba(255,255,255,0.35)" keyboardType="number-pad" value={report.cpf} onChangeText={(v) => set("cpf", maskCpf(v))} />
+            <Text style={styles.label}>Segundo contato (opcional)</Text>
+            <TextInput style={styles.input} placeholder="Nome de outro responsável" placeholderTextColor="rgba(255,255,255,0.35)" value={report.outroNome} onChangeText={(v) => set("outroNome", v)} />
+            <TextInput style={styles.input} placeholder="Telefone do segundo contato" placeholderTextColor="rgba(255,255,255,0.35)" keyboardType="phone-pad" value={report.outroTelefone} onChangeText={(v) => set("outroTelefone", maskPhone(v))} />
+            <TextInput style={styles.input} placeholder="Quem citou / apontou (opcional)" placeholderTextColor="rgba(255,255,255,0.35)" value={report.citado} onChangeText={(v) => set("citado", v)} />
           </View>
         )}
 
@@ -217,6 +227,12 @@ export function CriancaScreen({ navigation }: Props) {
             <Text style={styles.line}>{path === "perdi" ? "Visto" : "Encontrada"}: {report.local}</Text>
             {report.nomeCrianca ? <Text style={styles.line}>Nome: {report.nomeCrianca}</Text> : null}
             <Text style={styles.line}>Responsável: {report.nome} · {report.telefone}</Text>
+            {report.outroNome ? (
+              <Text style={styles.line}>
+                2º contato: {report.outroNome} · {report.outroTelefone || "sem fone"}
+              </Text>
+            ) : null}
+            {report.citado ? <Text style={styles.line}>Citado por: {report.citado}</Text> : null}
           </View>
         )}
 

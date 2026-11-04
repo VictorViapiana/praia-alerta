@@ -5,6 +5,7 @@ import { useApp } from "../../context/AppContext";
 import { FilterChips } from "./FilterChips";
 import { SosHoldButton } from "./SosHoldButton";
 import { GuaraPose } from "../guara/GuaraPose";
+import { MapSearchHits } from "./MapSearchHits";
 
 type Props = {
   onOpenGuara: () => void;
@@ -23,6 +24,7 @@ export function MapChrome({ onOpenGuara, onOpenSos }: Props) {
     setSearchOpen,
     searchQuery,
     setSearchQuery,
+    setSelectedId,
     weather,
     sky,
   } = useApp();
@@ -49,14 +51,24 @@ export function MapChrome({ onOpenGuara, onOpenSos }: Props) {
         </View>
 
         {searchOpen && (
-          <TextInput
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholder="Quiosque 12, ducha, escuna…"
-            placeholderTextColor="rgba(255,255,255,0.4)"
-            style={styles.search}
-            autoFocus
-          />
+          <>
+            <TextInput
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              placeholder="Quiosque 12, ducha, escuna…"
+              placeholderTextColor="rgba(255,255,255,0.4)"
+              style={styles.search}
+              autoFocus
+            />
+            <MapSearchHits
+              query={searchQuery}
+              onPick={(id) => {
+                setSelectedId(id);
+                setSearchOpen(false);
+                setSearchQuery("");
+              }}
+            />
+          </>
         )}
 
         <FilterChips

@@ -6,6 +6,9 @@ import { MapScreen } from "../screens/MapScreen";
 import { SosScreen } from "../screens/SosScreen";
 import { FeatureScreen } from "../screens/FeatureScreen";
 import { CriancaScreen } from "../screens/CriancaScreen";
+import { StoryScreen } from "../screens/StoryScreen";
+import { AmbulantePortalScreen } from "../screens/AmbulantePortalScreen";
+import { CameraScreen } from "../screens/CameraScreen";
 import type { RootStackParamList } from "./types";
 import { useState } from "react";
 
@@ -36,6 +39,9 @@ export function RootNavigator() {
         <Stack.Screen name="Sos" component={SosScreen} options={{ animation: "fade", presentation: "fullScreenModal" }} />
         <Stack.Screen name="Feature" component={FeatureScreen} options={{ animation: "slide_from_bottom" }} />
         <Stack.Screen name="Crianca" component={CriancaScreen} options={{ animation: "slide_from_bottom" }} />
+        <Stack.Screen name="Story" component={StoryScreen} options={{ animation: "slide_from_bottom" }} />
+        <Stack.Screen name="AmbulantePortal" component={AmbulantePortalScreen} options={{ animation: "slide_from_bottom" }} />
+        <Stack.Screen name="Camera" component={CameraScreen} options={{ animation: "fade", presentation: "fullScreenModal" }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

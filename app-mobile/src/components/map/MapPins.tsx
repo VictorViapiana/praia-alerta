@@ -1,14 +1,10 @@
+import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { Marker } from "react-native-maps";
 import { PIN_COLORS, type MapFilter } from "../../data/catalog";
-import {
-  ACADEMIA_ORLA,
-  AMBULANTES,
-  ORLA_LANDMARKS,
-  PLACES,
-  SHOWERS,
-} from "../../data/places";
+import { ACADEMIA_ORLA, ORLA_LANDMARKS, PLACES, SHOWERS, type Ambulante } from "../../data/places";
 import { fold } from "../../data/coast";
+import { useAmbulanteLive } from "../../context/AmbulanteLiveContext";
 
 type Props = {
   filter: MapFilter;
@@ -26,14 +22,27 @@ function Dot({
   color,
   label,
   active,
+  cart,
 }: {
   color: string;
   label?: string;
   active?: boolean;
+  cart?: boolean;
 }) {
   return (
     <View style={styles.wrap}>
-      <View style={[styles.dot, { backgroundColor: color, borderColor: active ? "#fff" : "rgba(255,255,255,0.85)", transform: [{ scale: active ? 1.15 : 1 }] }]} />
+      <View
+        style={[
+          cart ? styles.cart : styles.dot,
+          {
+            backgroundColor: color,
+            borderColor: active ? "#fff" : "rgba(255,255,255,0.85)",
+            transform: [{ scale: active ? 1.15 : 1 }],
+          },
+        ]}
+      >
+        {cart ? <Text style={styles.cartEmoji}>🛒</Text> : null}
+      </View>
       {label ? (
         <View style={styles.badge}>
           <Text style={styles.badgeText} numberOfLines={1}>
@@ -45,8 +54,29 @@ function Dot({
   );
 }
 
+function walkOffset(vendor: Ambulante, step: number) {
+  if (!vendor.walks) return { lat: vendor.lat, lng: vendor.lng };
+  const along = Math.sin((step / 8) * Math.PI * 2) * 0.00018;
+  return {
+    lat: vendor.lat + along * 0.74,
+    lng: vendor.lng + along * 0.67,
+  };
+}
+
 export function MapPins({ filter, query, selectedId, onSelect }: Props) {
-  const showPlaces = filter === "neutro" || filter === "quiosques" || filter === "hoteis" || filter === "sorveterias" || filter === "parceiros";
+  const { vendors } = useAmbulanteLive();
+  const [step, setStep] = useState(0);
+  const showPlaces =
+    filter === "neutro" ||
+    filter === "quiosques" ||
+    filter === "hoteis" ||
+    filter === "sorveterias" ||
+    filter === "parceiros";
+
+  useEffect(() => {
+    const id = setInterval(() => setStep((s) => (s + 1) % 8), 2200);
+    return () => clearInterval(id);
+  }, []);
 
   return (
     <>
@@ -60,7 +90,11 @@ export function MapPins({ filter, query, selectedId, onSelect }: Props) {
             onPress={() => onSelect(shower.id)}
             tracksViewChanges={false}
           >
-            <Dot color={PIN_COLORS.duchas} label={filter === "duchas" ? "Ducha" : undefined} active={selectedId === shower.id} />
+            <Dot
+              color={PIN_COLORS.duchas}
+              label={filter === "duchas" ? "Ducha" : undefined}
+              active={selectedId === shower.id}
+            />
           </Marker>
         );
       })}
@@ -86,19 +120,27 @@ export function MapPins({ filter, query, selectedId, onSelect }: Props) {
       })}
 
       {(filter === "neutro" || filter === "ambulantes") &&
-        AMBULANTES.filter((v) => v.isSponsor && v.isOnline).map((vendor) => {
-          if (!matchesQuery(vendor.name, query)) return null;
-          return (
-            <Marker
-              key={vendor.id}
-              coordinate={{ latitude: vendor.lat, longitude: vendor.lng }}
-              onPress={() => onSelect(vendor.id)}
-              tracksViewChanges={false}
-            >
-              <Dot color={PIN_COLORS.ambulantes} label={filter === "ambulantes" ? "🛍️" : undefined} active={selectedId === vendor.id} />
-            </Marker>
-          );
-        })}
+        vendors
+          .filter((v) => v.isSponsor && v.isOnline)
+          .map((vendor) => {
+            if (!matchesQuery(vendor.name, query)) return null;
+            const point = walkOffset(vendor, step + (vendor.id === "picole" ? 4 : 0));
+            return (
+              <Marker
+                key={vendor.id}
+                coordinate={{ latitude: point.lat, longitude: point.lng }}
+                onPress={() => onSelect(vendor.id)}
+                tracksViewChanges={vendor.walks}
+              >
+                <Dot
+                  color={PIN_COLORS.ambulantes}
+                  label={filter === "ambulantes" ? vendor.name.split(" ")[0] : undefined}
+                  active={selectedId === vendor.id}
+                  cart
+                />
+              </Marker>
+            );
+          })}
 
       {ORLA_LANDMARKS.map((landmark) => {
         if (filter !== "neutro" && selectedId !== landmark.id) return null;
@@ -136,6 +178,20 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     elevation: 3,
   },
+  cart: {
+    width: 28,
+    height: 28,
+    borderRadius: 10,
+    borderWidth: 2,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 4,
+  },
+  cartEmoji: { fontSize: 12 },
   badge: {
     marginTop: 2,
     paddingHorizontal: 5,
