@@ -36,13 +36,14 @@
   line-height: 1.08;
 }
 
-/* Evita menu Copiar/Pesquisar/Traduzir do iOS ao segurar botões (SOS etc.). */
+/* Evita menu Copiar/Pesquisar/Traduzir (iOS) e seleção longa (Android) ao segurar SOS. */
 .pa-no-callout,
 .pa-no-callout * {
   -webkit-user-select: none !important;
   user-select: none !important;
   -webkit-touch-callout: none !important;
   -webkit-user-drag: none !important;
+  touch-action: manipulation;
 }
 
 /* —— Céu por horário (Guarapari) —— */

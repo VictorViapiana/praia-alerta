@@ -707,6 +707,7 @@ function MapSos({ onTrigger, parked = false }: { onTrigger: () => void; parked?:
   const [progress, setProgress] = useState(0);
   const frame = useRef(0);
   const origin = useRef<{ x: number; y: number } | null>(null);
+  const btnRef = useRef<HTMLButtonElement | null>(null);
   const hold = 1200;
 
   const cancel = () => {
@@ -733,6 +734,21 @@ function MapSos({ onTrigger, parked = false }: { onTrigger: () => void; parked?:
     frame.current = requestAnimationFrame(step);
   };
 
+  // Android/iOS: bloqueia menu de contexto e seleção sem atrapalhar o hold (pointer).
+  useEffect(() => {
+    const node = btnRef.current;
+    if (!node) return;
+    const block = (event: Event) => event.preventDefault();
+    node.addEventListener("contextmenu", block);
+    node.addEventListener("selectstart", block);
+    node.addEventListener("dragstart", block);
+    return () => {
+      node.removeEventListener("contextmenu", block);
+      node.removeEventListener("selectstart", block);
+      node.removeEventListener("dragstart", block);
+    };
+  }, []);
+
   return (
     <div
       className="pa-no-callout absolute left-3 z-[70]"
@@ -743,13 +759,14 @@ function MapSos({ onTrigger, parked = false }: { onTrigger: () => void; parked?:
       }}
     >
       <button
+        ref={btnRef}
         type="button"
         data-map-ui
         aria-label="Segure para acionar emergência"
         onContextMenu={(event) => event.preventDefault()}
         onPointerDown={(event) => {
           if (event.button !== 0) return;
-          // Impede menu de seleção/copiar do iOS ao segurar.
+          // Impede menu de seleção (iOS/Android) ao segurar.
           event.preventDefault();
           origin.current = { x: event.clientX, y: event.clientY };
           event.currentTarget.setPointerCapture(event.pointerId);
