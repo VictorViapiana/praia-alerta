@@ -11,7 +11,7 @@ import { DayLayerOverlay } from "./DayLayerOverlay";
 import { RouteLayer } from "./RouteLayer";
 import { UserArrow } from "./UserArrow";
 import type { WalkRoute } from "../../data/walk-route";
-import { toLatLngList } from "../../utils/geo";
+import { approxZoomFromDelta, toLatLngList } from "../../utils/geo";
 
 export type BeachMapHandle = {
   fitRoute: (route: WalkRoute) => void;
@@ -134,6 +134,8 @@ export const BeachMapView = forwardRef<BeachMapHandle, Props>(function BeachMapV
         ? "mutedStandard"
         : "standard"
       : "satellite";
+  // PLACE_ZOOM = 17 no web — pins densos só de perto.
+  const showDensePins = approxZoomFromDelta(region.latitudeDelta) >= 17;
 
   return (
     <View style={styles.fill}>
@@ -169,6 +171,7 @@ export const BeachMapView = forwardRef<BeachMapHandle, Props>(function BeachMapV
             query={searchQuery}
             selectedId={selectedId}
             onSelect={setSelectedId}
+            showDense={showDensePins}
           />
         )}
         {lat != null && lng != null ? (

@@ -32,6 +32,7 @@ import { MAP_STEPS, MAP_TOUR_KEY } from "../data/onboarding";
 import { storageGet, storageSet } from "../utils/storage";
 import {
   readLocationSoftChoice,
+  reopenLocationSoftPrompt,
   writeLocationSoftChoice,
 } from "../data/location-soft";
 import {
@@ -71,6 +72,9 @@ export function MapScreen({ navigation }: Props) {
   const [locateNote, setLocateNote] = useState<string | null>(null);
   const [beachInvite, setBeachInvite] = useState(false);
   const beachInviteAsked = useRef(false);
+  /** Teaser tipo MarkerPopup — sheet completo só após “Ver cardápio”. */
+  const [sponsorOpen, setSponsorOpen] = useState(false);
+  const locChoiceRef = useRef<"unset" | "accepted" | "declined">("unset");
 
   const liveHeading = app.nav?.active ? navTrack.fix?.heading ?? heading : heading;
   const liveLat = app.nav?.active ? navTrack.fix?.lat ?? fix?.lat ?? null : fix?.lat ?? null;
@@ -117,14 +121,25 @@ export function MapScreen({ navigation }: Props) {
       const seen = await storageGet(MAP_TOUR_KEY);
       if (seen !== "1") setMapTour({ on: true, i: 0 });
       const loc = await readLocationSoftChoice();
-      if (loc === "unset") setLocPrompt(true);
+      locChoiceRef.current = loc;
       const n = await readNotifySoftChoice();
-      if (n === "unset") setNotifyPrompt(true);
+      // Sequência do web: avisos ~0.9s, localização ~2.8s — e só depois do tour.
+      if (n === "unset") {
+        setTimeout(() => setNotifyPrompt(true), 900);
+      }
+      if (loc === "unset") {
+        setTimeout(() => setLocPrompt(true), 2800);
+      }
       const pending = await takePendingSpot();
       if (pending) app.setSelectedId(pending);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Ao trocar o pin selecionado, fecha o portal e volta ao teaser.
+  useEffect(() => {
+    setSponsorOpen(false);
+  }, [app.selectedId]);
 
   useEffect(() => {
     let sub: Location.LocationSubscription | null = null;
@@ -226,9 +241,19 @@ export function MapScreen({ navigation }: Props) {
   }, []);
 
   const runLocate = useCallback(() => {
-    setLocating(true);
-    setLocateNote(null);
     void (async () => {
+      const stored = await readLocationSoftChoice();
+      const choice = locChoiceRef.current === "accepted" ? "accepted" : stored;
+      locChoiceRef.current = choice;
+      if (choice !== "accepted") {
+        await reopenLocationSoftPrompt();
+        locChoiceRef.current = "unset";
+        setLocPrompt(true);
+        setLocateNote(null);
+        return;
+      }
+      setLocating(true);
+      setLocateNote(null);
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== "granted") {
@@ -284,6 +309,8 @@ export function MapScreen({ navigation }: Props) {
 
   const showSponsor =
     (place && place.isSponsor) || vendor || app.selectedId === ESCUNA_POINT.id || app.selectedId === "escunas";
+  const softBlocked =
+    mapTour.on || Boolean(app.tipTour) || Boolean(app.showerRitual) || app.guaraOpen || Boolean(app.routeTarget);
 
   return (
     <View style={styles.fill}>
@@ -318,9 +345,10 @@ export function MapScreen({ navigation }: Props) {
           }}
           onLocate={runLocate}
           onOpenCamera={() => navigation.navigate("Camera")}
+          onMarkHit={(hit) => mapRef.current?.animateTo(hit.lat, hit.lng, 0.004)}
           locating={locating}
           locateNote={locateNote}
-          beachInvite={beachInvite && !app.searchOpen && !app.tipTour && !app.showerRitual}
+          beachInvite={beachInvite && !app.searchOpen && !app.tipTour && !app.showerRitual && !mapTour.on}
           onAcceptBeach={showPraiaDoMorro}
           onDeclineBeach={() => setBeachInvite(false)}
         />
@@ -389,22 +417,61 @@ export function MapScreen({ navigation }: Props) {
         </View>
       )}
 
-      {!app.nav?.active && !app.routeTarget && place && place.isSponsor && (
+      {/* Teaser estilo MarkerPopup — antes do portal completo */}
+      {!app.nav?.active &&
+        !app.routeTarget &&
+        !app.tipTour &&
+        !app.showerRitual &&
+        showSponsor &&
+        !sponsorOpen && (
+          <View style={[styles.teaser, { bottom: insets.bottom + 150 }]}>
+            <Text style={styles.teaserTitle}>
+              {place?.name ?? vendor?.name ?? ESCUNA_POINT.name}
+            </Text>
+            <Text style={styles.teaserSub}>
+              {place?.guaraTip ?? vendor?.tag ?? "Passeios de escuna no canal"}
+            </Text>
+            <View style={styles.teaserRow}>
+              <Pressable style={styles.teaserPrimary} onPress={() => setSponsorOpen(true)}>
+                <Text style={styles.teaserPrimaryText}>Ver cardápio e fotos</Text>
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  const t = place || vendor || ESCUNA_POINT;
+                  app.setRouteTarget({ id: t.id, lat: t.lat, lng: t.lng, name: t.name });
+                }}
+              >
+                <Text style={styles.teaserLink}>Como chegar</Text>
+              </Pressable>
+              <Pressable onPress={() => app.setSelectedId(null)}>
+                <Text style={styles.teaserLink}>Fechar</Text>
+              </Pressable>
+            </View>
+          </View>
+        )}
+
+      {!app.nav?.active && !app.routeTarget && place && place.isSponsor && sponsorOpen && (
         <SponsorSheet
           kind="place"
           place={place}
           skyPhase={app.sky.phase}
-          onClose={() => app.setSelectedId(null)}
+          onClose={() => {
+            setSponsorOpen(false);
+            app.setSelectedId(null);
+          }}
           onRoute={() =>
             app.setRouteTarget({ id: place.id, lat: place.lat, lng: place.lng, name: place.name })
           }
         />
       )}
-      {!app.nav?.active && !app.routeTarget && vendor && (
+      {!app.nav?.active && !app.routeTarget && vendor && sponsorOpen && (
         <SponsorSheet
           kind="vendor"
           vendor={vendor}
-          onClose={() => app.setSelectedId(null)}
+          onClose={() => {
+            setSponsorOpen(false);
+            app.setSelectedId(null);
+          }}
           onRoute={() =>
             app.setRouteTarget({ id: vendor.id, lat: vendor.lat, lng: vendor.lng, name: vendor.name })
           }
@@ -412,10 +479,14 @@ export function MapScreen({ navigation }: Props) {
       )}
       {!app.nav?.active &&
         !app.routeTarget &&
-        (app.selectedId === ESCUNA_POINT.id || app.selectedId === "escunas") && (
+        (app.selectedId === ESCUNA_POINT.id || app.selectedId === "escunas") &&
+        sponsorOpen && (
         <SponsorSheet
           kind="escuna"
-          onClose={() => app.setSelectedId(null)}
+          onClose={() => {
+            setSponsorOpen(false);
+            app.setSelectedId(null);
+          }}
           onRoute={() =>
             app.setRouteTarget({
               id: ESCUNA_POINT.id,
@@ -485,21 +556,7 @@ export function MapScreen({ navigation }: Props) {
       />
 
       <SoftPrompt
-        visible={locPrompt}
-        kind="location"
-        onAccept={() => {
-          void writeLocationSoftChoice("accepted");
-          setLocPrompt(false);
-          runLocate();
-        }}
-        onDecline={() => {
-          void writeLocationSoftChoice("declined");
-          setLocPrompt(false);
-          setLocateNote("Sem localização — toque de novo se mudar de ideia.");
-        }}
-      />
-      <SoftPrompt
-        visible={notifyPrompt && !locPrompt}
+        visible={notifyPrompt && !locPrompt && !softBlocked}
         kind="notify"
         onAccept={() => {
           void writeNotifySoftChoice("accepted").then(() => requestNativeNotifyPermission());
@@ -508,6 +565,22 @@ export function MapScreen({ navigation }: Props) {
         onDecline={() => {
           void writeNotifySoftChoice("declined");
           setNotifyPrompt(false);
+        }}
+      />
+      <SoftPrompt
+        visible={locPrompt && !softBlocked}
+        kind="location"
+        onAccept={() => {
+          void writeLocationSoftChoice("accepted");
+          locChoiceRef.current = "accepted";
+          setLocPrompt(false);
+          runLocate();
+        }}
+        onDecline={() => {
+          void writeLocationSoftChoice("declined");
+          locChoiceRef.current = "declined";
+          setLocPrompt(false);
+          setLocateNote("Sem localização — toque de novo se mudar de ideia.");
         }}
       />
 
@@ -561,6 +634,34 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   closeBtnText: { color: "#fff", fontWeight: "800", fontSize: 16, marginTop: -1 },
+  teaser: {
+    position: "absolute",
+    left: 16,
+    right: 16,
+    zIndex: 48,
+    backgroundColor: "rgba(255,255,255,0.96)",
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: "rgba(251,191,36,0.55)",
+    padding: 14,
+    gap: 6,
+    shadowColor: "#000",
+    shadowOpacity: 0.28,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 10,
+  },
+  teaserTitle: { color: "#142018", fontSize: 15, fontWeight: "800" },
+  teaserSub: { color: "rgba(20,32,24,0.65)", fontSize: 12, lineHeight: 16 },
+  teaserRow: { flexDirection: "row", alignItems: "center", gap: 12, marginTop: 6, flexWrap: "wrap" },
+  teaserPrimary: {
+    backgroundColor: "#f59e0b",
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+  },
+  teaserPrimaryText: { color: "#142018", fontWeight: "800", fontSize: 12 },
+  teaserLink: { color: "#0e7490", fontWeight: "700", fontSize: 12 },
   sheet: {
     position: "absolute",
     left: 0,

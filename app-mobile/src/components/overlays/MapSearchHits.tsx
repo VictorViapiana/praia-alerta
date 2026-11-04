@@ -13,16 +13,18 @@ import {
 import { useAmbulanteLive } from "../../context/AmbulanteLiveContext";
 import { RAMPS } from "../../data/rampas";
 
-type Hit = {
+export type SearchHit = {
   id: string;
   title: string;
   subtitle: string;
   kind: string;
+  lat: number;
+  lng: number;
 };
 
 type Props = {
   query: string;
-  onPick: (id: string) => void;
+  onPick: (hit: SearchHit) => void;
 };
 
 function score(name: string, query: string) {
@@ -40,26 +42,35 @@ export function MapSearchHits({ query, onPick }: Props) {
   const q = query.trim();
   if (!q) return null;
 
-  const hits: Hit[] = [];
+  const hits: SearchHit[] = [];
 
   for (const p of PLACES) {
     const s = score(p.name, q) || score(p.tag || "", q);
-    if (s > 0) hits.push({ id: p.id, title: p.name, subtitle: p.hours, kind: p.isSponsor ? "Patrocinador" : "Ponto" });
+    if (s > 0) {
+      hits.push({
+        id: p.id,
+        title: p.name,
+        subtitle: p.hours,
+        kind: p.isSponsor ? "Patrocinador" : "Ponto",
+        lat: p.lat,
+        lng: p.lng,
+      });
+    }
   }
   for (const s of SHOWERS) {
     if (score(s.name, q) || fold(q).includes("ducha")) {
-      hits.push({ id: s.id, title: s.name, subtitle: s.detail, kind: "Ducha" });
+      hits.push({ id: s.id, title: s.name, subtitle: s.detail, kind: "Ducha", lat: s.lat, lng: s.lng });
     }
   }
   for (const v of vendors.length ? vendors : AMBULANTES) {
     if (!(v.isSponsor && v.isOnline)) continue;
     if (score(v.name, q) || score(v.tag, q) || fold(q).includes("ambulante")) {
-      hits.push({ id: v.id, title: v.name, subtitle: v.tag, kind: "Ambulante" });
+      hits.push({ id: v.id, title: v.name, subtitle: v.tag, kind: "Ambulante", lat: v.lat, lng: v.lng });
     }
   }
   for (const r of RAMPS) {
     if (score(r.name, q) || fold(q).includes("rampa")) {
-      hits.push({ id: r.id, title: r.name, subtitle: r.detail, kind: "Rampa" });
+      hits.push({ id: r.id, title: r.name, subtitle: r.detail, kind: "Rampa", lat: r.lat, lng: r.lng });
     }
   }
   for (const l of [MARLIN, GOLFINHO, ACADEMIA_ORLA, ESCUNA_POINT, ...ORLA_LANDMARKS]) {
@@ -69,6 +80,8 @@ export function MapSearchHits({ query, onPick }: Props) {
         title: l.name,
         subtitle: "detail" in l ? String(l.detail) : "Landmark",
         kind: "Orla",
+        lat: l.lat,
+        lng: l.lng,
       });
     }
   }
@@ -88,7 +101,7 @@ export function MapSearchHits({ query, onPick }: Props) {
     <View style={styles.box}>
       <ScrollView style={{ maxHeight: 240 }} keyboardShouldPersistTaps="handled">
         {unique.map((hit) => (
-          <Pressable key={hit.id} style={styles.row} onPress={() => onPick(hit.id)}>
+          <Pressable key={hit.id} style={styles.row} onPress={() => onPick(hit)}>
             <View style={{ flex: 1 }}>
               <Text style={styles.title}>{hit.title}</Text>
               <Text style={styles.sub} numberOfLines={1}>

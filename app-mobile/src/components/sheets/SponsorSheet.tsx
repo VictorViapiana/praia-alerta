@@ -51,7 +51,7 @@ function PlacePortal({
   onClose: () => void;
   onRoute?: () => void;
 }) {
-  const [tab, setTab] = useState<"cardapio" | "agora" | "presente" | "ir">("cardapio");
+  const [tab, setTab] = useState<"cardapio" | "agora" | "presente" | "ir">("agora");
   const [stamped, setStamped] = useState(false);
   const offer = place.offers?.[skyPhase];
 

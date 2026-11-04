@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Camera, Heart, LocateFixed, Search, X } from "lucide-react-native";
 import { useApp } from "../../context/AppContext";
+import { isSunActive } from "../../data/day-layers";
 import { FilterChips } from "./FilterChips";
 import { SosHoldButton } from "./SosHoldButton";
 import { GuaraPose } from "../guara/GuaraPose";
@@ -12,6 +13,7 @@ type Props = {
   onOpenSos: () => void;
   onLocate: () => void;
   onOpenCamera: () => void;
+  onMarkHit?: (hit: { id: string; lat: number; lng: number }) => void;
   locating?: boolean;
   locateNote?: string | null;
   beachInvite?: boolean;
@@ -25,6 +27,7 @@ export function MapChrome({
   onOpenSos,
   onLocate,
   onOpenCamera,
+  onMarkHit,
   locating = false,
   locateNote = null,
   beachInvite = false,
@@ -146,10 +149,11 @@ export function MapChrome({
         {searchExpanded && (
           <MapSearchHits
             query={searchQuery}
-            onPick={(id) => {
-              setSelectedId(id);
+            onPick={(hit) => {
+              setSelectedId(hit.id);
               setSearchQuery("");
               setSearchOpen(false);
+              onMarkHit?.(hit);
             }}
           />
         )}
@@ -184,7 +188,14 @@ export function MapChrome({
           filter={filter}
           onFilter={(next) => setFilter(next === filter && next !== "neutro" ? "neutro" : next)}
           dayLayer={dayLayer}
-          onDayLayer={setDayLayer}
+          onDayLayer={(next) => {
+            if (next === "sol" && !isSunActive()) {
+              setDayLayer("off");
+              return;
+            }
+            setDayLayer(next);
+          }}
+          sunAvailable={isSunActive()}
         />
       </View>
     </View>

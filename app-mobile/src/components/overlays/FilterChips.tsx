@@ -8,10 +8,11 @@ type Props = {
   onFilter: (f: MapFilter) => void;
   dayLayer: DayLayer;
   onDayLayer: (l: DayLayer) => void;
+  sunAvailable?: boolean;
 };
 
 /** Filtros no estilo do web: faixa única arredondada + camadas do dia. */
-export function FilterChips({ filter, onFilter, dayLayer, onDayLayer }: Props) {
+export function FilterChips({ filter, onFilter, dayLayer, onDayLayer, sunAvailable = true }: Props) {
   return (
     <View style={styles.stack}>
       <ScrollView
@@ -48,18 +49,21 @@ export function FilterChips({ filter, onFilter, dayLayer, onDayLayer }: Props) {
       >
         {DAY_LAYER_CHIPS.map((item) => {
           const active = dayLayer === item.id;
+          const blocked = item.id === "sol" && !sunAvailable;
           return (
             <Pressable
               key={item.id}
               onPress={() => {
+                if (blocked) return;
                 void pulseSoft();
                 onDayLayer(item.id);
               }}
-              style={[styles.chipSoft, active && styles.chipSoftOn]}
+              style={[styles.chipSoft, active && styles.chipSoftOn, blocked && styles.chipBlocked]}
               accessibilityRole="button"
-              accessibilityState={{ selected: active }}
+              accessibilityState={{ selected: active, disabled: blocked }}
+              accessibilityHint={blocked ? "Sol disponível das 05:30 às 17:30" : undefined}
             >
-              <Text style={[styles.labelSoft, active && styles.labelOn]}>
+              <Text style={[styles.labelSoft, active && styles.labelOn, blocked && styles.labelBlocked]}>
                 {item.emoji} {item.label}
               </Text>
             </Pressable>
@@ -97,7 +101,9 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   chipSoftOn: { backgroundColor: "rgba(250,204,21,0.9)" },
+  chipBlocked: { opacity: 0.4 },
   label: { color: "rgba(255,255,255,0.85)", fontSize: 12, fontWeight: "600" },
   labelSoft: { color: "rgba(255,255,255,0.8)", fontSize: 11, fontWeight: "600" },
   labelOn: { color: "#142018" },
+  labelBlocked: { color: "rgba(255,255,255,0.45)" },
 });

@@ -23,6 +23,8 @@ type Props = {
   query: string;
   selectedId: string | null;
   onSelect: (id: string) => void;
+  /** Zoom ≥ 17 no web — esconde comércio até aproximar. */
+  showDense?: boolean;
 };
 
 function matchesQuery(name: string, query: string) {
@@ -50,8 +52,18 @@ function KioskPin({ place, active }: { place: Place; active?: boolean }) {
   );
 }
 
-function CartPin({ active }: { active?: boolean }) {
-  return <Image source={PIN_IMAGES.carrinho} style={[styles.cartImg, active && styles.scaleUp]} />;
+function CartPin({ active, flip }: { active?: boolean; flip?: boolean }) {
+  return (
+    <Image
+      source={PIN_IMAGES.carrinho}
+      style={[
+        styles.cartImg,
+        {
+          transform: [{ scaleX: flip ? -1 : 1 }, { scale: active ? 1.12 : 1 }],
+        },
+      ]}
+    />
+  );
 }
 
 function EscunaPin({ active }: { active?: boolean }) {
@@ -134,10 +146,10 @@ function landmarkColor(item: OrlaLandmark) {
   return "#ca8a04";
 }
 
-export function MapPins({ filter, query, selectedId, onSelect }: Props) {
+export function MapPins({ filter, query, selectedId, onSelect, showDense = true }: Props) {
   const { vendors } = useAmbulanteLive();
   const [step, setStep] = useState(0);
-  const showPlaces =
+  const categoryOk =
     filter === "neutro" ||
     filter === "quiosques" ||
     filter === "hoteis" ||
@@ -152,7 +164,8 @@ export function MapPins({ filter, query, selectedId, onSelect }: Props) {
   return (
     <>
       {/* Escuna — barco + onda */}
-      {(filter === "neutro" || filter === "parceiros") &&
+      {(showDense || selectedId === ESCUNA_POINT.id || selectedId === "escunas") &&
+        (filter === "neutro" || filter === "parceiros") &&
         matchesQuery(ESCUNA_POINT.name, query) && (
           <Marker
             coordinate={{ latitude: ESCUNA_POINT.lat, longitude: ESCUNA_POINT.lng }}
@@ -166,21 +179,24 @@ export function MapPins({ filter, query, selectedId, onSelect }: Props) {
         )}
 
       {/* Marlin */}
-      {filter === "neutro" && matchesQuery(MARLIN.name, query) && (
-        <Marker
-          coordinate={{ latitude: MARLIN.lat, longitude: MARLIN.lng }}
-          onPress={() => onSelect(MARLIN.id)}
-          anchor={{ x: 0.5, y: 0.9 }}
-          tracksViewChanges={false}
-          zIndex={35}
-        >
-          <MarlinPin active={selectedId === MARLIN.id} />
-        </Marker>
-      )}
+      {(showDense || selectedId === MARLIN.id) &&
+        filter === "neutro" &&
+        matchesQuery(MARLIN.name, query) && (
+          <Marker
+            coordinate={{ latitude: MARLIN.lat, longitude: MARLIN.lng }}
+            onPress={() => onSelect(MARLIN.id)}
+            anchor={{ x: 0.5, y: 0.9 }}
+            tracksViewChanges={false}
+            zIndex={35}
+          >
+            <MarlinPin active={selectedId === MARLIN.id} />
+          </Marker>
+        )}
 
       {SHOWERS.map((shower) => {
         const inCategory = filter === "neutro" || filter === "duchas";
-        if (!inCategory || !matchesQuery(shower.name, query)) return null;
+        const focused = selectedId === shower.id;
+        if ((!showDense && !focused) || !inCategory || !matchesQuery(shower.name, query)) return null;
         return (
           <Marker
             key={`shower-${shower.id}`}
@@ -194,13 +210,13 @@ export function MapPins({ filter, query, selectedId, onSelect }: Props) {
               color="#0284c7"
               kind="ducha"
               label={filter === "duchas" ? "Ducha" : undefined}
-              active={selectedId === shower.id}
+              active={focused}
             />
           </Marker>
         );
       })}
 
-      {PLACES.filter((place) => showPlaces || place.id === selectedId).map((place) => {
+      {PLACES.filter((place) => (showDense && categoryOk) || place.id === selectedId).map((place) => {
         const inCategory = filter === "neutro" || filter === place.mapKind;
         if (!inCategory || !matchesQuery(place.name, query)) return null;
 
@@ -244,10 +260,12 @@ export function MapPins({ filter, query, selectedId, onSelect }: Props) {
         );
       })}
 
-      {(filter === "neutro" || filter === "ambulantes") &&
+      {(showDense || vendors.some((v) => v.id === selectedId)) &&
+        (filter === "neutro" || filter === "ambulantes") &&
         vendors
           .filter((v) => v.isSponsor && v.isOnline)
           .map((vendor) => {
+            if (!showDense && vendor.id !== selectedId) return null;
             if (!matchesQuery(vendor.name, query)) return null;
             const point = walkOffset(vendor, step + (vendor.id === "picole" ? 4 : 0));
             return (
@@ -259,12 +277,13 @@ export function MapPins({ filter, query, selectedId, onSelect }: Props) {
                 tracksViewChanges={vendor.walks}
                 zIndex={30}
               >
-                <CartPin active={selectedId === vendor.id} />
+                <CartPin active={selectedId === vendor.id} flip={vendor.walks ? step % 8 > 4 : false} />
               </Marker>
             );
           })}
 
       {ORLA_LANDMARKS.map((landmark) => {
+        if (!showDense && selectedId !== landmark.id) return null;
         if (filter !== "neutro" && selectedId !== landmark.id) return null;
         if (!matchesQuery(landmark.name, query) && selectedId !== landmark.id) return null;
         return (
