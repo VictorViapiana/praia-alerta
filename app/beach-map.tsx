@@ -489,12 +489,12 @@ function ShowerPin({
 }) {
   return (
     <div
-      className={`relative h-5 w-5 ${selected ? "pin-focus" : ""} ${alert ? "pin-alert rounded-full" : ""}`}
+      className={`relative h-6 w-6 ${selected ? "pin-focus" : ""} ${alert ? "pin-alert rounded-full" : ""}`}
       style={{ opacity: faded ? 0.28 : 1 }}
     >
       {selected && <span className="pin-focus-ring" aria-hidden />}
       {(selected || showLabel) && (
-        <span className="absolute bottom-full left-1/2 mb-1 block w-max max-w-[10.5rem] -translate-x-1/2 truncate rounded-full border border-white bg-white px-2 py-1 text-center text-[11px] font-bold leading-none tracking-normal text-[#3c2a18] shadow-[0_2px_8px_rgba(0,0,0,0.55)]">
+        <span className="absolute bottom-full left-1/2 mb-1 block w-max max-w-[10.5rem] -translate-x-1/2 truncate rounded-full border border-white bg-white px-2 py-1 text-center text-[12px] font-bold leading-none tracking-normal text-[#3c2a18] shadow-[0_2px_8px_rgba(0,0,0,0.55)]">
           {name}
         </span>
       )}
@@ -507,9 +507,9 @@ function ShowerPin({
           event.stopPropagation();
           onSelect?.();
         }}
-        className={`grid h-5 w-5 place-items-center rounded-full border-2 border-white bg-gradient-to-b from-sky-50 to-sky-200 text-[#0284c7] shadow-[0_0_0_1px_rgba(0,0,0,0.4),0_4px_10px_rgba(2,132,199,0.45)] ${selected ? "ring-2 ring-sky-200" : ""} ${alert ? "ring-2 ring-cyan-300" : ""}`}
+        className={`grid h-6 w-6 place-items-center rounded-full border-2 border-white bg-gradient-to-b from-sky-50 to-sky-200 text-[#0284c7] shadow-[0_0_0_1px_rgba(0,0,0,0.4),0_5px_12px_rgba(2,132,199,0.5)] ${selected ? "ring-2 ring-sky-200" : ""} ${alert ? "ring-2 ring-cyan-300" : ""}`}
       >
-        <ShowerHead className="h-2.5 w-2.5" strokeWidth={2.4} />
+        <ShowerHead className="h-3.5 w-3.5" strokeWidth={2.3} />
       </button>
     </div>
   );
@@ -1568,7 +1568,7 @@ function OrlaMarkers({
               key={shower.id}
               position={[shower.lat, shower.lng]}
               zIndexOffset={selected ? 960 : 12}
-              size={20}
+              size={24}
             >
               <ShowerPin
                 name={shower.name}

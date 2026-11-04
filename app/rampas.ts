@@ -46,6 +46,45 @@ function corridorNorthSouth(
   };
 }
 
+/**
+ * Corredor ao longo de um rumo (graus a partir do norte, sentido horário).
+ * `bearingDeg` aponta para a areia/mar a partir do pin.
+ */
+function corridorAlongBearing(
+  lat: number,
+  lng: number,
+  halfM: number,
+  backM: number,
+  forwardM: number,
+  bearingDeg: number,
+): Pick<RampAccess, "corridor" | "edgeLeft" | "edgeRight"> {
+  const rad = (bearingDeg * Math.PI) / 180;
+  // Vetor para a frente (areia): north = cos(bearing), east = sin(bearing)
+  const fN = Math.cos(rad);
+  const fE = Math.sin(rad);
+  // Perpendicular à esquerda do rumo (para largura do corredor)
+  const lN = -fE;
+  const lE = fN;
+
+  const at = (along: number, across: number): [number, number] =>
+    shift(lat, lng, fN * along + lN * across, fE * along + lE * across);
+
+  const corridor: [number, number][] = [
+    at(-backM, halfM),
+    at(-backM, -halfM),
+    at(forwardM, -halfM),
+    at(forwardM, halfM),
+  ];
+  const markStart = Math.min(12, forwardM * 0.25);
+  const markEnd = forwardM - 2;
+  const markHalf = halfM - 0.4;
+  return {
+    corridor,
+    edgeLeft: [at(markStart, markHalf), at(markEnd, markHalf)],
+    edgeRight: [at(markStart, -markHalf), at(markEnd, -markHalf)],
+  };
+}
+
 function pointInRing(point: { lat: number; lng: number }, ring: [number, number][]) {
   let inside = false;
   for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
@@ -60,14 +99,26 @@ function pointInRing(point: { lat: number; lng: number }, ring: [number, number]
   return inside;
 }
 
-/** Mesmas medidas nas duas: 14 m de largura · 4 m atrás do pin · 44 m reto à areia/mar. */
+/** Mesmas medidas nas duas: 14 m de largura · 4 m atrás do pin · 44 m à areia/mar. */
 const RAMP_HALF_M = 7;
 const RAMP_BACK_M = 4;
 const RAMP_TO_SEA_M = 44;
 
+/**
+ * Rampa norte: rumo ~155° (SSE) — calçadão → areia na diagonal da foto
+ * (não reto N→S; alinhado à passagem real perto do costão).
+ */
+const NORTE_BEARING_DEG = 155;
+
 const principalGeom = corridorNorthSouth(-20.652309, -40.478881, RAMP_HALF_M, RAMP_BACK_M, RAMP_TO_SEA_M);
-/** Rampa norte (−20.653700, −40.474761): mesmo tamanho, reto N→S até o mar. */
-const norteGeom = corridorNorthSouth(-20.6537, -40.474761, RAMP_HALF_M, RAMP_BACK_M, RAMP_TO_SEA_M);
+const norteGeom = corridorAlongBearing(
+  -20.6537,
+  -40.474761,
+  RAMP_HALF_M,
+  RAMP_BACK_M,
+  RAMP_TO_SEA_M,
+  NORTE_BEARING_DEG,
+);
 
 export const RAMPA_PRINCIPAL: RampAccess = {
   id: "rampa-principal",
