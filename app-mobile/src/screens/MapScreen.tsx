@@ -66,6 +66,8 @@ export function MapScreen({ navigation }: Props) {
   const [mapTour, setMapTour] = useState<{ on: boolean; i: number }>({ on: false, i: 0 });
   const [previewRoute, setPreviewRoute] = useState<WalkRoute | null>(null);
   const [muroTalk, setMuroTalk] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const [locateNote, setLocateNote] = useState<string | null>(null);
 
   const liveHeading = app.nav?.active ? navTrack.fix?.heading ?? heading : heading;
   const liveLat = app.nav?.active ? navTrack.fix?.lat ?? fix?.lat ?? null : fix?.lat ?? null;
@@ -193,6 +195,17 @@ export function MapScreen({ navigation }: Props) {
           title: MARLIN.name,
           subtitle: MARLIN.detail,
           steps: MARLIN_TIPS.map((t) => ({ title: t.title, text: t.text, kind: "aviso" as const })),
+          accent: "ocean",
+        });
+        return;
+      }
+      const lm = landmarkById(id);
+      if (lm?.tips?.length) {
+        app.openTipTour({
+          title: lm.name,
+          subtitle: lm.detail,
+          steps: lm.tips,
+          accent: lm.tone === "salva" ? "amber" : lm.tone === "banheiro" ? "ocean" : "teal",
         });
       }
     },
@@ -204,9 +217,33 @@ export function MapScreen({ navigation }: Props) {
     openSelectedExperience(app.selectedId);
   }, [app.selectedId, openSelectedExperience]);
 
+  const runLocate = useCallback(() => {
+    setLocating(true);
+    setLocateNote(null);
+    void (async () => {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          setLocateNote("Permita a localização para centralizar o mapa.");
+          setLocating(false);
+          return;
+        }
+        const pos = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
+        mapRef.current?.animateTo(pos.coords.latitude, pos.coords.longitude, 0.0045);
+      } catch {
+        setLocateNote("Este aparelho não informou a localização.");
+      } finally {
+        setLocating(false);
+      }
+    })();
+  }, []);
+
   const onGuide = useCallback(
     (guide: GuaraGuide) => {
       if (guide.filter) app.setFilter(guide.filter);
+      if (guide.basemap) app.setBasemap(guide.basemap);
       if (guide.query != null) {
         app.setSearchQuery(guide.query);
         app.setSearchOpen(true);
@@ -221,9 +258,12 @@ export function MapScreen({ navigation }: Props) {
           name: guide.route.name,
         });
       }
-      if (guide.locate && fix) mapRef.current?.animateTo(fix.lat, fix.lng);
+      if (guide.locate) {
+        if (fix) mapRef.current?.animateTo(fix.lat, fix.lng);
+        else runLocate();
+      }
     },
-    [app, fix],
+    [app, fix, runLocate],
   );
 
   const showSponsor =
@@ -257,12 +297,20 @@ export function MapScreen({ navigation }: Props) {
             app.openSos();
             navigation.navigate("Sos");
           }}
+          onLocate={runLocate}
+          onOpenCamera={() => navigation.navigate("Camera")}
+          locating={locating}
+          locateNote={locateNote}
         />
       )}
 
       {!app.nav?.active && (
-        <Pressable style={[styles.back, { top: insets.top + 8 }]} onPress={() => navigation.goBack()}>
-          <Text style={styles.backText}>‹ Home</Text>
+        <Pressable
+          style={[styles.closeBtn, { top: insets.top + 10 }]}
+          onPress={() => navigation.goBack()}
+          accessibilityLabel="Fechar mapa"
+        >
+          <Text style={styles.closeBtnText}>✕</Text>
         </Pressable>
       )}
 
@@ -282,24 +330,25 @@ export function MapScreen({ navigation }: Props) {
         />
       )}
 
-      {/* Ficha rápida / landmark não-sponsor */}
+      {/* Ficha rápida — só quando não abriu ritual/tour do Guará (landmarks com tips usam TipTour). */}
       {!app.nav?.active &&
         !app.routeTarget &&
-        (landmark || ramp || (place && !place.isSponsor) || shower) &&
-        !showSponsor &&
-        !app.showerRitual && (
+        !app.tipTour &&
+        !app.showerRitual &&
+        (ramp || (place && !place.isSponsor) || (landmark && !landmark.tips?.length)) &&
+        !showSponsor && (
         <View style={[styles.sheet, { paddingBottom: insets.bottom + 16 }]}>
           <Text style={styles.sheetTitle}>
-            {place?.name ?? shower?.name ?? landmark?.name ?? ramp?.name}
+            {place?.name ?? landmark?.name ?? ramp?.name}
           </Text>
           <Text style={styles.sheetSub}>
-            {place?.guaraTip ?? shower?.detail ?? landmark?.detail ?? ramp?.detail}
+            {place?.guaraTip ?? landmark?.detail ?? ramp?.detail}
           </Text>
           <View style={styles.sheetRow}>
             <Pressable
               style={styles.routeBtn}
               onPress={() => {
-                const t = place || shower || landmark || ramp;
+                const t = place || landmark || ramp;
                 if (!t) return;
                 app.setRouteTarget({
                   id: t.id,
@@ -464,16 +513,20 @@ export function MapScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   fill: { flex: 1, backgroundColor: "#0b2a48" },
-  back: {
+  closeBtn: {
     position: "absolute",
-    left: 12,
-    zIndex: 50,
-    backgroundColor: "rgba(15,23,42,0.75)",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 12,
+    right: 14,
+    zIndex: 60,
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    backgroundColor: "rgba(15,23,42,0.72)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.2)",
+    alignItems: "center",
+    justifyContent: "center",
   },
-  backText: { color: "#fff", fontWeight: "700" },
+  closeBtnText: { color: "#fff", fontWeight: "800", fontSize: 16, marginTop: -1 },
   sheet: {
     position: "absolute",
     left: 0,

@@ -1,5 +1,5 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 import MapView, { type Region, PROVIDER_DEFAULT } from "react-native-maps";
 import { useApp } from "../../context/AppContext";
 import { useUserLocation } from "../../hooks/useUserLocation";
@@ -44,7 +44,7 @@ export const BeachMapView = forwardRef<BeachMapHandle, Props>(function BeachMapV
   ref,
 ) {
   const mapRef = useRef<MapView>(null);
-  const { filter, searchQuery, selectedId, setSelectedId, dayLayer, tide, nav } = useApp();
+  const { filter, searchQuery, selectedId, setSelectedId, dayLayer, tide, nav, basemap } = useApp();
   const { fix } = useUserLocation(!nav?.active);
   const [region, setRegion] = useState<Region>({
     ...mapTheme.center,
@@ -127,6 +127,13 @@ export const BeachMapView = forwardRef<BeachMapHandle, Props>(function BeachMapV
   }, [navigating, lat, lng, heading]);
 
   const drawn = navigating ? nav?.route ?? null : previewRoute;
+  // Satélite = foto da orla (como o web). Limpo = mapa sem POIs de terceiros.
+  const mapType =
+    basemap === "clean"
+      ? Platform.OS === "ios"
+        ? "mutedStandard"
+        : "standard"
+      : "satellite";
 
   return (
     <View style={styles.fill}>
@@ -139,9 +146,10 @@ export const BeachMapView = forwardRef<BeachMapHandle, Props>(function BeachMapV
         showsUserLocation={false}
         showsMyLocationButton={false}
         showsCompass={false}
+        showsPointsOfInterests={false}
         rotateEnabled
         pitchEnabled
-        mapType="hybrid"
+        mapType={mapType}
         userInterfaceStyle="light"
         followsUserLocation={false}
         toolbarEnabled={false}

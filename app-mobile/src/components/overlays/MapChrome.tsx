@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Search, X } from "lucide-react-native";
+import { Camera, Heart, LocateFixed, Search, X } from "lucide-react-native";
 import { useApp } from "../../context/AppContext";
 import { FilterChips } from "./FilterChips";
 import { SosHoldButton } from "./SosHoldButton";
@@ -10,132 +10,276 @@ import { MapSearchHits } from "./MapSearchHits";
 type Props = {
   onOpenGuara: () => void;
   onOpenSos: () => void;
-  onMuroTip?: () => void;
+  onLocate: () => void;
+  onOpenCamera: () => void;
+  locating?: boolean;
+  locateNote?: string | null;
 };
 
-export function MapChrome({ onOpenGuara, onOpenSos }: Props) {
+/** Chrome do mapa alinhado ao web: título, localizar, satélite/limpo, busca embaixo, câmera. */
+export function MapChrome({
+  onOpenGuara,
+  onOpenSos,
+  onLocate,
+  onOpenCamera,
+  locating = false,
+  locateNote = null,
+}: Props) {
   const insets = useSafeAreaInsets();
   const {
     filter,
     setFilter,
     dayLayer,
     setDayLayer,
-    searchOpen,
-    setSearchOpen,
+    basemap,
+    setBasemap,
     searchQuery,
     setSearchQuery,
     setSelectedId,
-    weather,
-    sky,
+    setSearchOpen,
   } = useApp();
+
+  const searchExpanded = searchQuery.trim().length > 0;
 
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
-      <View style={[styles.top, { paddingTop: insets.top + 8 }]} pointerEvents="box-none">
-        <View style={styles.headerRow}>
-          <View style={styles.weatherPill}>
-            <Text style={styles.weatherTemp}>
-              {weather.data ? `${Math.round(weather.data.temp)}°` : "··°"}
-            </Text>
-            <Text style={styles.weatherSub} numberOfLines={1}>
-              {weather.data?.summary ?? "Clima"} · {sky.label}
-            </Text>
-          </View>
-          <Pressable
-            onPress={() => setSearchOpen(!searchOpen)}
-            style={styles.iconBtn}
-            accessibilityLabel="Buscar na orla"
-          >
-            {searchOpen ? <X color="#fff" size={18} /> : <Search color="#fff" size={18} />}
-          </Pressable>
-        </View>
-
-        {searchOpen && (
-          <>
-            <TextInput
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              placeholder="Quiosque 12, ducha, escuna…"
-              placeholderTextColor="rgba(255,255,255,0.4)"
-              style={styles.search}
-              autoFocus
-            />
-            <MapSearchHits
-              query={searchQuery}
-              onPick={(id) => {
-                setSelectedId(id);
-                setSearchOpen(false);
-                setSearchQuery("");
-              }}
-            />
-          </>
-        )}
-
-        <FilterChips
-          filter={filter}
-          onFilter={setFilter}
-          dayLayer={dayLayer}
-          onDayLayer={setDayLayer}
-        />
+      {/* Título como no web */}
+      <View style={[styles.titleBlock, { top: insets.top + 6 }]} pointerEvents="none">
+        <Text style={styles.eyebrow}>Praia do Morro</Text>
+        <Text style={styles.title}>Mapa & Localização</Text>
       </View>
 
-      <SosHoldButton onTrigger={onOpenSos} top={insets.top + 168} />
+      {/* Localizar + satélite/limpo — canto direito */}
+      <View style={[styles.rightStack, { top: insets.top + 58 }]} pointerEvents="box-none">
+        <Pressable
+          onPress={onLocate}
+          style={[styles.locateBtn, locating && styles.locateBtnBusy]}
+          accessibilityLabel="Minha localização"
+        >
+          <LocateFixed color="#1d4ed8" size={22} strokeWidth={2.2} />
+        </Pressable>
+        <Text style={styles.locateCaption}>Minha localização</Text>
+
+        <View style={styles.basemapGroup}>
+          {(
+            [
+              ["satellite", "Satélite"],
+              ["clean", "Limpo"],
+            ] as const
+          ).map(([id, label]) => {
+            const on = basemap === id;
+            return (
+              <Pressable
+                key={id}
+                onPress={() => setBasemap(id)}
+                style={[styles.basemapBtn, on && styles.basemapBtnOn]}
+                accessibilityRole="button"
+                accessibilityState={{ selected: on }}
+              >
+                <Text style={[styles.basemapText, on && styles.basemapTextOn]}>{label}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+        {locateNote ? <Text style={styles.locateNote}>{locateNote}</Text> : null}
+      </View>
+
+      <SosHoldButton onTrigger={onOpenSos} top={insets.top + 210} />
+
+      {/* Câmera Eu amo Guarapari */}
+      <Pressable
+        onPress={onOpenCamera}
+        style={[styles.cameraFab, { bottom: insets.bottom + 168 }]}
+        accessibilityLabel="Eu amo Guarapari. Abrir a câmera."
+      >
+        <View style={styles.cameraOrb}>
+          <View style={styles.cameraInner}>
+            <Camera color="#fff" size={22} strokeWidth={2.2} />
+          </View>
+        </View>
+        <View style={styles.cameraLabel}>
+          <Heart color="#fda4af" size={10} fill="#fb7185" />
+          <Text style={styles.cameraLabelText}>Eu amo Guarapari</Text>
+        </View>
+      </Pressable>
 
       <Pressable
         onPress={onOpenGuara}
-        style={[styles.guaraFab, { bottom: insets.bottom + 28 }]}
+        style={[styles.guaraFab, { bottom: insets.bottom + 168 }]}
         accessibilityLabel="Abrir Guará"
       >
         <GuaraPose pose="bust" size={54} />
       </Pressable>
+
+      {/* Busca + filtros — ancorados embaixo como no web */}
+      <View style={[styles.bottom, { paddingBottom: insets.bottom + 10 }]} pointerEvents="box-none">
+        {searchExpanded && (
+          <MapSearchHits
+            query={searchQuery}
+            onPick={(id) => {
+              setSelectedId(id);
+              setSearchQuery("");
+              setSearchOpen(false);
+            }}
+          />
+        )}
+        <View style={[styles.searchBar, searchExpanded && styles.searchBarOpen]}>
+          <Search color={searchExpanded ? "#a16207" : "rgba(255,255,255,0.7)"} size={14} />
+          <TextInput
+            value={searchQuery}
+            onChangeText={(t) => {
+              setSearchQuery(t);
+              setSearchOpen(t.length > 0);
+            }}
+            placeholder="Buscar estabelecimento"
+            placeholderTextColor={searchExpanded ? "rgba(20,32,24,0.45)" : "rgba(255,255,255,0.45)"}
+            style={[styles.searchInput, searchExpanded && styles.searchInputOpen]}
+            returnKeyType="search"
+          />
+          {searchQuery.length > 0 ? (
+            <Pressable
+              onPress={() => {
+                setSearchQuery("");
+                setSearchOpen(false);
+              }}
+              hitSlop={8}
+              accessibilityLabel="Limpar busca"
+            >
+              <X color={searchExpanded ? "#142018" : "#fff"} size={14} />
+            </Pressable>
+          ) : null}
+        </View>
+
+        <FilterChips
+          filter={filter}
+          onFilter={(next) => setFilter(next === filter && next !== "neutro" ? "neutro" : next)}
+          dayLayer={dayLayer}
+          onDayLayer={setDayLayer}
+        />
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  top: {
+  titleBlock: {
     position: "absolute",
-    left: 0,
-    right: 0,
-    paddingHorizontal: 12,
-    gap: 10,
+    left: 20,
+    right: 72,
     zIndex: 30,
   },
-  headerRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  weatherPill: {
-    flex: 1,
-    backgroundColor: "rgba(15,23,42,0.72)",
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.12)",
+  eyebrow: {
+    color: "rgba(255,255,255,0.85)",
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 2.2,
+    textTransform: "uppercase",
+    textShadowColor: "rgba(0,0,0,0.85)",
+    textShadowRadius: 3,
+    textShadowOffset: { width: 0, height: 1 },
   },
-  weatherTemp: { color: "#fff", fontSize: 18, fontWeight: "800" },
-  weatherSub: { color: "rgba(255,255,255,0.72)", fontSize: 11, marginTop: 1 },
-  iconBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 14,
-    backgroundColor: "rgba(15,23,42,0.72)",
+  title: {
+    marginTop: 4,
+    color: "#fff",
+    fontSize: 22,
+    fontWeight: "700",
+    textShadowColor: "rgba(0,0,0,0.85)",
+    textShadowRadius: 4,
+    textShadowOffset: { width: 0, height: 2 },
+  },
+  rightStack: {
+    position: "absolute",
+    right: 14,
+    alignItems: "flex-end",
+    gap: 4,
+    zIndex: 40,
+  },
+  locateBtn: {
+    width: 48,
+    height: 48,
+    borderRadius: 999,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.12)",
+    shadowColor: "#0f172a",
+    shadowOpacity: 0.28,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 8,
   },
-  search: {
-    backgroundColor: "rgba(15,23,42,0.82)",
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+  locateBtnBusy: { opacity: 0.55 },
+  locateCaption: {
+    backgroundColor: "rgba(0,0,0,0.55)",
     color: "#fff",
-    fontSize: 14,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.12)",
+    fontSize: 9,
+    fontWeight: "700",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 999,
+    overflow: "hidden",
   },
-  guaraFab: {
+  basemapGroup: {
+    marginTop: 4,
+    flexDirection: "row",
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.25)",
+    backgroundColor: "rgba(0,0,0,0.55)",
+    padding: 2,
+  },
+  basemapBtn: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 },
+  basemapBtnOn: { backgroundColor: "#fff" },
+  basemapText: { color: "rgba(255,255,255,0.8)", fontSize: 10, fontWeight: "700" },
+  basemapTextOn: { color: "#142018" },
+  locateNote: {
+    maxWidth: 150,
+    color: "#fff",
+    fontSize: 10,
+    textAlign: "right",
+    lineHeight: 13,
+  },
+  cameraFab: {
     position: "absolute",
     right: 16,
+    alignItems: "center",
+    gap: 6,
+    zIndex: 50,
+  },
+  cameraOrb: {
+    width: 68,
+    height: 68,
+    borderRadius: 24,
+    backgroundColor: "rgba(255,255,255,0.18)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.45)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cameraInner: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    backgroundColor: "#e11d48",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cameraLabel: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: "rgba(0,0,0,0.55)",
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.25)",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  cameraLabelText: { color: "#fff", fontSize: 10, fontWeight: "700" },
+  guaraFab: {
+    position: "absolute",
+    left: 16,
     width: 64,
     height: 64,
     borderRadius: 999,
@@ -147,6 +291,36 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 6 },
     elevation: 8,
-    zIndex: 40,
+    zIndex: 50,
   },
+  bottom: {
+    position: "absolute",
+    left: 12,
+    right: 12,
+    bottom: 0,
+    gap: 8,
+    zIndex: 55,
+  },
+  searchBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.3)",
+    backgroundColor: "rgba(0,0,0,0.55)",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  searchBarOpen: {
+    backgroundColor: "#fff",
+    borderColor: "rgba(253,230,138,0.7)",
+  },
+  searchInput: {
+    flex: 1,
+    color: "#fff",
+    fontSize: 13,
+    padding: 0,
+  },
+  searchInputOpen: { color: "#142018" },
 });

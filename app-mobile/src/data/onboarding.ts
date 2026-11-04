@@ -9,17 +9,17 @@ export type TourStep = {
 
 export const HOME_STEPS: TourStep[] = [
   {
-    text: "Olá! Eu sou o Guará, o seu guia aqui na Praia do Morro! Deixe-me dar 2 avisos muito importantes antes de você aproveitar.",
+    text: "Olá! Eu sou o Guará, o seu guia aqui na Praia do Morro! 🏖️ Deixe-me dar 2 avisos muito importantes antes de você aproveitar.",
     target: null,
     guara: "large",
   },
   {
-    text: "Este é o botão de Criança Perdida. Ele avisa todos os quiosques e guarda-vidas da orla instantaneamente. Use APENAS se uma criança se perder de verdade!",
+    text: "Este é o botão de Criança Perdida. 👶 Ele avisa todos os quiosques e guarda-vidas da orla instantaneamente. Use APENAS se uma criança se perder de verdade!",
     target: "crianca",
     guara: "small",
   },
   {
-    text: "E aqui embaixo fica o botão de Emergência. Deslizar este botão aciona a Polícia e o Resgate. Trotes e alarmes falsos são crime, então use com total responsabilidade, ok?",
+    text: "E aqui embaixo fica o botão de Emergência. 🚨 Deslizar este botão aciona a Polícia e o Resgate. Trotes e alarmes falsos são crime, então use com total responsabilidade, ok?",
     target: "sos",
     guara: "small",
   },
@@ -47,7 +47,17 @@ export const MAP_STEPS: TourStep[] = [
     guara: "small",
   },
   {
-    text: "Aproxima com dois dedos. Os quiosques e os carrinhos nascem na areia. Toque no pin para ver a ficha e chamar no WhatsApp.",
+    text: "Este botão abre a câmera com a moldura Eu amo Guarapari. A foto fica com você.",
+    target: "map-camera",
+    guara: "small",
+  },
+  {
+    text: "Este círculo branco centraliza o mapa em você: calçadão embaixo dos pés, areia na frente.",
+    target: "map-location",
+    guara: "small",
+  },
+  {
+    text: "Aproxima com dois dedos. Os quiosques e os carrinhos nascem na areia. Toque no carrinho para ver o cardápio e chamar no WhatsApp.",
     target: null,
     guara: "small",
   },

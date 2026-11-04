@@ -6,6 +6,7 @@ import {
   ESCUNA_POINT,
   GOLFINHO,
   MARLIN,
+  ORLA_LANDMARKS,
   PLACES,
   SHOWERS,
 } from "../../data/places";
@@ -61,8 +62,15 @@ export function MapSearchHits({ query, onPick }: Props) {
       hits.push({ id: r.id, title: r.name, subtitle: r.detail, kind: "Rampa" });
     }
   }
-  for (const l of [MARLIN, GOLFINHO, ACADEMIA_ORLA, ESCUNA_POINT]) {
-    if (score(l.name, q)) hits.push({ id: l.id, title: l.name, subtitle: "Landmark", kind: "Orla" });
+  for (const l of [MARLIN, GOLFINHO, ACADEMIA_ORLA, ESCUNA_POINT, ...ORLA_LANDMARKS]) {
+    if (score(l.name, q) || ("search" in l && typeof l.search === "string" && fold(l.search).includes(fold(q)))) {
+      hits.push({
+        id: l.id,
+        title: l.name,
+        subtitle: "detail" in l ? String(l.detail) : "Landmark",
+        kind: "Orla",
+      });
+    }
   }
 
   hits.sort((a, b) => score(b.title, q) - score(a.title, q));
@@ -78,12 +86,14 @@ export function MapSearchHits({ query, onPick }: Props) {
 
   return (
     <View style={styles.box}>
-      <ScrollView style={{ maxHeight: 260 }} keyboardShouldPersistTaps="handled">
+      <ScrollView style={{ maxHeight: 240 }} keyboardShouldPersistTaps="handled">
         {unique.map((hit) => (
           <Pressable key={hit.id} style={styles.row} onPress={() => onPick(hit.id)}>
             <View style={{ flex: 1 }}>
               <Text style={styles.title}>{hit.title}</Text>
-              <Text style={styles.sub}>{hit.subtitle}</Text>
+              <Text style={styles.sub} numberOfLines={1}>
+                {hit.subtitle}
+              </Text>
             </View>
             <Text style={styles.kind}>{hit.kind}</Text>
           </Pressable>
@@ -95,12 +105,12 @@ export function MapSearchHits({ query, onPick }: Props) {
 
 const styles = StyleSheet.create({
   box: {
-    marginTop: 8,
-    backgroundColor: "rgba(15,23,42,0.94)",
+    backgroundColor: "#fff",
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.12)",
+    borderColor: "rgba(253,230,138,0.55)",
     overflow: "hidden",
+    marginBottom: 4,
   },
   row: {
     flexDirection: "row",
@@ -109,10 +119,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "rgba(255,255,255,0.08)",
+    borderBottomColor: "rgba(15,23,42,0.08)",
   },
-  title: { color: "#fff", fontWeight: "800", fontSize: 14 },
-  sub: { color: "rgba(255,255,255,0.55)", fontSize: 12, marginTop: 2 },
-  kind: { color: "#7dd3fc", fontSize: 11, fontWeight: "800" },
-  empty: { color: "rgba(255,255,255,0.65)", padding: 14, fontSize: 13 },
+  title: { color: "#142018", fontWeight: "800", fontSize: 14 },
+  sub: { color: "rgba(20,32,24,0.55)", fontSize: 12, marginTop: 2 },
+  kind: { color: "#b45309", fontSize: 11, fontWeight: "800" },
+  empty: { color: "rgba(20,32,24,0.65)", padding: 14, fontSize: 13 },
 });

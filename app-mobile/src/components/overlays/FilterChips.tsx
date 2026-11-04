@@ -10,10 +10,16 @@ type Props = {
   onDayLayer: (l: DayLayer) => void;
 };
 
+/** Filtros no estilo do web: faixa única arredondada + camadas do dia. */
 export function FilterChips({ filter, onFilter, dayLayer, onDayLayer }: Props) {
   return (
     <View style={styles.stack}>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.row}
+        style={styles.bar}
+      >
         {MAP_FILTERS.map((item) => {
           const active = filter === item.id;
           return (
@@ -24,14 +30,22 @@ export function FilterChips({ filter, onFilter, dayLayer, onDayLayer }: Props) {
                 onFilter(item.id);
               }}
               style={[styles.chip, active && styles.chipOn]}
+              accessibilityRole="button"
+              accessibilityState={{ selected: active }}
             >
-              <Text style={styles.emoji}>{item.emoji}</Text>
-              <Text style={[styles.label, active && styles.labelOn]}>{item.label}</Text>
+              <Text style={[styles.label, active && styles.labelOn]}>
+                {item.emoji} {item.label}
+              </Text>
             </Pressable>
           );
         })}
       </ScrollView>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.row}
+        style={styles.barSoft}
+      >
         {DAY_LAYER_CHIPS.map((item) => {
           const active = dayLayer === item.id;
           return (
@@ -42,9 +56,12 @@ export function FilterChips({ filter, onFilter, dayLayer, onDayLayer }: Props) {
                 onDayLayer(item.id);
               }}
               style={[styles.chipSoft, active && styles.chipSoftOn]}
+              accessibilityRole="button"
+              accessibilityState={{ selected: active }}
             >
-              <Text style={styles.emoji}>{item.emoji}</Text>
-              <Text style={[styles.labelSoft, active && styles.labelOn]}>{item.label}</Text>
+              <Text style={[styles.labelSoft, active && styles.labelOn]}>
+                {item.emoji} {item.label}
+              </Text>
             </Pressable>
           );
         })}
@@ -54,34 +71,33 @@ export function FilterChips({ filter, onFilter, dayLayer, onDayLayer }: Props) {
 }
 
 const styles = StyleSheet.create({
-  stack: { gap: 8 },
-  row: { gap: 8, paddingHorizontal: 4 },
-  chip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+  stack: { gap: 6 },
+  bar: {
     borderRadius: 999,
-    backgroundColor: "rgba(15,23,42,0.72)",
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.12)",
+    borderColor: "rgba(255,255,255,0.3)",
+    backgroundColor: "rgba(0,0,0,0.55)",
   },
-  chipOn: { backgroundColor: "rgba(14,165,233,0.92)", borderColor: "rgba(255,255,255,0.35)" },
-  chipSoft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
+  barSoft: {
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.25)",
+    backgroundColor: "rgba(8,47,73,0.5)",
+  },
+  row: { gap: 4, paddingHorizontal: 6, paddingVertical: 6 },
+  chip: {
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 999,
-    backgroundColor: "rgba(15,23,42,0.55)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.1)",
   },
-  chipSoftOn: { backgroundColor: "rgba(250,204,21,0.85)", borderColor: "rgba(255,255,255,0.4)" },
-  emoji: { fontSize: 13 },
-  label: { color: "rgba(255,255,255,0.88)", fontSize: 12, fontWeight: "600" },
+  chipOn: { backgroundColor: "#fff" },
+  chipSoft: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+  },
+  chipSoftOn: { backgroundColor: "rgba(250,204,21,0.9)" },
+  label: { color: "rgba(255,255,255,0.85)", fontSize: 12, fontWeight: "600" },
   labelSoft: { color: "rgba(255,255,255,0.8)", fontSize: 11, fontWeight: "600" },
-  labelOn: { color: "#0f172a" },
+  labelOn: { color: "#142018" },
 });

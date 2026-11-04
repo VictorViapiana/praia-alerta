@@ -22,11 +22,15 @@ export type NavState = {
   active: boolean;
 } | null;
 
+export type BasemapStyle = "satellite" | "clean";
+
 type AppState = {
   filter: MapFilter;
   setFilter: (f: MapFilter) => void;
   dayLayer: DayLayer;
   setDayLayer: (l: DayLayer) => void;
+  basemap: BasemapStyle;
+  setBasemap: (b: BasemapStyle) => void;
   selectedId: string | null;
   setSelectedId: (id: string | null) => void;
   searchQuery: string;
@@ -66,6 +70,7 @@ const Ctx = createContext<AppState | null>(null);
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [filter, setFilter] = useState<MapFilter>("neutro");
   const [dayLayer, setDayLayer] = useState<DayLayer>("off");
+  const [basemap, setBasemap] = useState<BasemapStyle>("satellite");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -124,6 +129,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setFilter,
       dayLayer,
       setDayLayer,
+      basemap,
+      setBasemap,
       selectedId,
       setSelectedId,
       searchQuery,
@@ -160,6 +167,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     [
       filter,
       dayLayer,
+      basemap,
       selectedId,
       searchQuery,
       searchOpen,
