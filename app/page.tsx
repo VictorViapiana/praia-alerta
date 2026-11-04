@@ -565,28 +565,28 @@ function GuaraIsland({ onReplay, onMission }: { onReplay: () => void; onMission:
                     </motion.button>
                   ))}
                 </div>
+
+                <div className="grid grid-cols-2 gap-1.5 border-t border-white/20 bg-sky-950/40 p-1.5 -mx-0.5 rounded-2xl">
+                  <MissionTrigger variant="rail" onOpen={onMission} />
+                  <button
+                    type="button"
+                    onClick={onReplay}
+                    aria-label="Refazer tutorial"
+                    className="flex min-h-[2.6rem] items-center justify-center gap-2 rounded-2xl border border-white/30 bg-sky-950/45 px-3 py-2 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] transition hover:border-white/45 hover:bg-sky-950/55"
+                  >
+                    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-white/30 bg-white/15 text-white">
+                      <RotateCcw className="h-3.5 w-3.5" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-[12px] font-semibold leading-none text-white">Passeio</span>
+                      <span className="mt-0.5 block text-[9px] leading-none text-cyan-50/80">Refazer tutorial</span>
+                    </span>
+                  </button>
+                </div>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
-
-        <div className="relative grid grid-cols-2 gap-1.5 border-t border-white/20 bg-sky-950/40 p-2">
-          <MissionTrigger variant="rail" onOpen={onMission} />
-          <button
-            type="button"
-            onClick={onReplay}
-            aria-label="Refazer tutorial"
-            className="flex min-h-[2.6rem] items-center justify-center gap-2 rounded-2xl border border-white/30 bg-sky-950/45 px-3 py-2 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] transition hover:border-white/45 hover:bg-sky-950/55"
-          >
-            <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-white/30 bg-white/15 text-white">
-              <RotateCcw className="h-3.5 w-3.5" />
-            </span>
-            <span className="min-w-0">
-              <span className="block text-[12px] font-semibold leading-none text-white">Passeio</span>
-              <span className="mt-0.5 block text-[9px] leading-none text-cyan-50/80">Refazer tutorial</span>
-            </span>
-          </button>
-        </div>
       </motion.div>
     </div>
   );
