@@ -78,8 +78,17 @@ export function HomeScreen({ navigation }: Props) {
     setTour({ on: true, i: 0 });
   };
 
+  const skyBottom =
+    sky.phase === "dawn"
+      ? "#c9785a"
+      : sky.phase === "dusk"
+        ? "#8a3d4a"
+        : sky.phase === "night"
+          ? "#071828"
+          : "#1d649c";
+
   return (
-    <View style={styles.fill}>
+    <View style={[styles.fill, { backgroundColor: skyBottom }]}>
       <OceanWash phase={sky.phase} />
       <ScrollView
         contentContainerStyle={[

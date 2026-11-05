@@ -32,6 +32,8 @@ import { useAmbulanteLive } from "../../context/AmbulanteLiveContext";
 import { PIN_IMAGES } from "../../assets/pins";
 import { KioskMark } from "./KioskMark";
 import { AcademiaMark, BenchMark, CourtMark, DolphinMark, RampaMark } from "./LandmarkMarks";
+import { HeadingBeam } from "./HeadingBeam";
+import { PlacePinBubble, SponsorPinBubble, VendorPinBubble } from "./PinBubbles";
 
 type Props = {
   filter: MapFilter;
@@ -40,6 +42,10 @@ type Props = {
   onSelect: (id: string) => void;
   /** Zoom alto — esconde comércio até aproximar (paridade PLACE_ZOOM web). */
   showDense?: boolean;
+  /** Abre portal completo do patrocinador. */
+  onOpenSponsor?: (id: string) => void;
+  /** Inicia rota até o ponto. */
+  onRoute?: (point: { id: string; lat: number; lng: number; name: string }) => void;
 };
 
 function matchesQuery(name: string, query: string) {
@@ -47,10 +53,19 @@ function matchesQuery(name: string, query: string) {
   return fold(name).includes(fold(query));
 }
 
-function walkOffset(vendor: { lat: number; lng: number; walks?: boolean; id: string }, step: number) {
-  if (!vendor.walks) return { lat: vendor.lat, lng: vendor.lng };
-  const along = Math.sin((step / 8) * Math.PI * 2) * 0.00018;
-  return { lat: vendor.lat + along * 0.74, lng: vendor.lng + along * 0.67 };
+/** Mesmo algoritmo do web beach-map: vai e volta ao longo da areia. */
+const SHORE_HEADING = (Math.atan2(0.67, 0.74) * 180) / Math.PI;
+
+function walkOffset(vendor: { lat: number; lng: number; walks?: boolean }, step: number) {
+  if (!vendor.walks) return { lat: vendor.lat, lng: vendor.lng, heading: SHORE_HEADING };
+  const phase = step <= 4 ? step : 8 - step;
+  const along = phase * 0.000045;
+  const forward = step >= 1 && step <= 4;
+  return {
+    lat: vendor.lat + along * 0.74,
+    lng: vendor.lng + along * 0.67,
+    heading: forward ? SHORE_HEADING : SHORE_HEADING - 180,
+  };
 }
 
 /** Paridade web: círculo branco + KioskMark SVG + número abaixo. */
@@ -77,17 +92,30 @@ function KioskPin({ place, active }: { place: Place; active?: boolean }) {
   );
 }
 
-function CartPin({ active, flip }: { active?: boolean; flip?: boolean }) {
+function CartPin({
+  active,
+  heading,
+  showBeam,
+}: {
+  active?: boolean;
+  heading: number;
+  showBeam?: boolean;
+}) {
+  const flip = Math.sin((heading * Math.PI) / 180) < 0;
   return (
-    <Image
-      source={PIN_IMAGES.carrinho}
-      style={[
-        styles.cartImg,
-        {
-          transform: [{ scaleX: flip ? -1 : 1 }, { scale: active ? 1.12 : 1 }],
-        },
-      ]}
-    />
+    <View style={styles.cartWrap}>
+      {showBeam ? <HeadingBeam heading={heading} size={64} /> : null}
+      <Image
+        source={PIN_IMAGES.carrinho}
+        style={[
+          styles.cartImg,
+          {
+            transform: [{ scaleX: flip ? -1 : 1 }, { scale: active ? 1.12 : 1 }],
+            zIndex: 2,
+          },
+        ]}
+      />
+    </View>
   );
 }
 
@@ -244,7 +272,15 @@ function CommerceGlyph({
   );
 }
 
-export function MapPins({ filter, query, selectedId, onSelect, showDense = true }: Props) {
+export function MapPins({
+  filter,
+  query,
+  selectedId,
+  onSelect,
+  showDense = true,
+  onOpenSponsor,
+  onRoute,
+}: Props) {
   const { vendors } = useAmbulanteLive();
   const [step, setStep] = useState(0);
   const [tracks, setTracks] = useState(true);
@@ -256,15 +292,16 @@ export function MapPins({ filter, query, selectedId, onSelect, showDense = true 
     filter === "parceiros";
 
   useEffect(() => {
-    const id = setInterval(() => setStep((s) => (s + 1) % 8), 2200);
+    // 3s como no web — carrinhos andam na areia
+    const id = setInterval(() => setStep((s) => (s + 1) % 8), 3000);
     return () => clearInterval(id);
   }, []);
 
   useEffect(() => {
     setTracks(true);
-    const id = setTimeout(() => setTracks(false), 900);
+    const id = setTimeout(() => setTracks(false), selectedId ? 2500 : 900);
     return () => clearTimeout(id);
-  }, [filter, query, showDense, vendors.length]);
+  }, [filter, query, showDense, vendors.length, selectedId, step]);
 
   return (
     <>
@@ -315,6 +352,7 @@ export function MapPins({ filter, query, selectedId, onSelect, showDense = true 
         const inCategory = filter === "neutro" || filter === place.mapKind;
         if (!inCategory || !matchesQuery(place.name, query)) return null;
 
+        const selected = selectedId === place.id;
         if (place.mapKind === "quiosques") {
           return (
             <Marker
@@ -322,10 +360,33 @@ export function MapPins({ filter, query, selectedId, onSelect, showDense = true 
               coordinate={{ latitude: place.lat, longitude: place.lng }}
               onPress={() => onSelect(place.id)}
               anchor={{ x: 0.5, y: 1 }}
-              tracksViewChanges={tracks}
-              zIndex={place.isSponsor ? 28 : 22}
+              tracksViewChanges={tracks || selected}
+              zIndex={selected ? 80 : place.isSponsor ? 28 : 22}
             >
-              <KioskPin place={place} active={selectedId === place.id} />
+              <View style={styles.pinStack} collapsable={false}>
+                {selected && place.isSponsor ? (
+                  <SponsorPinBubble
+                    name={place.name}
+                    hours={place.hours}
+                    tag={place.tag}
+                    cover={place.cover}
+                    onOpen={() => onOpenSponsor?.(place.id)}
+                    onRoute={() =>
+                      onRoute?.({ id: place.id, lat: place.lat, lng: place.lng, name: place.name })
+                    }
+                  />
+                ) : null}
+                {selected && !place.isSponsor ? (
+                  <PlacePinBubble
+                    name={place.name}
+                    hours={place.hours}
+                    onRoute={() =>
+                      onRoute?.({ id: place.id, lat: place.lat, lng: place.lng, name: place.name })
+                    }
+                  />
+                ) : null}
+                <KioskPin place={place} active={selected} />
+              </View>
             </Marker>
           );
         }
@@ -337,11 +398,34 @@ export function MapPins({ filter, query, selectedId, onSelect, showDense = true 
             key={place.id}
             coordinate={{ latitude: place.lat, longitude: place.lng }}
             onPress={() => onSelect(place.id)}
-            anchor={{ x: 0.5, y: 0.5 }}
-            tracksViewChanges={tracks}
-            zIndex={24}
+            anchor={{ x: 0.5, y: selected ? 1 : 0.5 }}
+            tracksViewChanges={tracks || selected}
+            zIndex={selected ? 80 : 24}
           >
-            <CommerceGlyph kind={place.mapKind} color={color} active={selectedId === place.id} />
+            <View style={styles.pinStack} collapsable={false}>
+              {selected && place.isSponsor ? (
+                <SponsorPinBubble
+                  name={place.name}
+                  hours={place.hours}
+                  tag={place.tag}
+                  cover={place.cover}
+                  onOpen={() => onOpenSponsor?.(place.id)}
+                  onRoute={() =>
+                    onRoute?.({ id: place.id, lat: place.lat, lng: place.lng, name: place.name })
+                  }
+                />
+              ) : null}
+              {selected && !place.isSponsor ? (
+                <PlacePinBubble
+                  name={place.name}
+                  hours={place.hours}
+                  onRoute={() =>
+                    onRoute?.({ id: place.id, lat: place.lat, lng: place.lng, name: place.name })
+                  }
+                />
+              ) : null}
+              <CommerceGlyph kind={place.mapKind} color={color} active={selected} />
+            </View>
           </Marker>
         );
       })}
@@ -372,17 +456,30 @@ export function MapPins({ filter, query, selectedId, onSelect, showDense = true 
           .map((vendor) => {
             if (!showDense && vendor.id !== selectedId) return null;
             if (!matchesQuery(vendor.name, query)) return null;
-            const point = walkOffset(vendor, step + (vendor.id === "picole" ? 4 : 0));
+            const baseStep = (step + (vendor.id === "picole" ? 4 : 0)) % 8;
+            const point = walkOffset(vendor, baseStep);
+            const selected = selectedId === vendor.id;
             return (
               <Marker
                 key={vendor.id}
                 coordinate={{ latitude: point.lat, longitude: point.lng }}
                 onPress={() => onSelect(vendor.id)}
-                anchor={{ x: 0.5, y: 0.9 }}
-                tracksViewChanges={tracks || Boolean(vendor.walks)}
-                zIndex={30}
+                anchor={{ x: 0.5, y: selected ? 1 : 0.9 }}
+                tracksViewChanges={tracks || Boolean(vendor.walks) || selected}
+                zIndex={selected ? 85 : 30}
               >
-                <CartPin active={selectedId === vendor.id} flip={vendor.walks ? step % 8 > 4 : false} />
+                <View style={styles.pinStack} collapsable={false}>
+                  {selected ? (
+                    <VendorPinBubble
+                      name={vendor.name}
+                      tag={vendor.tag}
+                      onRoute={() =>
+                        onRoute?.({ id: vendor.id, lat: point.lat, lng: point.lng, name: vendor.name })
+                      }
+                    />
+                  ) : null}
+                  <CartPin active={selected} heading={point.heading} showBeam={Boolean(vendor.walks)} />
+                </View>
               </Marker>
             );
           })}
@@ -391,16 +488,34 @@ export function MapPins({ filter, query, selectedId, onSelect, showDense = true 
         if (!showDense && selectedId !== landmark.id) return null;
         if (filter !== "neutro" && selectedId !== landmark.id) return null;
         if (!matchesQuery(landmark.name, query) && selectedId !== landmark.id) return null;
+        const selected = selectedId === landmark.id;
+        const showBubble = selected && !(landmark.tips && landmark.tips.length > 0);
         return (
           <Marker
             key={landmark.id}
             coordinate={{ latitude: landmark.lat, longitude: landmark.lng }}
             onPress={() => onSelect(landmark.id)}
-            anchor={{ x: 0.5, y: 0.5 }}
-            tracksViewChanges={tracks}
-            zIndex={18}
+            anchor={{ x: 0.5, y: showBubble ? 1 : 0.5 }}
+            tracksViewChanges={tracks || selected}
+            zIndex={selected ? 70 : 18}
           >
-            <LandmarkPinMark item={landmark} active={selectedId === landmark.id} />
+            <View style={styles.pinStack}>
+              {showBubble ? (
+                <PlacePinBubble
+                  name={landmark.name}
+                  hours={landmark.detail}
+                  onRoute={() =>
+                    onRoute?.({
+                      id: landmark.id,
+                      lat: landmark.lat,
+                      lng: landmark.lng,
+                      name: landmark.name,
+                    })
+                  }
+                />
+              ) : null}
+              <LandmarkPinMark item={landmark} active={selected} />
+            </View>
           </Marker>
         );
       })}
@@ -448,6 +563,13 @@ const styles = StyleSheet.create({
   },
   kioskNumPremium: { color: "#f8e6c4", fontSize: 11, fontWeight: "800" },
   cartImg: { width: 36, height: 36, resizeMode: "contain" },
+  pinStack: { alignItems: "center" },
+  cartWrap: {
+    width: 64,
+    height: 64,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   escunaWrap: { width: 96, height: 78, alignItems: "center", justifyContent: "flex-end" },
   escunaWake: {
     position: "absolute",

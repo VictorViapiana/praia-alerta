@@ -20,7 +20,7 @@ type Props = {
   onClose: () => void;
 };
 
-/** Paridade web `GuaraTipTour`: card + Guará grande embaixo + “Entendi, Guará”. */
+/** Paridade web `GuaraTipTour`: card + Guará + Ouvir/Próximo (botões fora do Pressable de fundo). */
 export function TipTourModal({
   visible,
   title,
@@ -63,18 +63,20 @@ export function TipTourModal({
         ? styles.toneGood
         : styles.toneInfo;
 
+  const advance = () => {
+    stopSpeaking();
+    if (last) onClose();
+    else onNext();
+  };
+
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable
-        style={styles.backdrop}
-        onPress={() => {
-          stopSpeaking();
-          if (last) onClose();
-          else onNext();
-        }}
-      >
+      <View style={styles.backdrop}>
+        {/* Fundo separado — não engole toques dos botões */}
+        <Pressable style={StyleSheet.absoluteFill} onPress={advance} accessibilityLabel="Avançar aviso" />
+
         <View style={styles.stage} pointerEvents="box-none">
-          <Pressable style={styles.card} onPress={(e) => e.stopPropagation()}>
+          <View style={styles.card} pointerEvents="auto">
             <View style={styles.head}>
               <View style={{ flex: 1, minWidth: 0 }}>
                 <Text style={styles.title}>{title}</Text>
@@ -101,33 +103,39 @@ export function TipTourModal({
               ))}
             </View>
 
-            <View style={styles.row}>
+            <View style={styles.row} pointerEvents="box-none">
               <Pressable
                 style={[styles.listen, { backgroundColor: softBg, borderColor: softBorder }]}
-                onPress={() => speakGuara(`${step.title}. ${step.text}`)}
+                onPress={(e) => {
+                  e?.stopPropagation?.();
+                  speakGuara(`${step.title}. ${step.text}`);
+                }}
+                hitSlop={12}
               >
                 <Volume2 size={14} color={softText} />
                 <Text style={[styles.listenText, { color: softText }]}>Ouvir</Text>
               </Pressable>
               <Pressable
                 style={[styles.next, { backgroundColor: btn }]}
-                onPress={() => {
-                  stopSpeaking();
-                  if (last) onClose();
-                  else onNext();
+                onPress={(e) => {
+                  e?.stopPropagation?.();
+                  advance();
                 }}
+                hitSlop={12}
               >
                 <Text style={styles.nextText}>{last ? "Entendi, Guará" : "Próximo >>"}</Text>
               </Pressable>
             </View>
-          </Pressable>
+          </View>
 
           <View style={styles.guaraSlot} pointerEvents="none">
             <GuaraPose pose={last ? "festa" : "full"} size={168} style={styles.guaraImg} />
           </View>
-          <Text style={styles.hint}>Toque na tela ou em Próximo</Text>
+          <Text style={styles.hint} pointerEvents="none">
+            Toque na tela ou em Próximo
+          </Text>
         </View>
-      </Pressable>
+      </View>
     </Modal>
   );
 }
@@ -144,6 +152,7 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 312,
     alignItems: "center",
+    zIndex: 2,
   },
   card: {
     width: "100%",

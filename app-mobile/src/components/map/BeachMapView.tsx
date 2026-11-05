@@ -28,6 +28,8 @@ type Props = {
   moving?: boolean;
   traveled?: Array<[number, number]>;
   remaining?: Array<[number, number]>;
+  onOpenSponsor?: (id: string) => void;
+  onRouteToPin?: (point: { id: string; lat: number; lng: number; name: string }) => void;
 };
 
 export const BeachMapView = forwardRef<BeachMapHandle, Props>(function BeachMapView(
@@ -40,6 +42,8 @@ export const BeachMapView = forwardRef<BeachMapHandle, Props>(function BeachMapV
     moving = false,
     traveled,
     remaining,
+    onOpenSponsor,
+    onRouteToPin,
   },
   ref,
 ) {
@@ -145,6 +149,9 @@ export const BeachMapView = forwardRef<BeachMapHandle, Props>(function BeachMapV
         provider={PROVIDER_DEFAULT}
         initialRegion={region}
         onRegionChangeComplete={setRegion}
+        onPress={() => {
+          if (selectedId) setSelectedId(null);
+        }}
         showsUserLocation={false}
         showsMyLocationButton={false}
         showsCompass={false}
@@ -172,6 +179,8 @@ export const BeachMapView = forwardRef<BeachMapHandle, Props>(function BeachMapV
             selectedId={selectedId}
             onSelect={setSelectedId}
             showDense={showDensePins}
+            onOpenSponsor={onOpenSponsor}
+            onRoute={onRouteToPin}
           />
         )}
         {lat != null && lng != null ? (

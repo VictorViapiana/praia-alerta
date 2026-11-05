@@ -13,8 +13,6 @@ import { GuaraChat } from "../components/guara/GuaraChat";
 import { TourOverlay } from "../components/guara/TourOverlay";
 import { SponsorSheet } from "../components/sheets/SponsorSheet";
 import { LandmarkTalkSheet } from "../components/sheets/LandmarkTalkSheet";
-import { SponsorTeaser } from "../components/overlays/SponsorTeaser";
-import { PlaceTeaser } from "../components/overlays/PlaceTeaser";
 import { RoutePreviewSheet } from "../components/nav/RoutePreviewSheet";
 import { NavHud } from "../components/nav/NavHud";
 import { useApp } from "../context/AppContext";
@@ -72,7 +70,6 @@ export function MapScreen({ navigation }: Props) {
   const [notifyPrompt, setNotifyPrompt] = useState(false);
   const [mapTour, setMapTour] = useState<{ on: boolean; i: number }>({ on: false, i: 0 });
   const [previewRoute, setPreviewRoute] = useState<WalkRoute | null>(null);
-  const [muroTalk, setMuroTalk] = useState(false);
   const [locating, setLocating] = useState(false);
   const [locateNote, setLocateNote] = useState<string | null>(null);
   const [beachInvite, setBeachInvite] = useState(false);
@@ -123,13 +120,10 @@ export function MapScreen({ navigation }: Props) {
   }, [app.nav?.active, navTrack.progress?.offMeters, navTrack.remainingMeters]);
 
   const place = PLACES.find((p) => p.id === app.selectedId) ?? null;
-  const shower = SHOWERS.find((s) => s.id === app.selectedId) ?? null;
   const vendor =
     liveVendors.vendors.find((v) => v.id === app.selectedId) ??
     AMBULANTES.find((v) => v.id === app.selectedId) ??
     null;
-  const landmark = landmarkById(app.selectedId);
-  const ramp = RAMPS.find((r) => r.id === app.selectedId) ?? null;
 
   const origin: WalkPoint = useMemo(
     () =>
@@ -222,15 +216,18 @@ export function MapScreen({ navigation }: Props) {
     },
   });
 
+  const { openShowerRitual, openTipTour, takePendingGuide, takePendingNotifySpot, setSelectedId } = app;
+  const lastExperienceRef = useRef<string | null>(null);
+
   const openSelectedExperience = useCallback(
     (id: string) => {
       const showerHit = SHOWERS.find((s) => s.id === id);
       if (showerHit) {
-        app.openShowerRitual(showerHit.detail || showerHit.name);
+        openShowerRitual(showerHit.detail || showerHit.name);
         return;
       }
       if (id === ACADEMIA_ORLA.id) {
-        app.openTipTour({
+        openTipTour({
           title: ACADEMIA_ORLA.name,
           subtitle: "Treino no calçadão · preserve o ferro da praia",
           steps: ACADEMIA_TOUR_STEPS,
@@ -239,11 +236,11 @@ export function MapScreen({ navigation }: Props) {
         return;
       }
       if (id === GOLFINHO.id) {
-        app.openTipTour({ title: GOLFINHO.name, subtitle: GOLFINHO.detail, steps: GOLFINHO.tips, accent: "teal" });
+        openTipTour({ title: GOLFINHO.name, subtitle: GOLFINHO.detail, steps: GOLFINHO.tips, accent: "teal" });
         return;
       }
       if (id === MARLIN.id) {
-        app.openTipTour({
+        openTipTour({
           title: "Marlin Azul",
           subtitle: "Patrimônio da orla · preserve e se cuide",
           steps: MARLIN_TIPS.map((t) => ({
@@ -260,7 +257,7 @@ export function MapScreen({ navigation }: Props) {
       }
       const rampHit = RAMPS.find((r) => r.id === id);
       if (rampHit) {
-        app.openTipTour({
+        openTipTour({
           title: "Corredor da rampa",
           subtitle: rampHit.detail,
           steps: [
@@ -281,11 +278,17 @@ export function MapScreen({ navigation }: Props) {
         setLandmarkTalk(lm);
       }
     },
-    [app],
+    [openShowerRitual, openTipTour],
   );
 
+  // Só dispara uma vez por id — evita Maximum update depth (openTipTour mudava o contexto).
   useEffect(() => {
-    if (!app.selectedId) return;
+    if (!app.selectedId) {
+      lastExperienceRef.current = null;
+      return;
+    }
+    if (lastExperienceRef.current === app.selectedId) return;
+    lastExperienceRef.current = app.selectedId;
     openSelectedExperience(app.selectedId);
   }, [app.selectedId, openSelectedExperience]);
 
@@ -372,18 +375,21 @@ export function MapScreen({ navigation }: Props) {
 
   useFocusEffect(
     useCallback(() => {
-      const guide = app.takePendingGuide();
+      const guide = takePendingGuide();
       if (guide) onGuide(guide);
-      const spot = app.takePendingNotifySpot();
+      const spot = takePendingNotifySpot();
       if (spot) {
-        app.setSelectedId(spot);
-        openSelectedExperience(spot);
+        setSelectedId(spot);
+        if (lastExperienceRef.current !== spot) {
+          lastExperienceRef.current = spot;
+          openSelectedExperience(spot);
+        }
       }
-    }, [app, onGuide, openSelectedExperience]),
+      // callbacks estáveis via refs/destructure — não depender do objeto app inteiro
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []),
   );
 
-  const showSponsor =
-    (place && place.isSponsor) || vendor || app.selectedId === ESCUNA_POINT.id || app.selectedId === "escunas";
   const softBlocked =
     mapTour.on ||
     Boolean(app.tipTour) ||
@@ -391,6 +397,15 @@ export function MapScreen({ navigation }: Props) {
     Boolean(landmarkTalk) ||
     app.guaraOpen ||
     Boolean(app.routeTarget);
+
+  // Escuna no web abre o portal direto; demais pins usam bubble no Marker.
+  useEffect(() => {
+    if (app.selectedId === ESCUNA_POINT.id || app.selectedId === "escunas") {
+      setSponsorOpen(true);
+      return;
+    }
+    if (!app.selectedId) setSponsorOpen(false);
+  }, [app.selectedId]);
 
   return (
     <View style={styles.fill}>
@@ -403,8 +418,14 @@ export function MapScreen({ navigation }: Props) {
         moving={Boolean(navTrack.fix?.moving)}
         traveled={navTrack.traveledLine}
         remaining={navTrack.remainingLine}
+        onOpenSponsor={(id) => {
+          app.setSelectedId(id);
+          setSponsorOpen(true);
+        }}
+        onRouteToPin={(point) => {
+          app.setRouteTarget(point);
+        }}
         onMuroPress={() => {
-          setMuroTalk(true);
           app.openTipTour({
             title: MURO_TALK_TITLE,
             subtitle: MURO_TALK_SUBTITLE,
@@ -467,53 +488,7 @@ export function MapScreen({ navigation }: Props) {
         </View>
       )}
 
-      {/* Ficha branca do pin comum — paridade MarkerPopup. */}
-      {!app.nav?.active &&
-        !app.routeTarget &&
-        !app.tipTour &&
-        !app.showerRitual &&
-        !landmarkTalk &&
-        (ramp || (place && !place.isSponsor) || (landmark && !landmark.tips?.length)) &&
-        !showSponsor && (
-          <PlaceTeaser
-            name={place?.name ?? landmark?.name ?? ramp?.name ?? "Ponto"}
-            subtitle={place?.hours ?? landmark?.detail ?? ramp?.detail ?? ""}
-            bottom={insets.bottom + 168}
-            onRoute={() => {
-              const t = place || landmark || ramp;
-              if (!t) return;
-              app.setRouteTarget({
-                id: t.id,
-                lat: t.lat,
-                lng: t.lng,
-                name: "name" in t ? t.name : "Destino",
-              });
-            }}
-            onClose={() => app.setSelectedId(null)}
-          />
-        )}
-
-      {/* Teaser estilo MarkerPopup ouro/escuro — antes do portal completo */}
-      {!app.nav?.active &&
-        !app.routeTarget &&
-        !app.tipTour &&
-        !app.showerRitual &&
-        showSponsor &&
-        !sponsorOpen && (
-          <SponsorTeaser
-            place={place}
-            vendor={vendor}
-            escuna={app.selectedId === ESCUNA_POINT.id || app.selectedId === "escunas"}
-            bottom={insets.bottom + 150}
-            onOpen={() => setSponsorOpen(true)}
-            onRoute={() => {
-              const t = place || vendor || ESCUNA_POINT;
-              app.setRouteTarget({ id: t.id, lat: t.lat, lng: t.lng, name: t.name });
-            }}
-            onClose={() => app.setSelectedId(null)}
-          />
-        )}
-
+      {/* Portal completo — card pequeno fica no próprio Marker (PinBubbles). */}
       {!app.nav?.active && !app.routeTarget && place && place.isSponsor && sponsorOpen && (
         <SponsorSheet
           kind="place"
@@ -691,8 +666,6 @@ export function MapScreen({ navigation }: Props) {
           }}
         />
       )}
-
-      {muroTalk ? null : null}
     </View>
   );
 }
