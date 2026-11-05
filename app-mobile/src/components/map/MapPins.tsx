@@ -361,7 +361,7 @@ export function MapPins({
         if (!inCategory || !matchesQuery(place.name, query)) return null;
 
         const selected = selectedId === place.id;
-        // Pin congelado — balão fica no SelectedPinOverlay (fora do Marker).
+        // Pin congelado — balão fica no SelectedPinBubbleMarker (Marker separado).
         if (place.mapKind === "quiosques") {
           return (
             <Marker
