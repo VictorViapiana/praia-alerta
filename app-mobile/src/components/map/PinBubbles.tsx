@@ -5,8 +5,8 @@ import { mediaImage } from "../../assets/media";
 import { ShineSweep } from "../ui/ShineSweep";
 
 /**
- * Card branco ancorado no pin — exatamente o MarkerPopup não-sponsor do web
- * (screenshot Quiosque 13).
+ * Card branco ancorado no pin — MarkerPopup não-sponsor do web.
+ * Só cores opacas: Marker no RN Maps fura se tiver rgba baixo.
  */
 export function PlacePinBubble({
   name,
@@ -18,7 +18,7 @@ export function PlacePinBubble({
   onRoute: () => void;
 }) {
   return (
-    <View style={styles.wrap} pointerEvents="box-none" collapsable={false}>
+    <View style={styles.wrap} collapsable={false}>
       <View style={styles.whiteCard} collapsable={false}>
         <Text style={styles.whiteTitle} numberOfLines={1}>
           {name}
@@ -40,8 +40,8 @@ export function PlacePinBubble({
 }
 
 /**
- * Card ouro ancorado no pin — MarkerPopup sponsor do web
- * (screenshot Quiosque 18: faixa cover + Patrocinador + CTA + Ir até aqui).
+ * Card ouro — MarkerPopup sponsor do web (Quiosque 12/18).
+ * Camadas 100% opacas para o bitmap do Marker não “furar” o mapa.
  */
 export function SponsorPinBubble({
   name,
@@ -59,13 +59,20 @@ export function SponsorPinBubble({
   onRoute: () => void;
 }) {
   return (
-    <View style={styles.wrap} pointerEvents="box-none" collapsable={false}>
-      <LinearGradient colors={["#fde68a", "#fb923c", "#f59e0b"]} style={styles.goldRing}>
+    <View style={styles.wrap} collapsable={false}>
+      <LinearGradient
+        colors={["#fde68a", "#fb923c", "#f59e0b"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.goldRing}
+      >
         <View style={styles.goldCard} collapsable={false}>
-          <View style={styles.goldCover}>
+          <View style={styles.goldCover} collapsable={false}>
             <Image source={mediaImage(cover)} style={StyleSheet.absoluteFill} resizeMode="cover" />
+            {/* Opaco — sem alpha baixo (mapa vaza no Marker) */}
             <LinearGradient
-              colors={["rgba(28,18,8,0.08)", "rgba(28,18,8,0.45)", "#1c1208"]}
+              colors={["#2a1a0c", "#1c1208", "#1c1208"]}
+              locations={[0, 0.55, 1]}
               style={StyleSheet.absoluteFill}
             />
             <View style={styles.badge}>
@@ -84,7 +91,12 @@ export function SponsorPinBubble({
               </View>
             ) : null}
             <Pressable style={styles.cta} onPress={onOpen} collapsable={false}>
-              <LinearGradient colors={["#fde68a", "#fdba74"]} style={styles.ctaGrad}>
+              <LinearGradient
+                colors={["#fde68a", "#fdba74"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.ctaGrad}
+              >
                 <ShineSweep bandWidth={90} travel={220} />
                 <Text style={styles.ctaText}>Ver cardápio e fotos</Text>
                 <ChevronRight color="#3a2208" size={14} />
@@ -117,7 +129,7 @@ export function VendorPinBubble({
   onRoute: () => void;
 }) {
   return (
-    <View style={styles.wrap} pointerEvents="box-none" collapsable={false}>
+    <View style={styles.wrap} collapsable={false}>
       <View style={styles.vendorCard} collapsable={false}>
         <Text style={styles.vendorEyebrow}>Credenciado</Text>
         <Text style={styles.whiteTitle} numberOfLines={1}>
@@ -141,20 +153,15 @@ export function VendorPinBubble({
 }
 
 const styles = StyleSheet.create({
-  wrap: { alignItems: "center", marginBottom: 2, width: 232 },
+  wrap: { alignItems: "center", marginBottom: 2, width: 232, backgroundColor: "transparent" },
   whiteCard: {
     width: 228,
-    backgroundColor: "#fff",
+    backgroundColor: "#ffffff",
     borderRadius: 16,
     borderWidth: 1,
     borderColor: "#e5e5e5",
     paddingHorizontal: 12,
     paddingVertical: 10,
-    shadowColor: "#1c1917",
-    shadowOpacity: 0.22,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 12,
   },
   whiteTitle: { color: "#171717", fontSize: 14, fontWeight: "600" },
   whiteHours: { color: "#525252", fontSize: 12, marginTop: 2 },
@@ -162,7 +169,7 @@ const styles = StyleSheet.create({
     marginTop: -5,
     width: 10,
     height: 10,
-    backgroundColor: "#fff",
+    backgroundColor: "#ffffff",
     borderBottomWidth: 1,
     borderRightWidth: 1,
     borderColor: "#e5e5e5",
@@ -173,33 +180,29 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    backgroundColor: "#1c1917",
-    borderRadius: 999,
+    backgroundColor: "#142018",
+    borderRadius: 16,
     paddingVertical: 9,
     paddingHorizontal: 10,
   },
   navDot: {
-    width: 26,
-    height: 26,
-    borderRadius: 8,
+    width: 28,
+    height: 28,
+    borderRadius: 10,
     backgroundColor: "#e11d48",
     alignItems: "center",
     justifyContent: "center",
   },
   darkRouteTitle: { color: "#fff", fontWeight: "700", fontSize: 13 },
-  darkRouteSub: { color: "rgba(255,255,255,0.6)", fontSize: 10, marginTop: 1 },
+  darkRouteSub: { color: "rgba(255,255,255,0.8)", fontSize: 11, marginTop: 1 },
   goldRing: {
     width: 232,
     borderRadius: 22,
     padding: 1.5,
-    shadowColor: "#b45309",
-    shadowOpacity: 0.35,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 14,
+    overflow: "hidden",
   },
   goldCard: { borderRadius: 20, overflow: "hidden", backgroundColor: "#1c1208" },
-  goldCover: { height: 52 },
+  goldCover: { height: 52, backgroundColor: "#1c1208", overflow: "hidden" },
   badge: {
     position: "absolute",
     left: 8,
@@ -207,19 +210,25 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    backgroundColor: "rgba(28,18,8,0.8)",
+    backgroundColor: "#1c1208",
     borderRadius: 999,
     paddingHorizontal: 8,
     paddingVertical: 4,
   },
   badgeText: { color: "#fffbeb", fontSize: 11, fontWeight: "800" },
-  goldBody: { paddingHorizontal: 10, paddingBottom: 10, paddingTop: 6, gap: 2 },
+  goldBody: {
+    paddingHorizontal: 10,
+    paddingBottom: 10,
+    paddingTop: 6,
+    gap: 2,
+    backgroundColor: "#1c1208",
+  },
   goldTitle: { color: "#fff", fontSize: 15, fontWeight: "600" },
-  goldHours: { color: "rgba(255,255,255,0.7)", fontSize: 12, marginTop: 2 },
+  goldHours: { color: "#d4d4d4", fontSize: 12, marginTop: 2 },
   tag: {
     alignSelf: "flex-start",
     marginTop: 6,
-    backgroundColor: "rgba(252,211,77,0.15)",
+    backgroundColor: "#3a2a14",
     borderRadius: 999,
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -241,13 +250,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    backgroundColor: "rgba(0,0,0,0.35)",
+    backgroundColor: "#0a0704",
     borderRadius: 12,
     paddingVertical: 9,
     paddingHorizontal: 8,
   },
   goldRouteTitle: { color: "#fff", fontWeight: "700", fontSize: 13 },
-  goldRouteSub: { color: "rgba(255,255,255,0.55)", fontSize: 10, marginTop: 1 },
+  goldRouteSub: { color: "#a3a3a3", fontSize: 10, marginTop: 1 },
   goldTail: {
     marginTop: -5,
     width: 12,

@@ -441,9 +441,11 @@ export function MapScreen({ navigation }: Props) {
         }}
       />
 
+      {/* Esconde Locate/Satélite com card no pin — senão Satélite cola no Patrocinador (screenshot). */}
       {!app.nav?.active &&
         !app.routeTarget &&
         !sponsorOpen &&
+        !app.selectedId &&
         !app.tipTour &&
         !app.showerRitual &&
         !landmarkTalk && (
@@ -576,13 +578,8 @@ export function MapScreen({ navigation }: Props) {
         <LandmarkTalkSheet
           landmark={landmarkTalk}
           onClose={() => {
+            // Mantém selectedId — bubble “Ir até aqui” no pin (paridade web).
             setLandmarkTalk(null);
-            app.setSelectedId(null);
-          }}
-          onRoute={() => {
-            const lm = landmarkTalk;
-            setLandmarkTalk(null);
-            app.setRouteTarget({ id: lm.id, lat: lm.lat, lng: lm.lng, name: lm.name });
           }}
         />
       ) : null}

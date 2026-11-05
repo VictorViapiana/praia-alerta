@@ -1,8 +1,10 @@
+import { Audio } from "expo-av";
 import * as Speech from "expo-speech";
 
 let speakToken = 0;
 let preferredVoice: string | undefined;
 let voicesReady: Promise<void> | null = null;
+let audioArmed = false;
 
 function cleanSpeech(text: string) {
   return text
@@ -33,8 +35,24 @@ function loadVoices() {
   return voicesReady;
 }
 
-// Pré-carrega vozes cedo (iOS só lista depois do warm-up).
+/** iOS: sem isso o AVSpeech fica mudo com o botão silencioso ligado. */
+async function armAudioSession() {
+  if (audioArmed) return;
+  try {
+    await Audio.setAudioModeAsync({
+      playsInSilentModeIOS: true,
+      staysActiveInBackground: false,
+      shouldDuckAndroid: true,
+      playThroughEarpieceAndroid: false,
+    });
+    audioArmed = true;
+  } catch {
+    /* ignore — tenta falar mesmo assim */
+  }
+}
+
 void loadVoices();
+void armAudioSession();
 
 export function stopSpeaking() {
   speakToken += 1;
@@ -46,8 +64,8 @@ export function stopSpeaking() {
 }
 
 /**
- * Voz do Guará — paridade prática com `app/voice.ts` via expo-speech.
- * Evita o bug clássico: Speech.stop() no mesmo tick cancela o speak seguinte no iOS.
+ * Voz do Guará — expo-speech + sessão de áudio iOS.
+ * Evita: stop()+speak no mesmo tick; silêncio com Ring/Silent.
  */
 export function speakGuara(text: string, onDone?: () => void) {
   const clean = cleanSpeech(text);
@@ -59,9 +77,9 @@ export function speakGuara(text: string, onDone?: () => void) {
   const token = speakToken;
 
   void (async () => {
+    await armAudioSession();
     await loadVoices();
-    // iOS: cancel + speak imediato = silêncio. Espera o motor respirar.
-    await new Promise((r) => setTimeout(r, 100));
+    await new Promise((r) => setTimeout(r, 120));
     if (token !== speakToken) {
       onDone?.();
       return;
@@ -79,7 +97,6 @@ export function speakGuara(text: string, onDone?: () => void) {
           if (token === speakToken) onDone?.();
         },
         onError: () => {
-          // Retry sem voice id (alguns devices rejeitam identifier).
           if (token !== speakToken) {
             onDone?.();
             return;

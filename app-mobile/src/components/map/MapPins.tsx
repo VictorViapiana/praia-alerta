@@ -121,13 +121,16 @@ function CartPin({
   );
 }
 
+/** Paridade web `escunaIcon` zoom&lt;18 → 140×98, label acima, barco −16°. */
 function EscunaPin(_props: { active?: boolean }) {
   return (
     <View style={styles.escunaWrap} collapsable={false}>
-      <Image source={PIN_IMAGES.escunaWake} style={styles.escunaWake} />
-      <Image source={PIN_IMAGES.escuna} style={styles.escunaBoat} />
       <View style={styles.escunaLabel}>
         <Text style={styles.escunaText}>Escunas</Text>
+      </View>
+      <View style={styles.escunaBoatWrap}>
+        <Image source={PIN_IMAGES.escunaWake} style={styles.escunaWake} />
+        <Image source={PIN_IMAGES.escuna} style={styles.escunaBoat} />
       </View>
     </View>
   );
@@ -314,7 +317,7 @@ export function MapPins({
         <Marker
           coordinate={{ latitude: ESCUNA_POINT.lat, longitude: ESCUNA_POINT.lng }}
           onPress={() => onSelect(ESCUNA_POINT.id)}
-          anchor={{ x: 0.5, y: 0.85 }}
+          anchor={{ x: 0.5, y: 1 }}
           tracksViewChanges={false}
           zIndex={40}
         >
@@ -661,24 +664,45 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   cartNameText: { color: "#7c2d12", fontSize: 10, fontWeight: "800" },
-  escunaWrap: { width: 96, height: 78, alignItems: "center", justifyContent: "flex-end" },
+  escunaWrap: {
+    width: 140,
+    height: 118,
+    alignItems: "center",
+    justifyContent: "flex-end",
+  },
+  escunaBoatWrap: {
+    width: 140,
+    height: 98,
+    transform: [{ rotate: "-16deg" }],
+  },
   escunaWake: {
     position: "absolute",
-    bottom: 6,
-    width: 88,
-    height: 34,
+    right: "6%",
+    bottom: "-40%",
+    width: 154,
+    height: 60,
     resizeMode: "contain",
-    opacity: 0.9,
+    transform: [{ rotate: "174deg" }],
+    zIndex: 0,
   },
-  escunaBoat: { width: 72, height: 54, resizeMode: "contain", zIndex: 2 },
+  escunaBoat: { width: 140, height: 98, resizeMode: "contain", zIndex: 2 },
   escunaLabel: {
-    marginTop: -2,
-    backgroundColor: "rgba(15,23,42,0.9)",
-    borderRadius: 8,
+    position: "absolute",
+    top: 0,
+    zIndex: 3,
+    backgroundColor: "#fff",
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.7)",
     paddingHorizontal: 7,
     paddingVertical: 2,
+    shadowColor: "#000",
+    shadowOpacity: 0.55,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 4,
   },
-  escunaText: { color: "#fde68a", fontSize: 10, fontWeight: "900" },
+  escunaText: { color: "#3c2a18", fontSize: 10, fontWeight: "700" },
   marlinWrap: { alignItems: "center" },
   marlinCircle: {
     width: 40,
