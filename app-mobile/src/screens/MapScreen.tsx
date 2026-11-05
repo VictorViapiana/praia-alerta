@@ -398,14 +398,20 @@ export function MapScreen({ navigation }: Props) {
     app.guaraOpen ||
     Boolean(app.routeTarget);
 
-  // Escuna no web abre o portal direto; demais pins usam bubble no Marker.
+  // Escuna + ambulante no web abrem portal direto no toque.
+  // Quiosque patrocinador só abre portal via “Ver cardápio” (onOpenSponsor).
   useEffect(() => {
     if (app.selectedId === ESCUNA_POINT.id || app.selectedId === "escunas") {
       setSponsorOpen(true);
       return;
     }
-    if (!app.selectedId) setSponsorOpen(false);
-  }, [app.selectedId]);
+    if (vendor) {
+      setSponsorOpen(true);
+      return;
+    }
+    // Troca de pin / limpa: fecha portal (exceto se ainda for o mesmo place sponsor aberto via CTA).
+    if (!app.selectedId || !place?.isSponsor) setSponsorOpen(false);
+  }, [app.selectedId, vendor, place?.isSponsor]);
 
   return (
     <View style={styles.fill}>
@@ -435,7 +441,12 @@ export function MapScreen({ navigation }: Props) {
         }}
       />
 
-      {!app.nav?.active && !app.routeTarget && (
+      {!app.nav?.active &&
+        !app.routeTarget &&
+        !sponsorOpen &&
+        !app.tipTour &&
+        !app.showerRitual &&
+        !landmarkTalk && (
         <MapChrome
           onOpenGuara={() => {
             setBeachInvite(false);
@@ -450,7 +461,7 @@ export function MapScreen({ navigation }: Props) {
           onMarkHit={(hit) => mapRef.current?.animateTo(hit.lat, hit.lng, 0.004)}
           locating={locating}
           locateNote={locateNote}
-          beachInvite={beachInvite && !app.searchOpen && !app.tipTour && !app.showerRitual && !mapTour.on}
+          beachInvite={beachInvite && !app.searchOpen && !mapTour.on}
           onAcceptBeach={showPraiaDoMorro}
           onDeclineBeach={() => setBeachInvite(false)}
         />
@@ -586,15 +597,14 @@ export function MapScreen({ navigation }: Props) {
         onNext={() => {
           const cur = app.tipTour;
           if (cur && cur.stepIndex >= cur.steps.length - 1) {
+            // Mantém selectedId — bubble de rota fica no pin (paridade web closeTipTour).
             app.tipClose();
-            app.setSelectedId(null);
             return;
           }
           app.tipNext();
         }}
         onClose={() => {
           app.tipClose();
-          app.setSelectedId(null);
         }}
       />
 

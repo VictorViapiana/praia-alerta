@@ -160,46 +160,62 @@ export function MapChrome({
             }}
           />
         )}
-        <View style={[styles.searchBar, searchExpanded && styles.searchBarOpen]}>
-          <Search color={searchExpanded ? "#a16207" : "rgba(255,255,255,0.7)"} size={14} />
-          <TextInput
-            value={searchQuery}
-            onChangeText={(t) => {
-              setSearchQuery(t);
-              setSearchOpen(t.length > 0);
-            }}
-            placeholder="Buscar estabelecimento"
-            placeholderTextColor={searchExpanded ? "rgba(20,32,24,0.45)" : "rgba(255,255,255,0.45)"}
-            style={[styles.searchInput, searchExpanded && styles.searchInputOpen]}
-            returnKeyType="search"
-          />
-          {searchQuery.length > 0 ? (
+        <View style={styles.searchRow}>
+          <View style={[styles.searchBar, searchExpanded && styles.searchBarOpen, { flex: 1 }]}>
+            <Search color={searchExpanded ? "#a16207" : "rgba(255,255,255,0.7)"} size={14} />
+            <TextInput
+              value={searchQuery}
+              onChangeText={(t) => {
+                setSearchQuery(t);
+                setSearchOpen(t.length > 0);
+              }}
+              placeholder="Buscar estabelecimento"
+              placeholderTextColor={searchExpanded ? "rgba(20,32,24,0.45)" : "rgba(255,255,255,0.45)"}
+              style={[styles.searchInput, searchExpanded && styles.searchInputOpen]}
+              returnKeyType="search"
+            />
+            {searchQuery.length > 0 ? (
+              <Pressable
+                onPress={() => {
+                  setSearchQuery("");
+                  setSearchOpen(false);
+                }}
+                hitSlop={8}
+                accessibilityLabel="Limpar busca"
+              >
+                <X color={searchExpanded ? "#142018" : "#fff"} size={14} />
+              </Pressable>
+            ) : null}
+          </View>
+          {searchExpanded ? (
             <Pressable
+              style={styles.mapCollapse}
               onPress={() => {
                 setSearchQuery("");
                 setSearchOpen(false);
               }}
-              hitSlop={8}
-              accessibilityLabel="Limpar busca"
+              accessibilityLabel="Voltar ao mapa"
             >
-              <X color={searchExpanded ? "#142018" : "#fff"} size={14} />
+              <Text style={styles.mapCollapseText}>Mapa</Text>
             </Pressable>
           ) : null}
         </View>
 
-        <FilterChips
-          filter={filter}
-          onFilter={(next) => setFilter(next === filter && next !== "neutro" ? "neutro" : next)}
-          dayLayer={dayLayer}
-          onDayLayer={(next) => {
-            if (next === "sol" && !isSunActive()) {
-              setDayLayer("off");
-              return;
-            }
-            setDayLayer(next);
-          }}
-          sunAvailable={isSunActive()}
-        />
+        {!searchExpanded ? (
+          <FilterChips
+            filter={filter}
+            onFilter={(next) => setFilter(next === filter && next !== "neutro" ? "neutro" : next)}
+            dayLayer={dayLayer}
+            onDayLayer={(next) => {
+              if (next === "sol" && !isSunActive()) {
+                setDayLayer("off");
+                return;
+              }
+              setDayLayer(next);
+            }}
+            sunAvailable={isSunActive()}
+          />
+        ) : null}
       </View>
     </View>
   );
@@ -404,6 +420,14 @@ const styles = StyleSheet.create({
     gap: 8,
     zIndex: 55,
   },
+  searchRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  mapCollapse: {
+    borderRadius: 999,
+    backgroundColor: "rgba(253,230,138,0.95)",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  mapCollapseText: { color: "#92400e", fontSize: 12, fontWeight: "800" },
   searchBar: {
     flexDirection: "row",
     alignItems: "center",

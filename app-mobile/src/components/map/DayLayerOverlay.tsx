@@ -28,28 +28,28 @@ export function DayLayerOverlay({ dayLayer, tide, weather }: Props) {
       <>
         <Polygon
           coordinates={toLatLngList(rings.glow)}
-          fillColor={`rgba(250,204,21,${(0.08 * heat).toFixed(3)})`}
+          fillColor={`rgba(180,83,9,${(0.1 * heat).toFixed(3)})`}
           strokeColor="transparent"
           strokeWidth={0}
           zIndex={6}
         />
         <Polygon
           coordinates={toLatLngList(rings.wash)}
-          fillColor={`rgba(250,204,21,${(0.14 * heat).toFixed(3)})`}
-          strokeColor={`rgba(250,204,21,${(0.28 * heat).toFixed(3)})`}
+          fillColor={`rgba(217,119,6,${(0.16 * heat).toFixed(3)})`}
+          strokeColor={`rgba(253,230,138,${(0.35 * heat).toFixed(3)})`}
           strokeWidth={1}
           zIndex={7}
         />
         <Polygon
           coordinates={toLatLngList(rings.mid)}
-          fillColor={`rgba(251,191,36,${(0.2 * heat).toFixed(3)})`}
+          fillColor={`rgba(245,158,11,${(0.22 * heat).toFixed(3)})`}
           strokeColor="transparent"
           strokeWidth={0}
           zIndex={8}
         />
         <Polygon
           coordinates={toLatLngList(rings.core)}
-          fillColor={`rgba(245,158,11,${(0.32 * heat).toFixed(3)})`}
+          fillColor={`rgba(253,230,138,${(0.28 * heat).toFixed(3)})`}
           strokeColor="transparent"
           strokeWidth={0}
           zIndex={9}

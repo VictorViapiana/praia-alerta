@@ -1,6 +1,6 @@
-import { View, StyleSheet } from "react-native";
+import { Text, View, StyleSheet } from "react-native";
 import { Marker } from "react-native-maps";
-import Svg, { Path, Circle } from "react-native-svg";
+import Svg, { Path } from "react-native-svg";
 import { HeadingBeam } from "./HeadingBeam";
 
 type Props = {
@@ -11,11 +11,10 @@ type Props = {
   moving?: boolean;
 };
 
-/** Localização do usuário — feixe HeadingBeam + seta (paridade web UserDot). */
+/** Localização do usuário — feixe HeadingBeam + seta / “Você” (paridade web UserDot). */
 export function UserArrow({ latitude, longitude, heading, navigating, moving }: Props) {
   const deg = heading ?? 0;
   const showBeam = heading != null;
-  const active = Boolean(navigating || moving);
 
   if (navigating) {
     return (
@@ -46,18 +45,18 @@ export function UserArrow({ latitude, longitude, heading, navigating, moving }: 
   return (
     <Marker
       coordinate={{ latitude, longitude }}
-      anchor={{ x: 0.5, y: 0.5 }}
+      anchor={{ x: 0.5, y: 0.55 }}
       flat
       tracksViewChanges={Boolean(moving)}
       zIndex={80}
     >
-      <View style={styles.idleWrap}>
-        {showBeam ? <HeadingBeam heading={deg} size={72} /> : null}
+      <View style={styles.idleWrap} collapsable={false}>
+        {showBeam ? <HeadingBeam heading={deg} size={120} /> : null}
         {moving ? <View style={styles.ring} /> : null}
         <View style={styles.dot}>
           <View style={styles.dotInner} />
         </View>
-        {active ? null : <View style={styles.labelPad} />}
+        <Text style={styles.voce}>Você</Text>
       </View>
     </Marker>
   );
@@ -78,8 +77,8 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(29,78,216,0.25)",
   },
   idleWrap: {
-    width: 72,
-    height: 72,
+    width: 120,
+    height: 132,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -103,5 +102,14 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   dotInner: { width: 12, height: 12, borderRadius: 999, backgroundColor: "#0284c7" },
-  labelPad: { height: 0 },
+  voce: {
+    marginTop: 4,
+    zIndex: 3,
+    color: "#0c4a6e",
+    fontSize: 11,
+    fontWeight: "800",
+    textShadowColor: "#fff",
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 4,
+  },
 });

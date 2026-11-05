@@ -106,7 +106,7 @@ function CartPin({
   const flip = Math.sin((heading * Math.PI) / 180) < 0;
   return (
     <View style={styles.cartWrap} collapsable={false}>
-      {showBeam ? <HeadingBeam heading={heading} size={72} /> : null}
+      {showBeam ? <HeadingBeam heading={heading} size={110} /> : null}
       {!active && name ? (
         <View style={styles.cartName}>
           <Text style={styles.cartNameText} numberOfLines={1}>
@@ -331,11 +331,22 @@ export function MapPins({
         <Marker
           coordinate={{ latitude: MARLIN.lat, longitude: MARLIN.lng }}
           onPress={() => onSelect(MARLIN.id)}
-          anchor={{ x: 0.5, y: 0.9 }}
-          tracksViewChanges={tracks}
-          zIndex={35}
+          anchor={{ x: 0.5, y: selectedId === MARLIN.id ? 1 : 0.9 }}
+          tracksViewChanges={tracks || selectedId === MARLIN.id}
+          zIndex={selectedId === MARLIN.id ? 80 : 35}
         >
-          <MarlinPin active={selectedId === MARLIN.id} />
+          <View style={styles.pinStack} collapsable={false}>
+            {selectedId === MARLIN.id ? (
+              <PlacePinBubble
+                name={MARLIN.name}
+                hours={MARLIN.detail}
+                onRoute={() =>
+                  onRoute?.({ id: MARLIN.id, lat: MARLIN.lat, lng: MARLIN.lng, name: MARLIN.name })
+                }
+              />
+            ) : null}
+            <MarlinPin active={selectedId === MARLIN.id} />
+          </View>
         </Marker>
       )}
 
@@ -449,11 +460,22 @@ export function MapPins({
             key={ramp.id}
             coordinate={{ latitude: ramp.lat, longitude: ramp.lng }}
             onPress={() => onSelect(ramp.id)}
-            anchor={{ x: 0.5, y: 0.5 }}
-            tracksViewChanges={tracks}
-            zIndex={26}
+            anchor={{ x: 0.5, y: focused ? 1 : 0.5 }}
+            tracksViewChanges={tracks || focused}
+            zIndex={focused ? 75 : 26}
           >
-            <RampaPinMark active={focused} />
+            <View style={styles.pinStack} collapsable={false}>
+              {focused ? (
+                <PlacePinBubble
+                  name={ramp.name}
+                  hours={ramp.detail}
+                  onRoute={() =>
+                    onRoute?.({ id: ramp.id, lat: ramp.lat, lng: ramp.lng, name: ramp.name })
+                  }
+                />
+              ) : null}
+              <RampaPinMark active={focused} />
+            </View>
           </Marker>
         );
       })}
@@ -503,18 +525,17 @@ export function MapPins({
         if (filter !== "neutro" && selectedId !== landmark.id) return null;
         if (!matchesQuery(landmark.name, query) && selectedId !== landmark.id) return null;
         const selected = selectedId === landmark.id;
-        const showBubble = selected && !(landmark.tips && landmark.tips.length > 0);
         return (
           <Marker
             key={landmark.id}
             coordinate={{ latitude: landmark.lat, longitude: landmark.lng }}
             onPress={() => onSelect(landmark.id)}
-            anchor={{ x: 0.5, y: showBubble ? 1 : 0.5 }}
+            anchor={{ x: 0.5, y: selected ? 1 : 0.5 }}
             tracksViewChanges={tracks || selected}
             zIndex={selected ? 70 : 18}
           >
-            <View style={styles.pinStack}>
-              {showBubble ? (
+            <View style={styles.pinStack} collapsable={false}>
+              {selected ? (
                 <PlacePinBubble
                   name={landmark.name}
                   hours={landmark.detail}
@@ -579,10 +600,10 @@ const styles = StyleSheet.create({
   cartImg: { width: 36, height: 36, resizeMode: "contain" },
   pinStack: { alignItems: "center" },
   cartWrap: {
-    width: 72,
-    height: 72,
+    width: 110,
+    height: 110,
     alignItems: "center",
-    justifyContent: "flex-end",
+    justifyContent: "center",
   },
   cartName: {
     position: "absolute",

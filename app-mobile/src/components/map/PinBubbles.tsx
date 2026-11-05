@@ -15,13 +15,13 @@ export function PlacePinBubble({
   onRoute: () => void;
 }) {
   return (
-    <View style={styles.wrap} pointerEvents="box-none">
-      <View style={styles.whiteCard}>
+    <View style={styles.wrap} pointerEvents="box-none" collapsable={false}>
+      <View style={styles.whiteCard} collapsable={false}>
         <Text style={styles.whiteTitle} numberOfLines={1}>
           {name}
         </Text>
         <Text style={styles.whiteHours}>{hours}</Text>
-        <Pressable style={styles.darkRoute} onPress={onRoute}>
+        <Pressable style={styles.darkRoute} onPress={onRoute} collapsable={false}>
           <View style={styles.navDot}>
             <Navigation color="#fff" size={11} fill="#fff" />
           </View>
@@ -72,9 +72,9 @@ export function SponsorPinBubble({
   const shineX = shimmer.interpolate({ inputRange: [0, 1], outputRange: [-120, 220] });
 
   return (
-    <View style={styles.wrap} pointerEvents="box-none">
+    <View style={styles.wrap} pointerEvents="box-none" collapsable={false}>
       <LinearGradient colors={["#fde68a", "#fb923c", "#f59e0b"]} style={styles.goldRing}>
-        <View style={styles.goldCard}>
+        <View style={styles.goldCard} collapsable={false}>
           <View style={styles.goldCover}>
             <Image source={mediaImage(cover)} style={StyleSheet.absoluteFill} resizeMode="cover" />
             <LinearGradient
@@ -96,7 +96,7 @@ export function SponsorPinBubble({
                 <Text style={styles.tagText}>{tag}</Text>
               </View>
             ) : null}
-            <Pressable style={styles.cta} onPress={onOpen}>
+            <Pressable style={styles.cta} onPress={onOpen} collapsable={false}>
               <LinearGradient colors={["#fde68a", "#fdba74"]} style={styles.ctaGrad}>
                 <Animated.View
                   pointerEvents="none"
@@ -106,7 +106,7 @@ export function SponsorPinBubble({
                 <ChevronRight color="#3a2208" size={13} />
               </LinearGradient>
             </Pressable>
-            <Pressable style={styles.goldRoute} onPress={onRoute}>
+            <Pressable style={styles.goldRoute} onPress={onRoute} collapsable={false}>
               <View style={styles.navDot}>
                 <Navigation color="#fff" size={11} fill="#fff" />
               </View>
@@ -133,15 +133,15 @@ export function VendorPinBubble({
   onRoute: () => void;
 }) {
   return (
-    <View style={styles.wrap} pointerEvents="box-none">
-      <View style={styles.vendorCard}>
+    <View style={styles.wrap} pointerEvents="box-none" collapsable={false}>
+      <View style={styles.vendorCard} collapsable={false}>
         <Text style={styles.vendorEyebrow}>Credenciado</Text>
         <Text style={styles.whiteTitle} numberOfLines={1}>
           {name}
         </Text>
         <Text style={styles.whiteHours}>{tag}</Text>
         <Text style={styles.online}>● Na areia agora</Text>
-        <Pressable style={styles.darkRoute} onPress={onRoute}>
+        <Pressable style={styles.darkRoute} onPress={onRoute} collapsable={false}>
           <View style={styles.navDot}>
             <Navigation color="#fff" size={11} fill="#fff" />
           </View>

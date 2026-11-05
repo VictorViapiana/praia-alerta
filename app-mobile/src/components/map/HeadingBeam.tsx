@@ -1,8 +1,11 @@
 import { View } from "react-native";
 import Svg, { Defs, LinearGradient, Path, Stop } from "react-native-svg";
 
-/** Feixe de direção — paridade web `HeadingBeam` (ambulantes / usuário). */
-export function HeadingBeam({ heading, size = 56 }: { heading: number; size?: number }) {
+/**
+ * Feixe de direção — paridade web `HeadingBeam` (cone ~240px viewBox 220).
+ * Ambulantes / usuário.
+ */
+export function HeadingBeam({ heading, size = 120 }: { heading: number; size?: number }) {
   return (
     <View
       pointerEvents="none"
@@ -34,8 +37,10 @@ export function HeadingBeam({ heading, size = 56 }: { heading: number; size?: nu
             <Stop offset="100%" stopColor="#7af6ff" stopOpacity="0" />
           </LinearGradient>
         </Defs>
-        <Path d="M110 110 L72 18 Q110 4 148 18 Z" fill="url(#wash)" />
-        <Path d="M110 110 L92 28 Q110 16 128 28 Z" fill="url(#core)" />
+        {/* Paths iguais ao web heading-beam.tsx */}
+        <Path d="M110 110 51 30Q110 8 169 30Z" fill="url(#wash)" opacity={0.85} />
+        <Path d="M110 110 78 20Q110 10 142 20Z" fill="url(#core)" />
+        <Path d="M110 110 104 22h12Z" fill="#ffffff" opacity={0.55} />
       </Svg>
     </View>
   );

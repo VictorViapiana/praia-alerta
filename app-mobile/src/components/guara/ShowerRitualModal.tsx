@@ -71,14 +71,10 @@ export function ShowerRitualModal({ visible, name, stepIndex, onNext, onClose }:
         </Pressable>
 
         <View style={styles.stage} pointerEvents="box-none">
-          {step.kind === "moeda" ? (
-            <View style={styles.coin}>
-              <Text style={styles.coinTop}>Brasil</Text>
-              <Text style={styles.coinValue}>R$ 1</Text>
-            </View>
-          ) : (
-            <View style={styles.coinSpacer} />
-          )}
+          <View style={[styles.coin, step.kind !== "moeda" && styles.coinSoft]}>
+            <Text style={styles.coinTop}>Brasil</Text>
+            <Text style={styles.coinValue}>R$ 1</Text>
+          </View>
 
           <Text style={styles.name}>{name}</Text>
           <Text style={styles.guaraTag}>Guará</Text>
@@ -120,6 +116,7 @@ export function ShowerRitualModal({ visible, name, stepIndex, onNext, onClose }:
           </View>
 
           <GuaraPose pose={pose} size={180} style={styles.guara} />
+          <Text style={styles.hint}>Toque fora do card ou em Próximo</Text>
         </View>
       </Pressable>
     </Modal>
@@ -159,7 +156,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 8,
   },
-  coinSpacer: { height: 20 },
+  coinSoft: { opacity: 0.55, transform: [{ scale: 0.92 }] },
   coinTop: {
     color: "#5c4308",
     fontSize: 10,
@@ -245,4 +242,13 @@ const styles = StyleSheet.create({
   bar: { flex: 1, height: 4, borderRadius: 999, backgroundColor: "rgba(255,255,255,0.2)" },
   barOn: { backgroundColor: "#a5f3fc" },
   guara: { marginTop: 8, width: 180, height: 190, resizeMode: "contain" },
+  hint: {
+    marginTop: 6,
+    color: "rgba(255,255,255,0.8)",
+    fontSize: 11,
+    textAlign: "center",
+    textShadowColor: "rgba(0,0,0,0.4)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
 });

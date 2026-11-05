@@ -28,6 +28,7 @@ import { hourInSaoPaulo } from "../../data/sky-phase";
 import { giftCodeFor } from "../../data/ambulante-hub";
 import { storageGet, storageSet } from "../../utils/storage";
 import { pulseSoft } from "../../utils/haptics";
+import { speakGuara } from "../../utils/speech";
 import { mediaImage } from "../../assets/media";
 
 const STAMP_KEY = "pa-sponsor-stamps-v1";
@@ -40,6 +41,20 @@ const PERK_LABEL: Record<string, string> = {
   music: "Música",
 };
 
+const PHASE_LABEL: Record<SkyPhase, string> = {
+  dawn: "Nascer do sol",
+  day: "Dia na orla",
+  dusk: "Pôr do sol",
+  night: "Noite na orla",
+};
+
+const PHASE_END: Record<SkyPhase, number> = {
+  dawn: 7.5,
+  day: 16.5,
+  dusk: 19,
+  night: 29,
+};
+
 function housePulse(hour: number): { level: number; label: string; hint: string } {
   if (hour < 9) return { level: 0.18, label: "Ainda acordando", hint: "Mesa fácil, café e brisa." };
   if (hour < 12) return { level: 0.42, label: "Movimento leve", hint: "Bom pra chegar sem fila." };
@@ -47,6 +62,25 @@ function housePulse(hour: number): { level: number; label: string; hint: string 
   if (hour < 18) return { level: 0.88, label: "Pico da orla", hint: "Muita gente na areia agora." };
   if (hour < 21) return { level: 0.78, label: "Fim de tarde cheio", hint: "Som, mesa e pôr do sol." };
   return { level: 0.48, label: "Noite calma", hint: "Clima mais intimista." };
+}
+
+function msUntilPhaseEnd(phase: SkyPhase, hour: number) {
+  let end = PHASE_END[phase];
+  if (phase === "night" && hour < 5) end = 5;
+  return Math.max(0, end - hour) * 60 * 60 * 1000;
+}
+
+function formatRemain(ms: number) {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  if (h > 0) return `${h}h ${String(m).padStart(2, "0")}m`;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
+
+function activeOffer(place: Place, phase: SkyPhase) {
+  return place.offers?.[phase] ?? place.offers?.day ?? null;
 }
 
 type Props =
@@ -86,9 +120,12 @@ function PlacePortal({
   const [stamped, setStamped] = useState(false);
   const [stampCount, setStampCount] = useState(0);
   const [holdUntil, setHoldUntil] = useState<number | null>(null);
+  const [giftOpen, setGiftOpen] = useState(false);
   const [now, setNow] = useState(Date.now());
-  const offer = place.offers?.[skyPhase];
-  const pulse = housePulse(hourInSaoPaulo(new Date(now)));
+  const hour = hourInSaoPaulo(new Date(now));
+  const offer = activeOffer(place, skyPhase);
+  const offerRemain = msUntilPhaseEnd(skyPhase, hour);
+  const pulse = housePulse(hour);
   const holdLeft = holdUntil ? Math.max(0, holdUntil - now) : 0;
 
   useEffect(() => {
@@ -120,6 +157,7 @@ function PlacePortal({
     await storageSet(STAMP_KEY, JSON.stringify(ids));
     setStamped(true);
     setStampCount(ids.length);
+    setGiftOpen(true);
     void pulseSoft();
   };
 
@@ -228,7 +266,7 @@ function PlacePortal({
             <View style={styles.pulseHead}>
               <Text style={styles.kicker}>Pulso da casa</Text>
               <View style={styles.phasePill}>
-                <Text style={styles.phasePillText}>Dia na orla</Text>
+                <Text style={styles.phasePillText}>{PHASE_LABEL[skyPhase]}</Text>
               </View>
             </View>
             <Text style={styles.offerTitle}>{pulse.label}</Text>
@@ -246,10 +284,31 @@ function PlacePortal({
           {place.guaraTip ? <Tip text={place.guaraTip} /> : null}
           {offer ? (
             <View style={styles.offerDark}>
-              <Text style={styles.kicker}>Oferta da maré</Text>
+              <View style={styles.pulseHead}>
+                <Text style={styles.kicker}>Oferta da maré</Text>
+                <Text style={styles.code}>{formatRemain(offerRemain)}</Text>
+              </View>
               <Text style={styles.offerTitle}>{offer.title}</Text>
               <Text style={styles.pLight}>{offer.detail}</Text>
-              {offer.code ? <Text style={styles.code}>Código {offer.code}</Text> : null}
+              {offer.code ? (
+                <>
+                  <Text style={styles.code}>Código {offer.code}</Text>
+                  <Pressable
+                    style={styles.stampBtn}
+                    onPress={() => {
+                      const digits = (place.phone ?? "").replace(/\D/g, "");
+                      const text = encodeURIComponent(
+                        `Oi! Cheguei pelo Praia Alerta Guará em ${place.name}. Quero usar o código ${offer.code}.`,
+                      );
+                      void Linking.openURL(
+                        digits ? `https://wa.me/${digits}?text=${text}` : `https://wa.me/?text=${text}`,
+                      );
+                    }}
+                  >
+                    <Text style={styles.stampBtnText}>Usar código {offer.code}</Text>
+                  </Pressable>
+                </>
+              ) : null}
             </View>
           ) : null}
         </View>
@@ -269,7 +328,28 @@ function PlacePortal({
           <Text style={styles.liveNote}>
             {stampCount}/3 selos · colecione nas casas
           </Text>
-          {place.gift?.code ? <Text style={styles.code}>{place.gift.code}</Text> : null}
+          {giftOpen && place.gift ? (
+            <View style={styles.giftReveal}>
+              <Text style={styles.offerTitle}>{place.gift.title}</Text>
+              <Text style={styles.pLight}>{place.gift.detail}</Text>
+              {place.gift.code ? <Text style={styles.code}>{place.gift.code}</Text> : null}
+              <Pressable
+                style={styles.stampBtn}
+                onPress={() => {
+                  const digits = (place.phone ?? "").replace(/\D/g, "");
+                  const text = encodeURIComponent(
+                    `Oi! Carimbei ${place.name} no Praia Alerta Guará.${place.gift?.code ? ` Código: ${place.gift.code}` : ""}`,
+                  );
+                  void Linking.openURL(
+                    digits ? `https://wa.me/${digits}?text=${text}` : `https://wa.me/?text=${text}`,
+                  );
+                }}
+              >
+                <Text style={styles.stampBtnText}>Enviar no WhatsApp</Text>
+              </Pressable>
+            </View>
+          ) : null}
+          {place.gift?.code && !giftOpen ? <Text style={styles.code}>{place.gift.code}</Text> : null}
           <Pressable style={styles.stampBtn} onPress={() => void stamp()}>
             <Text style={styles.stampText}>{stamped ? "Selo guardado ✓" : "Carimbar selo agora"}</Text>
           </Pressable>
@@ -419,6 +499,9 @@ function Tip({ text }: { text: string }) {
       <View style={{ flex: 1 }}>
         <Text style={styles.kicker}>Guará sussurra</Text>
         <Text style={styles.tipText}>{text}</Text>
+        <Pressable style={styles.tipListen} onPress={() => void speakGuara(text)}>
+          <Text style={styles.tipListenText}>Ouvir</Text>
+        </Pressable>
       </View>
     </View>
   );
@@ -657,6 +740,27 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   stampText: { color: "#3a2208", fontWeight: "800" },
+  stampBtnText: { color: "#3a2208", fontWeight: "800", fontSize: 13 },
+  giftReveal: {
+    alignSelf: "stretch",
+    marginTop: 8,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "rgba(253,230,138,0.35)",
+    backgroundColor: "rgba(0,0,0,0.25)",
+    padding: 12,
+    gap: 6,
+  },
+  tipListen: {
+    alignSelf: "flex-start",
+    marginTop: 8,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "rgba(253,230,138,0.4)",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  tipListenText: { color: "#fde68a", fontSize: 11, fontWeight: "700" },
   moment: {
     width: 148,
     height: 118,
