@@ -4,7 +4,10 @@ import { LinearGradient } from "expo-linear-gradient";
 import { mediaImage } from "../../assets/media";
 import { ShineSweep } from "../ui/ShineSweep";
 
-/** Card branco pequeno ancorado no pin — paridade web MarkerPopup não-sponsor. */
+/**
+ * Card branco ancorado no pin — exatamente o MarkerPopup não-sponsor do web
+ * (screenshot Quiosque 13).
+ */
 export function PlacePinBubble({
   name,
   hours,
@@ -23,7 +26,7 @@ export function PlacePinBubble({
         <Text style={styles.whiteHours}>{hours}</Text>
         <Pressable style={styles.darkRoute} onPress={onRoute} collapsable={false}>
           <View style={styles.navDot}>
-            <Navigation color="#fff" size={11} fill="#fff" />
+            <Navigation color="#fff" size={12} fill="#fff" />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.darkRouteTitle}>Ir até aqui</Text>
@@ -36,7 +39,10 @@ export function PlacePinBubble({
   );
 }
 
-/** Card ouro pequeno ancorado no pin — paridade web MarkerPopup sponsor. */
+/**
+ * Card ouro ancorado no pin — MarkerPopup sponsor do web
+ * (screenshot Quiosque 18: faixa cover + Patrocinador + CTA + Ir até aqui).
+ */
 export function SponsorPinBubble({
   name,
   hours,
@@ -59,11 +65,11 @@ export function SponsorPinBubble({
           <View style={styles.goldCover}>
             <Image source={mediaImage(cover)} style={StyleSheet.absoluteFill} resizeMode="cover" />
             <LinearGradient
-              colors={["rgba(28,18,8,0.05)", "rgba(28,18,8,0.55)", "#1c1208"]}
+              colors={["rgba(28,18,8,0.08)", "rgba(28,18,8,0.45)", "#1c1208"]}
               style={StyleSheet.absoluteFill}
             />
             <View style={styles.badge}>
-              <BadgeCheck color="#fcd34d" size={11} />
+              <BadgeCheck color="#fcd34d" size={12} />
               <Text style={styles.badgeText}>Patrocinador</Text>
             </View>
           </View>
@@ -81,14 +87,14 @@ export function SponsorPinBubble({
               <LinearGradient colors={["#fde68a", "#fdba74"]} style={styles.ctaGrad}>
                 <ShineSweep bandWidth={90} travel={220} />
                 <Text style={styles.ctaText}>Ver cardápio e fotos</Text>
-                <ChevronRight color="#3a2208" size={13} />
+                <ChevronRight color="#3a2208" size={14} />
               </LinearGradient>
             </Pressable>
             <Pressable style={styles.goldRoute} onPress={onRoute} collapsable={false}>
               <View style={styles.navDot}>
-                <Navigation color="#fff" size={11} fill="#fff" />
+                <Navigation color="#fff" size={12} fill="#fff" />
               </View>
-              <View>
+              <View style={{ flex: 1 }}>
                 <Text style={styles.goldRouteTitle}>Ir até aqui</Text>
                 <Text style={styles.goldRouteSub}>A pé, bicicleta ou carro</Text>
               </View>
@@ -121,7 +127,7 @@ export function VendorPinBubble({
         <Text style={styles.online}>● Na areia agora</Text>
         <Pressable style={styles.darkRoute} onPress={onRoute} collapsable={false}>
           <View style={styles.navDot}>
-            <Navigation color="#fff" size={11} fill="#fff" />
+            <Navigation color="#fff" size={12} fill="#fff" />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.darkRouteTitle}>Ir até aqui</Text>
@@ -135,9 +141,9 @@ export function VendorPinBubble({
 }
 
 const styles = StyleSheet.create({
-  wrap: { alignItems: "center", marginBottom: 4, width: 228 },
+  wrap: { alignItems: "center", marginBottom: 2, width: 232 },
   whiteCard: {
-    width: 220,
+    width: 228,
     backgroundColor: "#fff",
     borderRadius: 16,
     borderWidth: 1,
@@ -145,10 +151,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     shadowColor: "#1c1917",
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
+    shadowOpacity: 0.22,
+    shadowRadius: 14,
     shadowOffset: { width: 0, height: 8 },
-    elevation: 10,
+    elevation: 12,
   },
   whiteTitle: { color: "#171717", fontSize: 14, fontWeight: "600" },
   whiteHours: { color: "#525252", fontSize: 12, marginTop: 2 },
@@ -169,21 +175,30 @@ const styles = StyleSheet.create({
     gap: 8,
     backgroundColor: "#1c1917",
     borderRadius: 999,
-    paddingVertical: 8,
+    paddingVertical: 9,
     paddingHorizontal: 10,
   },
   navDot: {
-    width: 24,
-    height: 24,
-    borderRadius: 999,
+    width: 26,
+    height: 26,
+    borderRadius: 8,
     backgroundColor: "#e11d48",
     alignItems: "center",
     justifyContent: "center",
   },
-  darkRouteTitle: { color: "#fff", fontWeight: "700", fontSize: 12 },
-  darkRouteSub: { color: "rgba(255,255,255,0.6)", fontSize: 10 },
-  goldRing: { width: 228, borderRadius: 20, padding: 1.5 },
-  goldCard: { borderRadius: 18, overflow: "hidden", backgroundColor: "#1c1208" },
+  darkRouteTitle: { color: "#fff", fontWeight: "700", fontSize: 13 },
+  darkRouteSub: { color: "rgba(255,255,255,0.6)", fontSize: 10, marginTop: 1 },
+  goldRing: {
+    width: 232,
+    borderRadius: 22,
+    padding: 1.5,
+    shadowColor: "#b45309",
+    shadowOpacity: 0.35,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 14,
+  },
+  goldCard: { borderRadius: 20, overflow: "hidden", backgroundColor: "#1c1208" },
   goldCover: { height: 52 },
   badge: {
     position: "absolute",
@@ -198,12 +213,12 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   badgeText: { color: "#fffbeb", fontSize: 11, fontWeight: "800" },
-  goldBody: { paddingHorizontal: 10, paddingBottom: 10, paddingTop: 4, gap: 2 },
+  goldBody: { paddingHorizontal: 10, paddingBottom: 10, paddingTop: 6, gap: 2 },
   goldTitle: { color: "#fff", fontSize: 15, fontWeight: "600" },
-  goldHours: { color: "rgba(255,255,255,0.7)", fontSize: 12 },
+  goldHours: { color: "rgba(255,255,255,0.7)", fontSize: 12, marginTop: 2 },
   tag: {
     alignSelf: "flex-start",
-    marginTop: 4,
+    marginTop: 6,
     backgroundColor: "rgba(252,211,77,0.15)",
     borderRadius: 999,
     paddingHorizontal: 8,
@@ -218,7 +233,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 2,
-    paddingVertical: 10,
+    paddingVertical: 11,
   },
   ctaText: { color: "#3a2208", fontSize: 13, fontWeight: "600", zIndex: 1 },
   goldRoute: {
@@ -228,11 +243,11 @@ const styles = StyleSheet.create({
     gap: 8,
     backgroundColor: "rgba(0,0,0,0.35)",
     borderRadius: 12,
-    paddingVertical: 8,
+    paddingVertical: 9,
     paddingHorizontal: 8,
   },
-  goldRouteTitle: { color: "#fff", fontWeight: "700", fontSize: 12 },
-  goldRouteSub: { color: "rgba(255,255,255,0.55)", fontSize: 10 },
+  goldRouteTitle: { color: "#fff", fontWeight: "700", fontSize: 13 },
+  goldRouteSub: { color: "rgba(255,255,255,0.55)", fontSize: 10, marginTop: 1 },
   goldTail: {
     marginTop: -5,
     width: 12,
@@ -241,7 +256,7 @@ const styles = StyleSheet.create({
     transform: [{ rotate: "45deg" }],
   },
   vendorCard: {
-    width: 188,
+    width: 200,
     backgroundColor: "#fff",
     borderRadius: 16,
     borderWidth: 1,

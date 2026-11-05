@@ -6,13 +6,15 @@ type Props = { onDone: () => void };
 
 const DONE_MS = 3200;
 const EASE = Easing.bezier(0.22, 1, 0.36, 1);
-const H = Dimensions.get("window").height;
-/** Guará mais baixo que o sol — evita o disco solar atravessar o olho (webp com transparência). */
-const STAGE_DROP = H * 0.16;
+/** Paridade web `.sx-stage { transform: translate3d(0, 12vh, 0) }` */
+const STAGE_DROP = Dimensions.get("window").height * 0.12;
 
 /**
- * Splash igual ao web (`app/splash.tsx` + `.sx-stage`).
- * Sol atrás/acima; Guará na frente com backing opaco.
+ * Splash = web `app/splash.tsx` + `.sx-*`.
+ *
+ * Importante: o casco externo NÃO anima opacity. Se o root inteiro fade,
+ * o fundo do navigator (#0b2a48) vaza pelos pixels transparentes do webp
+ * (olho/asas) — parece “sol no olho” / animação lascada.
  */
 export function SplashScreen({ onDone }: Props) {
   const fadeOut = useRef(new Animated.Value(1)).current;
@@ -35,16 +37,36 @@ export function SplashScreen({ onDone }: Props) {
 
     const pulse = Animated.loop(
       Animated.sequence([
-        Animated.timing(sunPulse, { toValue: 1, duration: 1700, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-        Animated.timing(sunPulse, { toValue: 0, duration: 1700, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        Animated.timing(sunPulse, {
+          toValue: 1,
+          duration: 1700,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(sunPulse, {
+          toValue: 0,
+          duration: 1700,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
       ]),
     );
     pulse.start();
 
     const float = Animated.loop(
       Animated.sequence([
-        Animated.timing(floatY, { toValue: -8, duration: 1400, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-        Animated.timing(floatY, { toValue: 0, duration: 1400, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        Animated.timing(floatY, {
+          toValue: -8,
+          duration: 1400,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(floatY, {
+          toValue: 0,
+          duration: 1400,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
       ]),
     );
     float.start();
@@ -71,73 +93,69 @@ export function SplashScreen({ onDone }: Props) {
   const sunOpacity = sunPulse.interpolate({ inputRange: [0, 1], outputRange: [0.92, 1] });
 
   return (
-    <Animated.View style={[styles.fill, { opacity: fadeOut }]} pointerEvents="none">
-      {/* Fundo opaco sólido — no fade não vaza o sol da home pelo olho do Guará */}
-      <View style={styles.opaqueBase} />
+    // Casco opaco fixo — nunca recebe fadeOut
+    <View style={styles.shell} pointerEvents="none">
       <LinearGradient
         colors={["#67c8f5", "#93d8f8", "#c4e8fb", "#f5e6b8", "#7dd3fc", "#0ea5e9"]}
         locations={[0, 0.22, 0.38, 0.55, 0.74, 1]}
         style={StyleSheet.absoluteFill}
       />
-      <View style={styles.wash} pointerEvents="none" />
 
-      <Animated.View style={[styles.sunWrap, { opacity: sunOpacity, transform: [{ scale: sunScale }] }]}>
-        <View style={styles.sunHalo} />
-        <View style={styles.sunCorona} />
-        <LinearGradient
-          colors={["#ffffff", "#fffbeb", "#fef08a", "#fbbf24", "#f59e0b", "#ea580c"]}
-          style={styles.sun}
-        />
-      </Animated.View>
+      <Animated.View style={[StyleSheet.absoluteFill, { opacity: fadeOut }]}>
+        <View style={styles.wash} />
 
-      <LinearGradient
-        colors={["transparent", "rgba(14,116,160,0.28)", "rgba(18,100,155,0.72)", "#1d649c"]}
-        locations={[0, 0.35, 0.72, 1]}
-        style={styles.sea}
-      />
-
-      <View style={[styles.stage, { transform: [{ translateY: STAGE_DROP }] }]}>
+        {/* Sol — web .sx-sun-wrap top 23% */}
         <Animated.View
-          style={{
-            opacity: birdOpacity,
-            transform: [{ translateY: Animated.add(birdY, floatY) }, { scale: birdScale }],
-            alignItems: "center",
-          }}
+          style={[styles.sunWrap, { opacity: sunOpacity, transform: [{ scale: sunScale }] }]}
         >
-          {/* Disco opaco atrás do Guará — tapa qualquer vazamento do sol pelo webp */}
-          <View style={styles.birdBack} />
-          <Image
-            source={require("../assets/guara/poses/chapeu-alegretto.webp")}
-            style={styles.bird}
-            resizeMode="contain"
-            accessibilityIgnoresInvertColors
+          <View style={styles.sunHalo} />
+          <View style={styles.sunCorona} />
+          <LinearGradient
+            colors={["#ffffff", "#fffbeb", "#fef08a", "#fbbf24", "#f59e0b", "#ea580c"]}
+            style={styles.sun}
           />
         </Animated.View>
 
-        <Animated.View
-          style={[
-            styles.brand,
-            { opacity: brandOpacity, transform: [{ translateY: brandY }] },
-          ]}
-        >
-          <Text style={styles.name}>Praia Alerta Guará</Text>
-          <Text style={styles.tag}>Praia do Morro</Text>
-        </Animated.View>
-      </View>
-    </Animated.View>
+        <LinearGradient
+          colors={["transparent", "rgba(14,116,160,0.28)", "rgba(18,100,155,0.72)", "#1d649c"]}
+          locations={[0, 0.35, 0.72, 1]}
+          style={styles.sea}
+        />
+
+        <View style={[styles.stage, { transform: [{ translateY: STAGE_DROP }] }]}>
+          <Animated.View
+            style={{
+              opacity: birdOpacity,
+              transform: [{ translateY: Animated.add(birdY, floatY) }, { scale: birdScale }],
+              alignItems: "center",
+            }}
+          >
+            <Image
+              source={require("../assets/guara/poses/chapeu-alegretto.webp")}
+              style={styles.bird}
+              resizeMode="contain"
+              accessibilityIgnoresInvertColors
+            />
+          </Animated.View>
+
+          <Animated.View
+            style={[styles.brand, { opacity: brandOpacity, transform: [{ translateY: brandY }] }]}
+          >
+            <Text style={styles.name}>Praia Alerta Guará</Text>
+            <Text style={styles.tag}>Praia do Morro</Text>
+          </Animated.View>
+        </View>
+      </Animated.View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  fill: {
+  shell: {
     ...StyleSheet.absoluteFill,
     zIndex: 200,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#7eb8e0",
-  },
-  opaqueBase: {
-    ...StyleSheet.absoluteFill,
     backgroundColor: "#7eb8e0",
   },
   wash: {
@@ -146,7 +164,7 @@ const styles = StyleSheet.create({
   },
   sunWrap: {
     position: "absolute",
-    top: "12%",
+    top: "23%",
     left: "50%",
     width: 160,
     height: 160,
@@ -184,23 +202,15 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   stage: {
-    zIndex: 2,
+    zIndex: 3,
+    elevation: 3,
     alignItems: "center",
     paddingHorizontal: 24,
     gap: 6,
   },
-  birdBack: {
-    position: "absolute",
-    top: "8%",
-    width: 150,
-    height: 150,
-    borderRadius: 999,
-    backgroundColor: "rgba(196,232,251,0.95)",
-  },
   bird: {
     width: 210,
     aspectRatio: 621 / 975,
-    zIndex: 1,
   },
   brand: {
     alignItems: "center",
