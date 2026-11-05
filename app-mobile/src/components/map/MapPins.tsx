@@ -490,7 +490,7 @@ export function MapPins({
                   <CartPin
                     active={selected}
                     heading={point.heading}
-                    showBeam={Boolean(vendor.walks)}
+                    showBeam
                     name={vendor.name}
                   />
                 </View>
