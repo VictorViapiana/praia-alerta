@@ -49,7 +49,7 @@ export function SosSlider({ onTrigger }: Props) {
   return (
     <View style={styles.dock}>
       <View style={styles.guara}>
-        <GuaraPose pose="emergencia" size={56} />
+        <GuaraPose pose="emergencia" size={72} style={styles.guaraImg} />
       </View>
       <View style={styles.track} onLayout={onLayout}>
         <View style={[styles.fillBar, { width: offset + 56 }]} />
@@ -70,8 +70,9 @@ export function SosSlider({ onTrigger }: Props) {
 }
 
 const styles = StyleSheet.create({
-  dock: { paddingTop: 28 },
-  guara: { position: "absolute", left: 8, top: 0, zIndex: 2 },
+  dock: { paddingTop: 36 },
+  guara: { position: "absolute", left: 12, top: 0, zIndex: 2 },
+  guaraImg: { width: 72, height: 76, resizeMode: "contain" },
   track: {
     height: 64,
     borderRadius: 999,

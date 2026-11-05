@@ -1,4 +1,4 @@
-import Svg, { Circle, Path, Rect } from "react-native-svg";
+import Svg, { Circle, Ellipse, Path, Rect } from "react-native-svg";
 
 /** Marcas SVG do web (`beach-map.tsx`) — bancos, quadra, academia, golfinho. */
 
@@ -45,6 +45,32 @@ export function AcademiaMark({ size = 22 }: { size?: number }) {
       <Rect x="9.2" y="14.85" width="13.6" height="1.1" rx="0.55" fill="#fdba74" opacity={0.85} />
       <Rect x="23.6" y="11.2" width="3.2" height="9.6" rx="1.1" fill="#c2410c" />
       <Rect x="25.6" y="9.2" width="4.2" height="13.6" rx="1.4" fill="#9a3412" />
+    </Svg>
+  );
+}
+
+/** Rampa de acesso — SVG do web `RampaPin`. */
+export function RampaMark({ size = 22 }: { size?: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 32 32">
+      <Ellipse cx="16" cy="25.2" rx="11" ry="3" fill="#e4c07a" />
+      <Path
+        d="M6.5 22.2 20.5 12.2h5.2v3.2L11.2 25.2Z"
+        fill="#d08a45"
+        stroke="#8a4e1d"
+        strokeWidth={0.8}
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M11.4 20.6 22.2 13.4M14.2 22.2 24.6 14.6"
+        fill="none"
+        stroke="#8a4e1d"
+        strokeWidth={0.7}
+        strokeLinecap="round"
+      />
+      <Path d="M8.2 17.6 20.2 9.4" fill="none" stroke="#0b3a5b" strokeWidth={1.5} strokeLinecap="round" />
+      <Path d="M8.2 17.6v4.6M20.2 9.4v2.8" fill="none" stroke="#0b3a5b" strokeWidth={1.4} strokeLinecap="round" />
+      <Path d="M11.2 19.8 22.4 11.8" fill="none" stroke="#0284c7" strokeWidth={1.15} strokeLinecap="round" />
     </Svg>
   );
 }

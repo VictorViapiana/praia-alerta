@@ -237,7 +237,9 @@ export function HomeScreen({ navigation }: Props) {
               >
                 <View style={[styles.wash, { backgroundColor: WASH[feature.id] }]} />
                 {feature.id === "alertas" ? <View style={styles.ping} /> : null}
-                <Icon color={feature.accent} size={28} strokeWidth={1.7} />
+                <View style={[styles.glyphWrap, { shadowColor: feature.accent }]}>
+                  <Icon color={feature.accent} size={36} strokeWidth={1.7} />
+                </View>
                 <Text style={styles.cardTitle}>{feature.title}</Text>
                 <Text style={styles.cardSub}>{feature.subtitle}</Text>
               </Pressable>
@@ -463,6 +465,13 @@ const styles = StyleSheet.create({
     borderColor: "rgba(255,255,255,0.18)",
   },
   wash: { position: "absolute", right: -24, top: -28, width: 96, height: 96, borderRadius: 99 },
+  glyphWrap: {
+    alignSelf: "flex-start",
+    shadowOpacity: 0.85,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 6,
+  },
   ping: { position: "absolute", right: 14, top: 14, width: 10, height: 10, borderRadius: 99, backgroundColor: "#f3e8ff" },
   cardTitle: { color: "#fff", fontWeight: "700", fontSize: 15 },
   cardSub: { color: "rgba(207,250,254,0.85)", fontSize: 11, marginTop: 2 },

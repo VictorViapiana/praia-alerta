@@ -6,6 +6,8 @@ import {
   Baby,
   DoorOpen,
   Footprints,
+  Hotel,
+  IceCreamCone,
   Landmark,
   LifeBuoy,
   ShowerHead,
@@ -24,11 +26,12 @@ import {
   type OrlaLandmark,
   type Place,
 } from "../../data/places";
+import { RAMPS } from "../../data/rampas";
 import { fold } from "../../data/coast";
 import { useAmbulanteLive } from "../../context/AmbulanteLiveContext";
 import { PIN_IMAGES } from "../../assets/pins";
 import { KioskMark } from "./KioskMark";
-import { AcademiaMark, BenchMark, CourtMark, DolphinMark } from "./LandmarkMarks";
+import { AcademiaMark, BenchMark, CourtMark, DolphinMark, RampaMark } from "./LandmarkMarks";
 
 type Props = {
   filter: MapFilter;
@@ -103,8 +106,23 @@ function EscunaPin({ active }: { active?: boolean }) {
 function MarlinPin({ active }: { active?: boolean }) {
   return (
     <View style={[styles.marlinWrap, active && styles.scaleUp]}>
-      <Image source={PIN_IMAGES.marlin} style={styles.marlinImg} />
+      <View style={styles.marlinCircle}>
+        <Image source={PIN_IMAGES.marlin} style={styles.marlinImg} />
+      </View>
       <Text style={styles.marlinLabel}>Marlin</Text>
+    </View>
+  );
+}
+
+function RampaPinMark({ active }: { active?: boolean }) {
+  return (
+    <View style={[styles.glyphWrap, active && styles.scaleUp]}>
+      <View style={styles.rampaCircle}>
+        <RampaMark size={22} />
+      </View>
+      <View style={styles.rampaBadge}>
+        <Text style={styles.rampaBadgeText}>Rampa</Text>
+      </View>
     </View>
   );
 }
@@ -208,10 +226,20 @@ function LandmarkPinMark({ item, active }: { item: OrlaLandmark; active?: boolea
   );
 }
 
-function CommerceGlyph({ color, active }: { color: string; active?: boolean }) {
+function CommerceGlyph({
+  kind,
+  color,
+  active,
+}: {
+  kind: Place["mapKind"];
+  color: string;
+  active?: boolean;
+}) {
+  const Icon =
+    kind === "hoteis" ? Hotel : kind === "sorveterias" ? IceCreamCone : UtensilsCrossed;
   return (
     <View style={[styles.commerceCircle, { borderColor: color }, active && styles.scaleUp]}>
-      <UtensilsCrossed color={color} size={14} strokeWidth={2.2} />
+      <Icon color={color} size={14} strokeWidth={2.2} />
     </View>
   );
 }
@@ -314,7 +342,26 @@ export function MapPins({ filter, query, selectedId, onSelect, showDense = true 
             tracksViewChanges={tracks}
             zIndex={24}
           >
-            <CommerceGlyph color={color} active={selectedId === place.id} />
+            <CommerceGlyph kind={place.mapKind} color={color} active={selectedId === place.id} />
+          </Marker>
+        );
+      })}
+
+      {RAMPS.map((ramp) => {
+        const focused = selectedId === ramp.id;
+        if (!showDense && !focused) return null;
+        if (filter !== "neutro" && !focused) return null;
+        if (!matchesQuery(ramp.name, query) && !focused) return null;
+        return (
+          <Marker
+            key={ramp.id}
+            coordinate={{ latitude: ramp.lat, longitude: ramp.lng }}
+            onPress={() => onSelect(ramp.id)}
+            anchor={{ x: 0.5, y: 0.5 }}
+            tracksViewChanges={tracks}
+            zIndex={26}
+          >
+            <RampaPinMark active={focused} />
           </Marker>
         );
       })}
@@ -421,7 +468,22 @@ const styles = StyleSheet.create({
   },
   escunaText: { color: "#fde68a", fontSize: 9, fontWeight: "900" },
   marlinWrap: { alignItems: "center" },
-  marlinImg: { width: 40, height: 40, resizeMode: "contain" },
+  marlinCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#fff",
+    borderWidth: 2,
+    borderColor: "#93c5fd",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.4,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 4,
+  },
+  marlinImg: { width: 32, height: 32, resizeMode: "contain" },
   marlinLabel: {
     marginTop: 2,
     color: "#12315c",
@@ -431,6 +493,29 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 3,
   },
+  rampaCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 4,
+  },
+  rampaBadge: {
+    marginTop: 2,
+    backgroundColor: "#0b3a5b",
+    borderRadius: 999,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+  },
+  rampaBadgeText: { color: "#fff", fontSize: 9, fontWeight: "800" },
   glyphWrap: { alignItems: "center" },
   showerCircle: {
     width: 24,
