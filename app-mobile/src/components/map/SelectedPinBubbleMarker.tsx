@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState, type ReactNode, type RefObject } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { StyleSheet, View } from "react-native";
-import type MapView from "react-native-maps";
+import { Marker } from "react-native-maps";
 import { useAmbulanteLive } from "../../context/AmbulanteLiveContext";
 import { MARLIN, ORLA_LANDMARKS, PLACES } from "../../data/places";
 import { RAMPS } from "../../data/rampas";
@@ -9,10 +9,7 @@ import { PlacePinBubble, SponsorPinBubble, VendorPinBubble } from "./PinBubbles"
 type RoutePoint = { id: string; lat: number; lng: number; name: string };
 
 type Props = {
-  mapRef: RefObject<MapView | null>;
   selectedId: string | null;
-  /** Qualquer mudança de região força recalcular o pixel do pin. */
-  regionKey: string;
   onOpenSponsor?: (id: string) => void;
   onRoute?: (point: RoutePoint) => void;
 };
@@ -20,12 +17,11 @@ type Props = {
 type Target = {
   lat: number;
   lng: number;
-  /** Altura visual do pin (anchor y=1 = ponta inferior no lat/lng). */
+  /** Altura do pin (anchor y=1). Spacer empurra o balão pra cima do ícone. */
   pinH: number;
   bubble: ReactNode;
 };
 
-/** Mesmo offset do MapPins — carrinhos andam na areia. */
 function walkOffset(vendor: { lat: number; lng: number; walks?: boolean }, step: number) {
   if (!vendor.walks) return { lat: vendor.lat, lng: vendor.lng };
   const phase = step <= 4 ? step : 8 - step;
@@ -37,30 +33,30 @@ function walkOffset(vendor: { lat: number; lng: number; walks?: boolean }, step:
 }
 
 /**
- * Balão FORA do Marker. No Apple Maps, mudar a altura do filho do Marker no
- * select reposiciona o pin (salta areia ↔ cidade). Overlay + pointForCoordinate
- * mantém o pin congelado e ancora o card acima do ícone.
+ * Balão num Marker SEPARADO do pin (mesma lat/lng).
+ * Spacer = altura do pin → âncora no pé = ponta do ícone; balão fica logo acima.
+ * O pin em MapPins nunca muda de tamanho → não salta no Apple Maps.
+ * (Overlay + pointForCoordinate desalinhava o card no iOS.)
  */
-export function SelectedPinOverlay({
-  mapRef,
-  selectedId,
-  regionKey,
-  onOpenSponsor,
-  onRoute,
-}: Props) {
+export function SelectedPinBubbleMarker({ selectedId, onOpenSponsor, onRoute }: Props) {
   const { vendors } = useAmbulanteLive();
   const [step, setStep] = useState(0);
-  const [pt, setPt] = useState<{ x: number; y: number } | null>(null);
-  const [box, setBox] = useState({ w: 232, h: 120 });
+  const [tracks, setTracks] = useState(true);
 
   useEffect(() => {
     const id = setInterval(() => setStep((s) => (s + 1) % 8), 3000);
     return () => clearInterval(id);
   }, []);
 
+  // Pulso só ao montar/trocar seleção (ou passo do ambulante) — nunca mexe no pin.
+  useEffect(() => {
+    setTracks(true);
+    const id = setTimeout(() => setTracks(false), 550);
+    return () => clearTimeout(id);
+  }, [selectedId, step]);
+
   const target = useMemo((): Target | null => {
     if (!selectedId) return null;
-
     const route = (point: RoutePoint) => () => onRoute?.(point);
 
     if (selectedId === MARLIN.id) {
@@ -80,7 +76,7 @@ export function SelectedPinOverlay({
 
     const place = PLACES.find((p) => p.id === selectedId);
     if (place) {
-      const pinH = place.mapKind === "quiosques" ? 58 : 36;
+      const pinH = place.mapKind === "quiosques" ? 62 : 36;
       const go = route({ id: place.id, lat: place.lat, lng: place.lng, name: place.name });
       return {
         lat: place.lat,
@@ -158,58 +154,26 @@ export function SelectedPinOverlay({
     return null;
   }, [selectedId, vendors, step, onOpenSponsor, onRoute]);
 
-  useEffect(() => {
-    let cancelled = false;
-    if (!target) {
-      setPt(null);
-      return;
-    }
-    const map = mapRef.current;
-    if (!map?.pointForCoordinate) {
-      setPt(null);
-      return;
-    }
-    map
-      .pointForCoordinate({ latitude: target.lat, longitude: target.lng })
-      .then((point) => {
-        if (!cancelled) setPt(point);
-      })
-      .catch(() => {
-        if (!cancelled) setPt(null);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [target?.lat, target?.lng, selectedId, regionKey, mapRef]);
-
-  if (!target || !pt) return null;
+  if (!target) return null;
 
   return (
-    <View
-      pointerEvents="box-none"
-      style={[
-        styles.layer,
-        {
-          left: pt.x - box.w / 2,
-          top: pt.y - target.pinH - box.h - 6,
-        },
-      ]}
-      onLayout={(e) => {
-        const { width, height } = e.nativeEvent.layout;
-        if (width > 0 && height > 0 && (width !== box.w || height !== box.h)) {
-          setBox({ w: width, h: height });
-        }
-      }}
+    <Marker
+      coordinate={{ latitude: target.lat, longitude: target.lng }}
+      anchor={{ x: 0.5, y: 1 }}
+      tracksViewChanges={tracks}
+      zIndex={220}
+      // Toque no card não deve propagar como tap no mapa (deselect).
+      onPress={() => {}}
     >
-      {target.bubble}
-    </View>
+      <View style={styles.stack} collapsable={false}>
+        {target.bubble}
+        {/* Reserva a altura do pin: âncora no mesmo pé do ícone → balão colado acima. */}
+        <View style={{ height: target.pinH, width: 2 }} collapsable={false} />
+      </View>
+    </Marker>
   );
 }
 
 const styles = StyleSheet.create({
-  layer: {
-    position: "absolute",
-    zIndex: 40,
-    elevation: 40,
-  },
+  stack: { alignItems: "center", backgroundColor: "transparent" },
 });
