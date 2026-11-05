@@ -134,9 +134,8 @@ export const BeachMapView = forwardRef<BeachMapHandle, Props>(function BeachMapV
         ? "mutedStandard"
         : "standard"
       : "satellite";
-  // Web PLACE_ZOOM=17; no RN o delta inicial (~0.018) fica ~zoom 14 e sumia tudo.
-  // Mostra pins a partir de ~15.5 para a orla nascer visível ao abrir o mapa.
-  const showDensePins = approxZoomFromDelta(region.latitudeDelta) >= 15.5;
+  // Web ORLA_ZOOM=16. Pins densos a partir de ~15 (abre já preenchido; some ao afastar).
+  const showDensePins = approxZoomFromDelta(region.latitudeDelta) >= 15;
 
   return (
     <View style={styles.fill}>

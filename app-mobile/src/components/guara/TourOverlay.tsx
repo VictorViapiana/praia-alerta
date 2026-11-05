@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { TourStep } from "../../data/onboarding";
 import { GuaraPose } from "./GuaraPose";
@@ -12,13 +12,49 @@ type Props = {
   onDone: () => void;
 };
 
-/** Avisos do Guará — layout do web: balão branco + rabo + Guará embaixo (ou ao lado). */
+type Hole = { top: number; left: number; width: number; height: number; radius: number };
+
+/** Posições aproximadas dos alvos do tutorial (paridade spotlight do web). */
+function holeForTarget(
+  target: string | null,
+  w: number,
+  h: number,
+  insets: { top: number; bottom: number },
+): Hole | null {
+  if (!target) return null;
+  switch (target) {
+    case "crianca":
+      return { top: insets.top + 8, left: w - 72, width: 56, height: 56, radius: 18 };
+    case "sos":
+      return {
+        top: h - insets.bottom - 118,
+        left: 18,
+        width: w - 36,
+        height: 64,
+        radius: 999,
+      };
+    case "map-search":
+      return { top: insets.top + 56, left: 14, width: w - 88, height: 48, radius: 16 };
+    case "map-filters":
+      return { top: insets.top + 112, left: 14, width: w - 28, height: 44, radius: 14 };
+    case "map-camera":
+      return { top: h - insets.bottom - 240, left: w - 108, width: 92, height: 110, radius: 28 };
+    case "map-location":
+      return { top: insets.top + 56, left: w - 70, width: 48, height: 48, radius: 999 };
+    default:
+      return null;
+  }
+}
+
+/** Avisos do Guará — balão + spotlight no alvo (como `guara-onboarding` no web). */
 export function TourOverlay({ steps, index, onNext, onDone }: Props) {
   const insets = useSafeAreaInsets();
+  const { width: w, height: h } = useWindowDimensions();
   const step = steps[index] ?? steps[0];
   const last = index >= steps.length - 1;
   const [narrating, setNarrating] = useState(false);
   const large = step?.guara === "large" && !step?.target;
+  const hole = holeForTarget(step?.target ?? null, w, h, insets);
 
   useEffect(() => {
     if (!step) return;
@@ -71,9 +107,32 @@ export function TourOverlay({ steps, index, onNext, onDone }: Props) {
     </View>
   );
 
+  const bubbleNearHole =
+    hole &&
+    (hole.top > h * 0.45
+      ? { top: Math.max(insets.top + 12, hole.top - 170), left: 18, right: 18 }
+      : { top: Math.min(h - 220, hole.top + hole.height + 16), left: 18, right: 18 });
+
   return (
     <View style={[styles.root, { paddingBottom: insets.bottom + 16, paddingTop: insets.top + 12 }]}>
       <Pressable style={styles.dim} onPress={advance} accessibilityLabel="Avançar aviso" />
+
+      {hole ? (
+        <View
+          pointerEvents="none"
+          style={[
+            styles.hole,
+            {
+              top: hole.top,
+              left: hole.left,
+              width: hole.width,
+              height: hole.height,
+              borderRadius: hole.radius,
+            },
+          ]}
+        />
+      ) : null}
+
       {large ? (
         <View style={styles.centerStack} pointerEvents="box-none">
           {bubble}
@@ -83,6 +142,13 @@ export function TourOverlay({ steps, index, onNext, onDone }: Props) {
             resizeMode="contain"
             accessibilityIgnoresInvertColors
           />
+        </View>
+      ) : hole && bubbleNearHole ? (
+        <View style={[styles.anchored, bubbleNearHole]} pointerEvents="box-none">
+          <View style={styles.sideRow}>
+            <GuaraPose pose="bust" size={48} />
+            <View style={{ flex: 1 }}>{bubble}</View>
+          </View>
         </View>
       ) : (
         <View style={styles.sideRow} pointerEvents="box-none">
@@ -102,6 +168,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
   },
   dim: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(0,0,0,0.72)" },
+  hole: {
+    position: "absolute",
+    zIndex: 1,
+    borderWidth: 2.5,
+    borderColor: "rgba(251,113,133,0.95)",
+    backgroundColor: "rgba(255,255,255,0.08)",
+    shadowColor: "#fb7185",
+    shadowOpacity: 0.7,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 8,
+  },
+  anchored: {
+    position: "absolute",
+    zIndex: 2,
+  },
   centerStack: {
     zIndex: 2,
     alignItems: "center",

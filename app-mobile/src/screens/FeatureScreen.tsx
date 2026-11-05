@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Droplets, Sun, Wind, X } from "lucide-react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { GuaraPose } from "../components/guara/GuaraPose";
+import { TidePanel } from "../components/ui/TidePanel";
 import { FEATURES } from "../data/catalog";
 import { meters, uvLabel, weatherMark } from "../data/coast";
 import { mareGuaraPose, weatherGuaraPose } from "../data/guara-poses";
@@ -153,46 +154,52 @@ export function FeatureScreen({ navigation, route }: Props) {
           <>
             <View style={styles.heroCard}>
               <GuaraPose pose={marePose} size={116} style={styles.heroGuara} />
-              <Text style={styles.kicker}>Nível do mar agora</Text>
-              <Text style={styles.heroTemp}>{tide.data ? meters(tide.data.level) : "—"}</Text>
-              <Text style={styles.heroLine}>Tendência: {tide.data?.trend ?? "…"}</Text>
-              <Text style={styles.heroMeta}>
-                Onda {tide.data ? `${tide.data.wave.toFixed(1)} m` : "—"} · Mar{" "}
-                {tide.data?.seaTemp != null ? `${tide.data.seaTemp}°C` : "—"}
-              </Text>
               <Text style={styles.heroMeta}>{tide.data?.note ?? "Carregando maré…"}</Text>
             </View>
-            <View style={styles.row2}>
-              {tide.data?.nextHigh ? (
-                <View style={styles.mini}>
-                  <Text style={styles.kicker}>Preamar</Text>
-                  <Text style={styles.miniVal}>{tide.data.nextHigh.label}</Text>
-                  <Text style={styles.line}>{meters(tide.data.nextHigh.level)}</Text>
+            {tide.data ? (
+              <>
+                <TidePanel data={tide.data} />
+                <View style={styles.row2}>
+                  {tide.data.nextHigh ? (
+                    <View style={styles.mini}>
+                      <Text style={styles.kicker}>Preamar</Text>
+                      <Text style={styles.miniVal}>{tide.data.nextHigh.label}</Text>
+                      <Text style={styles.line}>{meters(tide.data.nextHigh.level)}</Text>
+                    </View>
+                  ) : null}
+                  {tide.data.nextLow ? (
+                    <View style={styles.mini}>
+                      <Text style={styles.kicker}>Baixa-mar</Text>
+                      <Text style={styles.miniVal}>{tide.data.nextLow.label}</Text>
+                      <Text style={styles.line}>{meters(tide.data.nextLow.level)}</Text>
+                    </View>
+                  ) : null}
                 </View>
-              ) : null}
-              {tide.data?.nextLow ? (
-                <View style={styles.mini}>
-                  <Text style={styles.kicker}>Baixa-mar</Text>
-                  <Text style={styles.miniVal}>{tide.data.nextLow.label}</Text>
-                  <Text style={styles.line}>{meters(tide.data.nextLow.level)}</Text>
+                <View style={styles.card}>
+                  <Text style={styles.kicker}>Dicas do Guará</Text>
+                  <Text style={styles.line}>
+                    {tide.data.wave < 0.7
+                      ? "Banho confortável no raso entre os postos."
+                      : tide.data.wave < 1.3
+                        ? "Banho com atenção: ondas picadas no raso."
+                        : "Prefira a areia se a bandeira apertar."}
+                  </Text>
+                  <Text style={styles.line}>
+                    {tide.data.trend === "Vazante"
+                      ? "Boa hora para caminhar na faixa molhada."
+                      : "Faixa molhada mais estreita — caminhe perto do calçadão."}
+                  </Text>
                 </View>
-              ) : null}
-            </View>
-            <View style={styles.card}>
-              <Text style={styles.kicker}>Dicas do Guará</Text>
-              <Text style={styles.line}>
-                {(tide.data?.wave ?? 0) < 0.7
-                  ? "Banho confortável no raso entre os postos."
-                  : (tide.data?.wave ?? 0) < 1.3
-                    ? "Banho com atenção: ondas picadas no raso."
-                    : "Prefira a areia se a bandeira apertar."}
-              </Text>
-              <Text style={styles.line}>
-                {tide.data?.trend === "Vazante"
-                  ? "Boa hora para caminhar na faixa molhada."
-                  : "Faixa molhada mais estreita — caminhe perto do calçadão."}
-              </Text>
-            </View>
+              </>
+            ) : (
+              <View style={styles.card}>
+                <Text style={styles.line}>
+                  {tide.failed
+                    ? "A estação do mar não respondeu. Abra de novo em instantes."
+                    : "Carregando nível e ondas…"}
+                </Text>
+              </View>
+            )}
           </>
         )}
 
