@@ -6,11 +6,13 @@ type Props = { onDone: () => void };
 
 const DONE_MS = 3200;
 const EASE = Easing.bezier(0.22, 1, 0.36, 1);
-const STAGE_DROP = Dimensions.get("window").height * 0.12;
+const H = Dimensions.get("window").height;
+/** Guará mais baixo que o sol — evita o disco solar atravessar o olho (webp com transparência). */
+const STAGE_DROP = H * 0.16;
 
 /**
- * Splash igual ao web (`app/splash.tsx` + `.sx-stage` translateY 12vh).
- * Guará de chapéu Alegretto mais baixo, perto do horizonte.
+ * Splash igual ao web (`app/splash.tsx` + `.sx-stage`).
+ * Sol atrás/acima; Guará na frente com backing opaco.
  */
 export function SplashScreen({ onDone }: Props) {
   const fadeOut = useRef(new Animated.Value(1)).current;
@@ -70,6 +72,8 @@ export function SplashScreen({ onDone }: Props) {
 
   return (
     <Animated.View style={[styles.fill, { opacity: fadeOut }]} pointerEvents="none">
+      {/* Fundo opaco sólido — no fade não vaza o sol da home pelo olho do Guará */}
+      <View style={styles.opaqueBase} />
       <LinearGradient
         colors={["#67c8f5", "#93d8f8", "#c4e8fb", "#f5e6b8", "#7dd3fc", "#0ea5e9"]}
         locations={[0, 0.22, 0.38, 0.55, 0.74, 1]}
@@ -100,6 +104,8 @@ export function SplashScreen({ onDone }: Props) {
             alignItems: "center",
           }}
         >
+          {/* Disco opaco atrás do Guará — tapa qualquer vazamento do sol pelo webp */}
+          <View style={styles.birdBack} />
           <Image
             source={require("../assets/guara/poses/chapeu-alegretto.webp")}
             style={styles.bird}
@@ -128,6 +134,11 @@ const styles = StyleSheet.create({
     zIndex: 200,
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: "#7eb8e0",
+  },
+  opaqueBase: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: "#7eb8e0",
   },
   wash: {
     ...StyleSheet.absoluteFill,
@@ -135,12 +146,15 @@ const styles = StyleSheet.create({
   },
   sunWrap: {
     position: "absolute",
-    top: "23%",
+    top: "12%",
+    left: "50%",
     width: 160,
     height: 160,
+    marginLeft: -80,
     marginTop: -80,
     alignItems: "center",
     justifyContent: "center",
+    zIndex: 0,
   },
   sunHalo: {
     position: "absolute",
@@ -167,6 +181,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     height: "34%",
+    zIndex: 1,
   },
   stage: {
     zIndex: 2,
@@ -174,10 +189,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     gap: 6,
   },
+  birdBack: {
+    position: "absolute",
+    top: "8%",
+    width: 150,
+    height: 150,
+    borderRadius: 999,
+    backgroundColor: "rgba(196,232,251,0.95)",
+  },
   bird: {
     width: 210,
-    // proporção do chapéu Alegretto (621×975) — height:auto no web
     aspectRatio: 621 / 975,
+    zIndex: 1,
   },
   brand: {
     alignItems: "center",
