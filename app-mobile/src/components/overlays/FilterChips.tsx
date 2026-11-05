@@ -9,10 +9,19 @@ type Props = {
   dayLayer: DayLayer;
   onDayLayer: (l: DayLayer) => void;
   sunAvailable?: boolean;
+  /** Web esconde camadas do dia enquanto a busca está aberta. */
+  hideDayLayers?: boolean;
 };
 
 /** Filtros no estilo do web: faixa única arredondada + camadas do dia. */
-export function FilterChips({ filter, onFilter, dayLayer, onDayLayer, sunAvailable = true }: Props) {
+export function FilterChips({
+  filter,
+  onFilter,
+  dayLayer,
+  onDayLayer,
+  sunAvailable = true,
+  hideDayLayers = false,
+}: Props) {
   return (
     <View style={styles.stack}>
       <ScrollView
@@ -41,35 +50,43 @@ export function FilterChips({ filter, onFilter, dayLayer, onDayLayer, sunAvailab
           );
         })}
       </ScrollView>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.row}
-        style={styles.barSoft}
-      >
-        {DAY_LAYER_CHIPS.map((item) => {
-          const active = dayLayer === item.id;
-          const blocked = item.id === "sol" && !sunAvailable;
-          return (
-            <Pressable
-              key={item.id}
-              onPress={() => {
-                if (blocked) return;
-                void pulseSoft();
-                onDayLayer(item.id);
-              }}
-              style={[styles.chipSoft, active && styles.chipSoftOn, blocked && styles.chipBlocked]}
-              accessibilityRole="button"
-              accessibilityState={{ selected: active, disabled: blocked }}
-              accessibilityHint={blocked ? "Sol disponível das 05:30 às 17:30" : undefined}
-            >
-              <Text style={[styles.labelSoft, active && styles.labelOn, blocked && styles.labelBlocked]}>
-                {item.emoji} {item.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
+      {!hideDayLayers ? (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.rowSoft}
+          style={styles.barSoft}
+        >
+          {DAY_LAYER_CHIPS.map((item) => {
+            const active = dayLayer === item.id;
+            const blocked = item.id === "sol" && !sunAvailable;
+            return (
+              <Pressable
+                key={item.id}
+                onPress={() => {
+                  if (blocked) return;
+                  void pulseSoft();
+                  onDayLayer(item.id);
+                }}
+                style={[styles.chipSoft, active && styles.chipSoftOn, blocked && styles.chipBlocked]}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active, disabled: blocked }}
+                accessibilityHint={blocked ? "Sol disponível das 05:30 às 17:30" : undefined}
+              >
+                <Text
+                  style={[
+                    styles.labelSoft,
+                    active && styles.labelSoftOn,
+                    blocked && styles.labelBlocked,
+                  ]}
+                >
+                  {item.emoji} {item.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      ) : null}
     </View>
   );
 }
@@ -89,21 +106,29 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(8,47,73,0.5)",
   },
   row: { gap: 4, paddingHorizontal: 6, paddingVertical: 6 },
+  rowSoft: { gap: 4, paddingHorizontal: 4, paddingVertical: 4 },
   chip: {
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 999,
   },
+  /** Vista / filtro ativo — branco sólido como no web. */
   chipOn: { backgroundColor: "#fff" },
   chipSoft: {
     paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingVertical: 4,
     borderRadius: 999,
   },
-  chipSoftOn: { backgroundColor: "rgba(250,204,21,0.9)" },
+  /** Camada do dia selecionada — amber-100 / #3b2a12 como no web. */
+  chipSoftOn: { backgroundColor: "#fef3c7" },
   chipBlocked: { opacity: 0.4 },
-  label: { color: "rgba(255,255,255,0.85)", fontSize: 12, fontWeight: "600" },
-  labelSoft: { color: "rgba(255,255,255,0.8)", fontSize: 11, fontWeight: "600" },
-  labelOn: { color: "#142018" },
-  labelBlocked: { color: "rgba(255,255,255,0.45)" },
+  label: { color: "rgba(255,255,255,0.85)", fontSize: 12, fontWeight: "500" },
+  labelOn: { color: "#142018", fontWeight: "600" },
+  labelSoft: { color: "rgba(255,255,255,0.8)", fontSize: 11, fontWeight: "500" },
+  labelSoftOn: { color: "#3b2a12", fontWeight: "600" },
+  labelBlocked: {
+    color: "rgba(255,255,255,0.35)",
+    textDecorationLine: "line-through",
+    textDecorationColor: "rgba(255,255,255,0.3)",
+  },
 });
