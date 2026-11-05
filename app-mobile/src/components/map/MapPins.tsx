@@ -96,15 +96,24 @@ function CartPin({
   active,
   heading,
   showBeam,
+  name,
 }: {
   active?: boolean;
   heading: number;
   showBeam?: boolean;
+  name?: string;
 }) {
   const flip = Math.sin((heading * Math.PI) / 180) < 0;
   return (
-    <View style={styles.cartWrap}>
-      {showBeam ? <HeadingBeam heading={heading} size={64} /> : null}
+    <View style={styles.cartWrap} collapsable={false}>
+      {showBeam ? <HeadingBeam heading={heading} size={72} /> : null}
+      {!active && name ? (
+        <View style={styles.cartName}>
+          <Text style={styles.cartNameText} numberOfLines={1}>
+            {name}
+          </Text>
+        </View>
+      ) : null}
       <Image
         source={PIN_IMAGES.carrinho}
         style={[
@@ -465,7 +474,7 @@ export function MapPins({
                 coordinate={{ latitude: point.lat, longitude: point.lng }}
                 onPress={() => onSelect(vendor.id)}
                 anchor={{ x: 0.5, y: selected ? 1 : 0.9 }}
-                tracksViewChanges={tracks || Boolean(vendor.walks) || selected}
+                tracksViewChanges={Boolean(vendor.walks) || tracks || selected}
                 zIndex={selected ? 85 : 30}
               >
                 <View style={styles.pinStack} collapsable={false}>
@@ -478,7 +487,12 @@ export function MapPins({
                       }
                     />
                   ) : null}
-                  <CartPin active={selected} heading={point.heading} showBeam={Boolean(vendor.walks)} />
+                  <CartPin
+                    active={selected}
+                    heading={point.heading}
+                    showBeam={Boolean(vendor.walks)}
+                    name={vendor.name}
+                  />
                 </View>
               </Marker>
             );
@@ -565,11 +579,29 @@ const styles = StyleSheet.create({
   cartImg: { width: 36, height: 36, resizeMode: "contain" },
   pinStack: { alignItems: "center" },
   cartWrap: {
-    width: 64,
-    height: 64,
+    width: 72,
+    height: 72,
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "flex-end",
   },
+  cartName: {
+    position: "absolute",
+    bottom: 52,
+    maxWidth: 140,
+    backgroundColor: "#fff",
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#fff",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    zIndex: 3,
+    shadowColor: "#000",
+    shadowOpacity: 0.45,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 4,
+  },
+  cartNameText: { color: "#7c2d12", fontSize: 10, fontWeight: "800" },
   escunaWrap: { width: 96, height: 78, alignItems: "center", justifyContent: "flex-end" },
   escunaWake: {
     position: "absolute",
