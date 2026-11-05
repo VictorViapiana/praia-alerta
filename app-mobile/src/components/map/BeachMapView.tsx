@@ -44,7 +44,7 @@ export const BeachMapView = forwardRef<BeachMapHandle, Props>(function BeachMapV
   ref,
 ) {
   const mapRef = useRef<MapView>(null);
-  const { filter, searchQuery, selectedId, setSelectedId, dayLayer, tide, nav, basemap } = useApp();
+  const { filter, searchQuery, selectedId, setSelectedId, dayLayer, tide, weather, nav, basemap } = useApp();
   const { fix } = useUserLocation(!nav?.active);
   const [region, setRegion] = useState<Region>({
     ...mapTheme.center,
@@ -156,7 +156,7 @@ export const BeachMapView = forwardRef<BeachMapHandle, Props>(function BeachMapV
         followsUserLocation={false}
         toolbarEnabled={false}
       >
-        <DayLayerOverlay dayLayer={dayLayer} tide={tide.data} />
+        <DayLayerOverlay dayLayer={dayLayer} tide={tide.data} weather={weather.data} />
         <RampCorridors />
         <MuroPolylines latitudeDelta={region.latitudeDelta} onPress={onMuroPress} />
         <RouteLayer

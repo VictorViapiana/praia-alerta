@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import * as Location from "expo-location";
@@ -11,10 +12,12 @@ import { ShowerRitualModal } from "../components/guara/ShowerRitualModal";
 import { GuaraChat } from "../components/guara/GuaraChat";
 import { TourOverlay } from "../components/guara/TourOverlay";
 import { SponsorSheet } from "../components/sheets/SponsorSheet";
+import { LandmarkTalkSheet } from "../components/sheets/LandmarkTalkSheet";
 import { SponsorTeaser } from "../components/overlays/SponsorTeaser";
 import { RoutePreviewSheet } from "../components/nav/RoutePreviewSheet";
 import { NavHud } from "../components/nav/NavHud";
 import { useApp } from "../context/AppContext";
+import { speakGuara } from "../utils/speech";
 import { MURO_TALK_SUBTITLE, MURO_TALK_TEXT, MURO_TALK_TITLE } from "../data/orla-muro";
 import {
   ACADEMIA_ORLA,
@@ -45,8 +48,8 @@ import {
 import { useOrlaSentinel } from "../hooks/useOrlaSentinel";
 import { useUserLocation } from "../hooks/useUserLocation";
 import { useNavTracking } from "../hooks/useNavTracking";
-import { useNotifyOpen } from "../hooks/useNotifyOpen";
 import { useAmbulanteLive } from "../context/AmbulanteLiveContext";
+import type { OrlaLandmark } from "../data/places";
 import type { RootStackParamList } from "../navigation/types";
 import type { WalkPoint, WalkRoute } from "../data/walk-route";
 import { SHOWER_RITUAL_STEPS } from "../data/places";
@@ -75,21 +78,48 @@ export function MapScreen({ navigation }: Props) {
   const beachInviteAsked = useRef(false);
   /** Teaser tipo MarkerPopup — sheet completo só após “Ver cardápio”. */
   const [sponsorOpen, setSponsorOpen] = useState(false);
+  const [landmarkTalk, setLandmarkTalk] = useState<OrlaLandmark | null>(null);
+  const [arrivedBanner, setArrivedBanner] = useState<string | null>(null);
+  const [recalcNote, setRecalcNote] = useState<string | null>(null);
+  const arrivedRef = useRef(false);
+  const offStreakRef = useRef(0);
   const locChoiceRef = useRef<"unset" | "accepted" | "declined">("unset");
 
   const liveHeading = app.nav?.active ? navTrack.fix?.heading ?? heading : heading;
   const liveLat = app.nav?.active ? navTrack.fix?.lat ?? fix?.lat ?? null : fix?.lat ?? null;
   const liveLng = app.nav?.active ? navTrack.fix?.lng ?? fix?.lng ?? null : fix?.lng ?? null;
 
-  // Chegada: encerra navegação perto do destino.
+  // Chegada: fala + banner + encerra navegação.
   useEffect(() => {
-    if (!app.nav?.active) return;
+    if (!app.nav?.active) {
+      arrivedRef.current = false;
+      offStreakRef.current = 0;
+      return;
+    }
     if (navTrack.remainingMeters > 28) return;
     if ((navTrack.progress?.offMeters ?? 0) > 40) return;
+    if (arrivedRef.current) return;
+    arrivedRef.current = true;
+    const name = app.nav.destination.name;
+    speakGuara(`Você chegou. ${name} está aqui.`);
+    setArrivedBanner(`Você chegou · ${name}`);
+    setTimeout(() => setArrivedBanner(null), 4200);
     app.stopNav();
     setPreviewRoute(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [app.nav?.active, navTrack.remainingMeters, navTrack.progress?.offMeters]);
+
+  // Fora da rota: aviso do Guará (paridade web).
+  useEffect(() => {
+    if (!app.nav?.active) return;
+    const off = (navTrack.progress?.offMeters ?? 0) > 45 && navTrack.remainingMeters > 40;
+    offStreakRef.current = off ? offStreakRef.current + 1 : 0;
+    if (offStreakRef.current === 3) {
+      speakGuara("Você saiu do caminho. Estou refazendo a rota.");
+      setRecalcNote("Estou refazendo a rota…");
+      setTimeout(() => setRecalcNote(null), 3500);
+    }
+  }, [app.nav?.active, navTrack.progress?.offMeters, navTrack.remainingMeters]);
 
   const place = PLACES.find((p) => p.id === app.selectedId) ?? null;
   const shower = SHOWERS.find((s) => s.id === app.selectedId) ?? null;
@@ -99,15 +129,6 @@ export function MapScreen({ navigation }: Props) {
     null;
   const landmark = landmarkById(app.selectedId);
   const ramp = RAMPS.find((r) => r.id === app.selectedId) ?? null;
-
-  useNotifyOpen(
-    useCallback(
-      (spot) => {
-        app.setSelectedId(spot);
-      },
-      [app],
-    ),
-  );
 
   const origin: WalkPoint = useMemo(
     () =>
@@ -131,7 +152,7 @@ export function MapScreen({ navigation }: Props) {
       if (loc === "unset") {
         setTimeout(() => setLocPrompt(true), 2800);
       }
-      const pending = await takePendingSpot();
+      const pending = (await takePendingSpot()) ?? app.takePendingNotifySpot();
       if (pending) app.setSelectedId(pending);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -256,12 +277,7 @@ export function MapScreen({ navigation }: Props) {
       }
       const lm = landmarkById(id);
       if (lm?.tips?.length) {
-        app.openTipTour({
-          title: lm.name,
-          subtitle: lm.detail,
-          steps: lm.tips,
-          accent: lm.tone === "salva" ? "amber" : lm.tone === "banheiro" ? "ocean" : "teal",
-        });
+        setLandmarkTalk(lm);
       }
     },
     [app],
@@ -332,7 +348,10 @@ export function MapScreen({ navigation }: Props) {
         app.setSearchQuery(guide.query);
         app.setSearchOpen(true);
       }
-      if (guide.openId) app.setSelectedId(guide.openId);
+      if (guide.openId) {
+        app.setSelectedId(guide.openId);
+        openSelectedExperience(guide.openId);
+      }
       if (guide.fly) mapRef.current?.animateTo(guide.fly.lat, guide.fly.lng, 0.005);
       if (guide.route) {
         app.setRouteTarget({
@@ -347,13 +366,30 @@ export function MapScreen({ navigation }: Props) {
         else runLocate();
       }
     },
-    [app, fix, runLocate],
+    [app, fix, runLocate, openSelectedExperience],
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      const guide = app.takePendingGuide();
+      if (guide) onGuide(guide);
+      const spot = app.takePendingNotifySpot();
+      if (spot) {
+        app.setSelectedId(spot);
+        openSelectedExperience(spot);
+      }
+    }, [app, onGuide, openSelectedExperience]),
   );
 
   const showSponsor =
     (place && place.isSponsor) || vendor || app.selectedId === ESCUNA_POINT.id || app.selectedId === "escunas";
   const softBlocked =
-    mapTour.on || Boolean(app.tipTour) || Boolean(app.showerRitual) || app.guaraOpen || Boolean(app.routeTarget);
+    mapTour.on ||
+    Boolean(app.tipTour) ||
+    Boolean(app.showerRitual) ||
+    Boolean(landmarkTalk) ||
+    app.guaraOpen ||
+    Boolean(app.routeTarget);
 
   return (
     <View style={styles.fill}>
@@ -424,11 +460,18 @@ export function MapScreen({ navigation }: Props) {
         />
       )}
 
-      {/* Ficha rápida — só quando não abriu ritual/tour do Guará (landmarks com tips usam TipTour). */}
+      {(arrivedBanner || recalcNote) && (
+        <View style={[styles.arriveBanner, { top: insets.top + 56 }]}>
+          <Text style={styles.arriveText}>{arrivedBanner ?? recalcNote}</Text>
+        </View>
+      )}
+
+      {/* Ficha rápida — landmarks com tips usam LandmarkTalkSheet. */}
       {!app.nav?.active &&
         !app.routeTarget &&
         !app.tipTour &&
         !app.showerRitual &&
+        !landmarkTalk &&
         (ramp || (place && !place.isSponsor) || (landmark && !landmark.tips?.length)) &&
         !showSponsor && (
         <View style={[styles.sheet, { paddingBottom: insets.bottom + 16 }]}>
@@ -554,6 +597,21 @@ export function MapScreen({ navigation }: Props) {
         />
       )}
 
+      {landmarkTalk ? (
+        <LandmarkTalkSheet
+          landmark={landmarkTalk}
+          onClose={() => {
+            setLandmarkTalk(null);
+            app.setSelectedId(null);
+          }}
+          onRoute={() => {
+            const lm = landmarkTalk;
+            setLandmarkTalk(null);
+            app.setRouteTarget({ id: lm.id, lat: lm.lat, lng: lm.lng, name: lm.name });
+          }}
+        />
+      ) : null}
+
       <TipTourModal
         visible={Boolean(app.tipTour)}
         title={app.tipTour?.title ?? ""}
@@ -652,6 +710,20 @@ export function MapScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   fill: { flex: 1, backgroundColor: "#0b2a48" },
+  arriveBanner: {
+    position: "absolute",
+    alignSelf: "center",
+    left: 24,
+    right: 24,
+    zIndex: 70,
+    backgroundColor: "rgba(15,23,42,0.88)",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(125,211,252,0.45)",
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  arriveText: { color: "#fff", textAlign: "center", fontWeight: "700", fontSize: 14 },
   closeBtn: {
     position: "absolute",
     right: 14,

@@ -9,6 +9,7 @@ import { CriancaScreen } from "../screens/CriancaScreen";
 import { StoryScreen } from "../screens/StoryScreen";
 import { AmbulantePortalScreen } from "../screens/AmbulantePortalScreen";
 import { CameraScreen } from "../screens/CameraScreen";
+import { NotifyBridge } from "./NotifyBridge";
 import type { RootStackParamList } from "./types";
 import { useState } from "react";
 
@@ -33,6 +34,7 @@ export function RootNavigator() {
 
   return (
     <NavigationContainer theme={theme}>
+      <NotifyBridge />
       <Stack.Navigator screenOptions={{ headerShown: false, animation: "fade_from_bottom" }}>
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Map" component={MapScreen} options={{ animation: "slide_from_right" }} />

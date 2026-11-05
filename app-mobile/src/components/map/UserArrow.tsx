@@ -1,6 +1,6 @@
 import { View, StyleSheet } from "react-native";
 import { Marker } from "react-native-maps";
-import Svg, { Path, Circle } from "react-native-svg";
+import Svg, { Path, Circle, Defs, LinearGradient, Stop } from "react-native-svg";
 
 type Props = {
   latitude: number;
@@ -10,28 +10,38 @@ type Props = {
   moving?: boolean;
 };
 
-/** Seta direcional premium (nav) / ponto azul (parado). */
+/** Seta / feixe de rumo — cone sempre que há heading (paridade web HeadingBeam). */
 export function UserArrow({ latitude, longitude, heading, navigating, moving }: Props) {
   const deg = heading ?? 0;
+  const showBeam = heading != null;
+  const active = Boolean(navigating || moving);
+
   return (
     <Marker
       coordinate={{ latitude, longitude }}
       anchor={{ x: 0.5, y: 0.5 }}
       flat
-      rotation={navigating || moving ? deg : 0}
-      tracksViewChanges={Boolean(navigating)}
+      rotation={showBeam ? deg : 0}
+      tracksViewChanges={Boolean(navigating || moving)}
       zIndex={80}
     >
-      {navigating || moving ? (
+      {showBeam ? (
         <View style={styles.navWrap}>
           {moving ? <View style={styles.pulse} /> : null}
-          <Svg width={40} height={40} viewBox="0 0 40 40">
-            <Circle cx={20} cy={20} r={18} fill="rgba(0,163,255,0.18)" />
+          <Svg width={56} height={56} viewBox="0 0 56 56">
+            <Defs>
+              <LinearGradient id="beam" x1="28" y1="4" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+                <Stop offset="0" stopColor="#38bdf8" stopOpacity="0.55" />
+                <Stop offset="1" stopColor="#38bdf8" stopOpacity="0" />
+              </LinearGradient>
+            </Defs>
+            <Path d="M28 6 L40 30 L28 24 L16 30 Z" fill="url(#beam)" opacity={0.9} />
+            <Circle cx={28} cy={28} r={active ? 18 : 14} fill="rgba(0,163,255,0.18)" />
             <Path
-              d="M20 4 L32 30 L20 24 L8 30 Z"
+              d="M28 12 L36 34 L28 28 L20 34 Z"
               fill="#00A3FF"
               stroke="#ffffff"
-              strokeWidth={2.2}
+              strokeWidth={2}
               strokeLinejoin="round"
             />
           </Svg>
@@ -47,15 +57,15 @@ export function UserArrow({ latitude, longitude, heading, navigating, moving }: 
 
 const styles = StyleSheet.create({
   navWrap: {
-    width: 48,
-    height: 48,
+    width: 56,
+    height: 56,
     alignItems: "center",
     justifyContent: "center",
   },
   pulse: {
     position: "absolute",
-    width: 42,
-    height: 42,
+    width: 48,
+    height: 48,
     borderRadius: 999,
     backgroundColor: "rgba(0,163,255,0.22)",
   },

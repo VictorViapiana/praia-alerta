@@ -1,4 +1,5 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { mediaImage } from "../../assets/media";
 import { fold } from "../../data/coast";
 import {
   ACADEMIA_ORLA,
@@ -20,6 +21,8 @@ export type SearchHit = {
   kind: string;
   lat: number;
   lng: number;
+  cover?: string;
+  gold?: boolean;
 };
 
 type Props = {
@@ -54,6 +57,8 @@ export function MapSearchHits({ query, onPick }: Props) {
         kind: p.isSponsor ? "Patrocinador" : "Ponto",
         lat: p.lat,
         lng: p.lng,
+        cover: p.cover,
+        gold: p.isSponsor,
       });
     }
   }
@@ -65,7 +70,16 @@ export function MapSearchHits({ query, onPick }: Props) {
   for (const v of vendors.length ? vendors : AMBULANTES) {
     if (!(v.isSponsor && v.isOnline)) continue;
     if (score(v.name, q) || score(v.tag, q) || fold(q).includes("ambulante")) {
-      hits.push({ id: v.id, title: v.name, subtitle: v.tag, kind: "Ambulante", lat: v.lat, lng: v.lng });
+      hits.push({
+        id: v.id,
+        title: v.name,
+        subtitle: v.tag,
+        kind: "Ambulante",
+        lat: v.lat,
+        lng: v.lng,
+        cover: v.cover,
+        gold: true,
+      });
     }
   }
   for (const r of RAMPS) {
@@ -82,6 +96,7 @@ export function MapSearchHits({ query, onPick }: Props) {
         kind: "Orla",
         lat: l.lat,
         lng: l.lng,
+        cover: "cover" in l ? String(l.cover) : undefined,
       });
     }
   }
@@ -99,16 +114,25 @@ export function MapSearchHits({ query, onPick }: Props) {
 
   return (
     <View style={styles.box}>
-      <ScrollView style={{ maxHeight: 240 }} keyboardShouldPersistTaps="handled">
+      <ScrollView style={{ maxHeight: 280 }} keyboardShouldPersistTaps="handled">
         {unique.map((hit) => (
-          <Pressable key={hit.id} style={styles.row} onPress={() => onPick(hit)}>
+          <Pressable
+            key={hit.id}
+            style={[styles.row, hit.gold && styles.rowGold]}
+            onPress={() => onPick(hit)}
+          >
+            {hit.cover ? (
+              <Image source={mediaImage(hit.cover)} style={styles.thumb} />
+            ) : (
+              <View style={[styles.thumb, styles.thumbEmpty]} />
+            )}
             <View style={{ flex: 1 }}>
               <Text style={styles.title}>{hit.title}</Text>
               <Text style={styles.sub} numberOfLines={1}>
                 {hit.subtitle}
               </Text>
             </View>
-            <Text style={styles.kind}>{hit.kind}</Text>
+            <Text style={[styles.kind, hit.gold && styles.kindGold]}>{hit.kind}</Text>
           </Pressable>
         ))}
       </ScrollView>
@@ -129,13 +153,27 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: "rgba(15,23,42,0.08)",
   },
+  rowGold: {
+    backgroundColor: "rgba(253,230,138,0.22)",
+  },
+  thumb: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: "#e2e8f0",
+  },
+  thumbEmpty: {
+    borderWidth: 1,
+    borderColor: "rgba(15,23,42,0.08)",
+  },
   title: { color: "#142018", fontWeight: "800", fontSize: 14 },
   sub: { color: "rgba(20,32,24,0.55)", fontSize: 12, marginTop: 2 },
-  kind: { color: "#b45309", fontSize: 11, fontWeight: "800" },
+  kind: { color: "#64748b", fontSize: 11, fontWeight: "800" },
+  kindGold: { color: "#b45309" },
   empty: { color: "rgba(20,32,24,0.65)", padding: 14, fontSize: 13 },
 });

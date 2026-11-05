@@ -53,7 +53,18 @@ export function StoryScreen({ navigation, route }: Props) {
             </Text>
             {FLAGS.map((flag) => (
               <View key={flag.id} style={styles.flagRow}>
-                <View style={[styles.flagCloth, { backgroundColor: flag.cloth }]} />
+                {flag.id === "vigiada" ? (
+                  <View style={styles.flagCloth}>
+                    <LinearGradient
+                      colors={["#ef4444", "#ef4444", "#f59e0b", "#f59e0b"]}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      style={StyleSheet.absoluteFill}
+                    />
+                  </View>
+                ) : (
+                  <View style={[styles.flagCloth, { backgroundColor: flag.cloth }]} />
+                )}
                 <View style={{ flex: 1 }}>
                   <View style={styles.flagHead}>
                     <Text style={styles.flagName}>{flag.name}</Text>
@@ -161,7 +172,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.12)",
   },
-  flagCloth: { width: 56, height: 36, borderRadius: 6, marginTop: 4 },
+  flagCloth: { width: 56, height: 36, borderRadius: 6, marginTop: 4, overflow: "hidden" },
   flagHead: { flexDirection: "row", alignItems: "center", gap: 8 },
   flagName: { color: "#fff", fontWeight: "800", fontSize: 15 },
   now: { backgroundColor: "#fde68a", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },

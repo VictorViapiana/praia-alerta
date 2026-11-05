@@ -36,8 +36,18 @@ const WASH: Record<FeatureId, string> = {
 
 export function HomeScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
-  const { sky, weather, tide, setFeatureId, openSos, missionOpen, setMissionOpen, setFilter, setSearchQuery } =
-    useApp();
+  const {
+    sky,
+    weather,
+    tide,
+    setFeatureId,
+    openSos,
+    missionOpen,
+    setMissionOpen,
+    setFilter,
+    setSearchQuery,
+    queueGuide,
+  } = useApp();
   const [tour, setTour] = useState({ on: false, i: 0 });
   const [open, setOpen] = useState(false);
   const [narrating, setNarrating] = useState(false);
@@ -139,6 +149,7 @@ export function HomeScreen({ navigation }: Props) {
                         if (guide.filter) setFilter(guide.filter);
                         if (guide.query) setSearchQuery(guide.query);
                         if (guide.fly || guide.openId || guide.route || guide.filter || guide.locate) {
+                          queueGuide(guide);
                           navigation.navigate("Map");
                         }
                       }}
