@@ -1,4 +1,5 @@
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { useEffect, useRef } from "react";
+import { Animated, Easing, Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { BadgeCheck, ChevronRight, Navigation } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { mediaImage } from "../../assets/media";
@@ -51,6 +52,25 @@ export function SponsorPinBubble({
   onOpen: () => void;
   onRoute: () => void;
 }) {
+  const shimmer = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(shimmer, {
+          toValue: 1,
+          duration: 1800,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.delay(600),
+        Animated.timing(shimmer, { toValue: 0, duration: 0, useNativeDriver: true }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [shimmer]);
+  const shineX = shimmer.interpolate({ inputRange: [0, 1], outputRange: [-120, 220] });
+
   return (
     <View style={styles.wrap} pointerEvents="box-none">
       <LinearGradient colors={["#fde68a", "#fb923c", "#f59e0b"]} style={styles.goldRing}>
@@ -78,6 +98,10 @@ export function SponsorPinBubble({
             ) : null}
             <Pressable style={styles.cta} onPress={onOpen}>
               <LinearGradient colors={["#fde68a", "#fdba74"]} style={styles.ctaGrad}>
+                <Animated.View
+                  pointerEvents="none"
+                  style={[styles.ctaShine, { transform: [{ translateX: shineX }] }]}
+                />
                 <Text style={styles.ctaText}>Ver cardápio e fotos</Text>
                 <ChevronRight color="#3a2208" size={13} />
               </LinearGradient>
@@ -133,7 +157,7 @@ export function VendorPinBubble({
 }
 
 const styles = StyleSheet.create({
-  wrap: { alignItems: "center", marginBottom: 6, width: 232 },
+  wrap: { alignItems: "center", marginBottom: 4, width: 228 },
   whiteCard: {
     width: 220,
     backgroundColor: "#fff",
@@ -148,7 +172,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     elevation: 10,
   },
-  whiteTitle: { color: "#171717", fontSize: 14, fontWeight: "700" },
+  whiteTitle: { color: "#171717", fontSize: 14, fontWeight: "600" },
   whiteHours: { color: "#525252", fontSize: 12, marginTop: 2 },
   whiteTail: {
     marginTop: -5,
@@ -180,43 +204,52 @@ const styles = StyleSheet.create({
   },
   darkRouteTitle: { color: "#fff", fontWeight: "700", fontSize: 12 },
   darkRouteSub: { color: "rgba(255,255,255,0.6)", fontSize: 10 },
-  goldRing: { width: 232, borderRadius: 20, padding: 1.5 },
+  goldRing: { width: 228, borderRadius: 20, padding: 1.5 },
   goldCard: { borderRadius: 18, overflow: "hidden", backgroundColor: "#1c1208" },
-  goldCover: { height: 44 },
+  goldCover: { height: 52 },
   badge: {
     position: "absolute",
     left: 8,
-    top: 6,
+    top: 8,
     flexDirection: "row",
     alignItems: "center",
-    gap: 3,
-    backgroundColor: "rgba(28,18,8,0.85)",
+    gap: 4,
+    backgroundColor: "rgba(28,18,8,0.8)",
     borderRadius: 999,
-    paddingHorizontal: 7,
-    paddingVertical: 3,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
-  badgeText: { color: "#fffbeb", fontSize: 10, fontWeight: "800" },
-  goldBody: { paddingHorizontal: 10, paddingBottom: 10, paddingTop: 6, gap: 3 },
-  goldTitle: { color: "#fff", fontSize: 14, fontWeight: "700" },
-  goldHours: { color: "rgba(255,255,255,0.7)", fontSize: 11 },
+  badgeText: { color: "#fffbeb", fontSize: 11, fontWeight: "800" },
+  goldBody: { paddingHorizontal: 10, paddingBottom: 10, paddingTop: 4, gap: 2 },
+  goldTitle: { color: "#fff", fontSize: 15, fontWeight: "600" },
+  goldHours: { color: "rgba(255,255,255,0.7)", fontSize: 12 },
   tag: {
     alignSelf: "flex-start",
-    marginTop: 2,
+    marginTop: 4,
     backgroundColor: "rgba(252,211,77,0.15)",
     borderRadius: 999,
-    paddingHorizontal: 7,
-    paddingVertical: 3,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
-  tagText: { color: "#fffbeb", fontSize: 11, fontWeight: "600" },
-  cta: { marginTop: 6, borderRadius: 999, overflow: "hidden" },
+  tagText: { color: "#fffbeb", fontSize: 12, fontWeight: "500" },
+  cta: { marginTop: 8, borderRadius: 999, overflow: "hidden" },
   ctaGrad: {
+    position: "relative",
+    overflow: "hidden",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 2,
-    paddingVertical: 9,
+    paddingVertical: 10,
   },
-  ctaText: { color: "#3a2208", fontSize: 12, fontWeight: "700" },
+  ctaShine: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    width: "50%",
+    backgroundColor: "rgba(255,255,255,0.55)",
+  },
+  ctaText: { color: "#3a2208", fontSize: 13, fontWeight: "600", zIndex: 1 },
   goldRoute: {
     marginTop: 6,
     flexDirection: "row",
@@ -231,13 +264,13 @@ const styles = StyleSheet.create({
   goldRouteSub: { color: "rgba(255,255,255,0.55)", fontSize: 10 },
   goldTail: {
     marginTop: -5,
-    width: 10,
-    height: 10,
+    width: 12,
+    height: 12,
     backgroundColor: "#fb923c",
     transform: [{ rotate: "45deg" }],
   },
   vendorCard: {
-    width: 200,
+    width: 188,
     backgroundColor: "#fff",
     borderRadius: 16,
     borderWidth: 1,
