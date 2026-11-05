@@ -33,8 +33,6 @@ import { PIN_IMAGES } from "../../assets/pins";
 import { KioskMark } from "./KioskMark";
 import { AcademiaMark, BenchMark, CourtMark, DolphinMark, RampaMark } from "./LandmarkMarks";
 import { HeadingBeam } from "./HeadingBeam";
-import { PlacePinBubble, SponsorPinBubble, VendorPinBubble } from "./PinBubbles";
-
 type Props = {
   filter: MapFilter;
   query: string;
@@ -42,10 +40,6 @@ type Props = {
   onSelect: (id: string) => void;
   /** Zoom alto — esconde comércio até aproximar (paridade PLACE_ZOOM web). */
   showDense?: boolean;
-  /** Abre portal completo do patrocinador. */
-  onOpenSponsor?: (id: string) => void;
-  /** Inicia rota até o ponto. */
-  onRoute?: (point: { id: string; lat: number; lng: number; name: string }) => void;
 };
 
 function matchesQuery(name: string, query: string) {
@@ -282,12 +276,16 @@ export function MapPins({
   selectedId,
   onSelect,
   showDense = true,
-  onOpenSponsor,
-  onRoute,
 }: Props) {
   const { vendors } = useAmbulanteLive();
   const [step, setStep] = useState(0);
-  const [tracks, setTracks] = useState(true);
+  /**
+   * Pulso de bitmap só quando o conjunto/visual dos pins muda (filtro/zoom/lista).
+   * NUNCA no select — isso + balão no Marker era o salto areia↔cidade no iOS.
+   */
+  const [bootTracks, setBootTracks] = useState(true);
+  /** Carrinhos andando precisam redesenhar a cada passo. */
+  const [walkTracks, setWalkTracks] = useState(true);
   const categoryOk =
     filter === "neutro" ||
     filter === "quiosques" ||
@@ -301,12 +299,18 @@ export function MapPins({
     return () => clearInterval(id);
   }, []);
 
-  // Pulso curto p/ bitmap do Marker (inclui select — balão acima do pin no MESMO Marker).
   useEffect(() => {
-    setTracks(true);
-    const id = setTimeout(() => setTracks(false), 700);
+    setBootTracks(true);
+    const id = setTimeout(() => setBootTracks(false), 600);
     return () => clearTimeout(id);
-  }, [filter, query, showDense, vendors.length, step, selectedId]);
+  }, [filter, query, showDense, vendors.length]);
+
+  // Pulso curto só quando o passo do ambulante muda — NUNCA no select.
+  useEffect(() => {
+    setWalkTracks(true);
+    const id = setTimeout(() => setWalkTracks(false), 400);
+    return () => clearTimeout(id);
+  }, [step]);
 
   return (
     <>
@@ -315,7 +319,7 @@ export function MapPins({
           coordinate={{ latitude: ESCUNA_POINT.lat, longitude: ESCUNA_POINT.lng }}
           onPress={() => onSelect(ESCUNA_POINT.id)}
           anchor={{ x: 0.5, y: 1 }}
-          tracksViewChanges={false}
+          tracksViewChanges={bootTracks}
           zIndex={40}
         >
           <EscunaPin />
@@ -327,21 +331,10 @@ export function MapPins({
           coordinate={{ latitude: MARLIN.lat, longitude: MARLIN.lng }}
           onPress={() => onSelect(MARLIN.id)}
           anchor={{ x: 0.5, y: 1 }}
-          tracksViewChanges={selectedId === MARLIN.id || tracks}
+          tracksViewChanges={bootTracks}
           zIndex={selectedId === MARLIN.id ? 80 : 35}
         >
-          <View style={styles.pinStack} collapsable={false}>
-            {selectedId === MARLIN.id ? (
-              <PlacePinBubble
-                name={MARLIN.name}
-                hours={MARLIN.detail}
-                onRoute={() =>
-                  onRoute?.({ id: MARLIN.id, lat: MARLIN.lat, lng: MARLIN.lng, name: MARLIN.name })
-                }
-              />
-            ) : null}
-            <MarlinPin />
-          </View>
+          <MarlinPin />
         </Marker>
       )}
 
@@ -355,7 +348,7 @@ export function MapPins({
             coordinate={{ latitude: shower.lat, longitude: shower.lng }}
             onPress={() => onSelect(shower.id)}
             anchor={{ x: 0.5, y: 0.5 }}
-            tracksViewChanges={false}
+            tracksViewChanges={bootTracks}
             zIndex={20}
           >
             <ShowerPinMark label={filter === "duchas" ? shower.name : undefined} />
@@ -368,7 +361,7 @@ export function MapPins({
         if (!inCategory || !matchesQuery(place.name, query)) return null;
 
         const selected = selectedId === place.id;
-        // Web MarkerPopup: balão ACIMA do ícone no mesmo marker (anchor no pé do pin).
+        // Pin congelado — balão fica no SelectedPinOverlay (fora do Marker).
         if (place.mapKind === "quiosques") {
           return (
             <Marker
@@ -376,33 +369,10 @@ export function MapPins({
               coordinate={{ latitude: place.lat, longitude: place.lng }}
               onPress={() => onSelect(place.id)}
               anchor={{ x: 0.5, y: 1 }}
-              tracksViewChanges={selected || tracks}
+              tracksViewChanges={bootTracks}
               zIndex={selected ? 85 : place.isSponsor ? 28 : 22}
             >
-              <View style={styles.pinStack} collapsable={false}>
-                {selected && place.isSponsor ? (
-                  <SponsorPinBubble
-                    name={place.name}
-                    hours={place.hours}
-                    tag={place.tag}
-                    cover={place.cover}
-                    onOpen={() => onOpenSponsor?.(place.id)}
-                    onRoute={() =>
-                      onRoute?.({ id: place.id, lat: place.lat, lng: place.lng, name: place.name })
-                    }
-                  />
-                ) : null}
-                {selected && !place.isSponsor ? (
-                  <PlacePinBubble
-                    name={place.name}
-                    hours={place.hours}
-                    onRoute={() =>
-                      onRoute?.({ id: place.id, lat: place.lat, lng: place.lng, name: place.name })
-                    }
-                  />
-                ) : null}
-                <KioskPin place={place} />
-              </View>
+              <KioskPin place={place} />
             </Marker>
           );
         }
@@ -415,33 +385,10 @@ export function MapPins({
             coordinate={{ latitude: place.lat, longitude: place.lng }}
             onPress={() => onSelect(place.id)}
             anchor={{ x: 0.5, y: 1 }}
-            tracksViewChanges={selected || tracks}
+            tracksViewChanges={bootTracks}
             zIndex={selected ? 85 : 24}
           >
-            <View style={styles.pinStack} collapsable={false}>
-              {selected && place.isSponsor ? (
-                <SponsorPinBubble
-                  name={place.name}
-                  hours={place.hours}
-                  tag={place.tag}
-                  cover={place.cover}
-                  onOpen={() => onOpenSponsor?.(place.id)}
-                  onRoute={() =>
-                    onRoute?.({ id: place.id, lat: place.lat, lng: place.lng, name: place.name })
-                  }
-                />
-              ) : null}
-              {selected && !place.isSponsor ? (
-                <PlacePinBubble
-                  name={place.name}
-                  hours={place.hours}
-                  onRoute={() =>
-                    onRoute?.({ id: place.id, lat: place.lat, lng: place.lng, name: place.name })
-                  }
-                />
-              ) : null}
-              <CommerceGlyph kind={place.mapKind} color={color} />
-            </View>
+            <CommerceGlyph kind={place.mapKind} color={color} />
           </Marker>
         );
       })}
@@ -457,21 +404,10 @@ export function MapPins({
             coordinate={{ latitude: ramp.lat, longitude: ramp.lng }}
             onPress={() => onSelect(ramp.id)}
             anchor={{ x: 0.5, y: 1 }}
-            tracksViewChanges={focused || tracks}
+            tracksViewChanges={bootTracks}
             zIndex={focused ? 75 : 26}
           >
-            <View style={styles.pinStack} collapsable={false}>
-              {focused ? (
-                <PlacePinBubble
-                  name={ramp.name}
-                  hours={ramp.detail}
-                  onRoute={() =>
-                    onRoute?.({ id: ramp.id, lat: ramp.lat, lng: ramp.lng, name: ramp.name })
-                  }
-                />
-              ) : null}
-              <RampaPinMark />
-            </View>
+            <RampaPinMark />
           </Marker>
         );
       })}
@@ -492,26 +428,10 @@ export function MapPins({
                 coordinate={{ latitude: point.lat, longitude: point.lng }}
                 onPress={() => onSelect(vendor.id)}
                 anchor={{ x: 0.5, y: 1 }}
-                tracksViewChanges={selected || (vendor.walks ? tracks : false)}
+                tracksViewChanges={vendor.walks ? walkTracks || bootTracks : bootTracks}
                 zIndex={selected ? 85 : 30}
               >
-                <View style={styles.pinStack} collapsable={false}>
-                  {selected ? (
-                    <VendorPinBubble
-                      name={vendor.name}
-                      tag={vendor.tag}
-                      onRoute={() =>
-                        onRoute?.({
-                          id: vendor.id,
-                          lat: point.lat,
-                          lng: point.lng,
-                          name: vendor.name,
-                        })
-                      }
-                    />
-                  ) : null}
-                  <CartPin heading={point.heading} showBeam name={vendor.name} />
-                </View>
+                <CartPin heading={point.heading} showBeam name={vendor.name} />
               </Marker>
             );
           })}
@@ -527,26 +447,10 @@ export function MapPins({
             coordinate={{ latitude: landmark.lat, longitude: landmark.lng }}
             onPress={() => onSelect(landmark.id)}
             anchor={{ x: 0.5, y: 1 }}
-            tracksViewChanges={selected || tracks}
+            tracksViewChanges={bootTracks}
             zIndex={selected ? 70 : 18}
           >
-            <View style={styles.pinStack} collapsable={false}>
-              {selected ? (
-                <PlacePinBubble
-                  name={landmark.name}
-                  hours={landmark.detail}
-                  onRoute={() =>
-                    onRoute?.({
-                      id: landmark.id,
-                      lat: landmark.lat,
-                      lng: landmark.lng,
-                      name: landmark.name,
-                    })
-                  }
-                />
-              ) : null}
-              <LandmarkPinMark item={landmark} />
-            </View>
+            <LandmarkPinMark item={landmark} />
           </Marker>
         );
       })}
@@ -604,7 +508,6 @@ const styles = StyleSheet.create({
   kioskNumPremium: { color: "#f8e6c4", fontSize: 11, fontWeight: "800" },
   cartImg: { width: 34, height: 34, resizeMode: "contain" },
   /** Coluna web: balão em cima, ícone embaixo — âncora no pé do pin. */
-  pinStack: { alignItems: "center" },
   cartWrap: {
     width: 78,
     height: 78,

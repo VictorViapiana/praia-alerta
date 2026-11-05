@@ -5,6 +5,7 @@ import { useApp } from "../../context/AppContext";
 import { useUserLocation } from "../../hooks/useUserLocation";
 import { map as mapTheme } from "../../theme/colors";
 import { MapPins } from "./MapPins";
+import { SelectedPinOverlay } from "./SelectedPinOverlay";
 import { MuroPolylines } from "./MuroPolylines";
 import { RampCorridors } from "./RampCorridors";
 import { DayLayerOverlay } from "./DayLayerOverlay";
@@ -54,6 +55,9 @@ export const BeachMapView = forwardRef<BeachMapHandle, Props>(function BeachMapV
     ...mapTheme.center,
     ...mapTheme.initialDelta,
   });
+  /** Tick leve p/ reposicionar o balão no pan — sem re-render pesado de pins a cada frame. */
+  const [bubbleTick, setBubbleTick] = useState(0);
+  const lastBubbleTick = useRef(0);
   const centeredOnce = useRef(false);
   const lastFollow = useRef(0);
   const navStartedAt = useRef(0);
@@ -140,6 +144,7 @@ export const BeachMapView = forwardRef<BeachMapHandle, Props>(function BeachMapV
       : "satellite";
   // Web ORLA_ZOOM=16. Pins densos a partir de ~15 (abre já preenchido; some ao afastar).
   const showDensePins = approxZoomFromDelta(region.latitudeDelta) >= 15;
+  const regionKey = `${region.latitude.toFixed(5)},${region.longitude.toFixed(5)},${region.latitudeDelta.toFixed(5)},${bubbleTick}`;
 
   return (
     <View style={styles.fill}>
@@ -148,6 +153,15 @@ export const BeachMapView = forwardRef<BeachMapHandle, Props>(function BeachMapV
         style={StyleSheet.absoluteFill}
         provider={PROVIDER_DEFAULT}
         initialRegion={region}
+        onRegionChange={(next) => {
+          if (!selectedId) return;
+          const now = Date.now();
+          if (now - lastBubbleTick.current < 48) return;
+          lastBubbleTick.current = now;
+          setBubbleTick((t) => t + 1);
+          // Mantém delta aproximado sem setRegion a cada frame (evita remount de pins).
+          void next;
+        }}
         onRegionChangeComplete={setRegion}
         onPress={() => {
           if (selectedId) setSelectedId(null);
@@ -179,8 +193,6 @@ export const BeachMapView = forwardRef<BeachMapHandle, Props>(function BeachMapV
             selectedId={selectedId}
             onSelect={setSelectedId}
             showDense={showDensePins}
-            onOpenSponsor={onOpenSponsor}
-            onRoute={onRouteToPin}
           />
         )}
         {lat != null && lng != null ? (
@@ -193,6 +205,15 @@ export const BeachMapView = forwardRef<BeachMapHandle, Props>(function BeachMapV
           />
         ) : null}
       </MapView>
+      {!navigating && selectedId ? (
+        <SelectedPinOverlay
+          mapRef={mapRef}
+          selectedId={selectedId}
+          regionKey={regionKey}
+          onOpenSponsor={onOpenSponsor}
+          onRoute={onRouteToPin}
+        />
+      ) : null}
     </View>
   );
 });

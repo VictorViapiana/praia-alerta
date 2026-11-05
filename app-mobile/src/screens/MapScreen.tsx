@@ -501,7 +501,7 @@ export function MapScreen({ navigation }: Props) {
         </View>
       )}
 
-      {/* Portal completo — card pequeno fica no próprio Marker (PinBubbles). */}
+      {/* Portal completo — card pequeno fica no SelectedPinOverlay (fora do Marker). */}
       {!app.nav?.active && !app.routeTarget && place && place.isSponsor && sponsorOpen && (
         <SponsorSheet
           kind="place"
