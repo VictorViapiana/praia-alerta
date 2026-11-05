@@ -268,11 +268,17 @@ export function MapScreen({ navigation }: Props) {
         const far =
           metersBetween(next, { lat: PRAIA_MORRO_VIEW.lat, lng: PRAIA_MORRO_VIEW.lng }) >=
           FAR_FROM_BEACH_M;
-        if (far && !beachInviteAsked.current) {
-          beachInviteAsked.current = true;
-          setBeachInvite(true);
+        if (far) {
+          // Longe da orla (ex.: Barra do Riacho): mantém a Praia do Morro no mapa
+          // e convida o Guará a mostrar a praia — senão o usuário vê mapa sem pins.
+          if (!beachInviteAsked.current) {
+            beachInviteAsked.current = true;
+            setBeachInvite(true);
+          }
+          mapRef.current?.animateTo(PRAIA_MORRO_VIEW.lat, PRAIA_MORRO_VIEW.lng, 0.0055);
+        } else {
+          mapRef.current?.animateTo(next.lat, next.lng, 0.0045);
         }
-        mapRef.current?.animateTo(next.lat, next.lng, 0.0045);
       } catch {
         setLocateNote("Este aparelho não informou a localização.");
       } finally {

@@ -6,6 +6,7 @@ import { Baby, MapPin, ShieldAlert, ShoppingBag, Sun, Waves } from "lucide-react
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { MissionModal } from "../components/guara/MissionModal";
 import { TourOverlay } from "../components/guara/TourOverlay";
+import { OceanWash } from "../components/ui/OceanWash";
 import { FEATURES, GUARA_SPEECH, type FeatureId } from "../data/catalog";
 import { answerGuara, HOME_PROMPTS } from "../data/guara-guide";
 import { useApp } from "../context/AppContext";
@@ -68,7 +69,8 @@ export function HomeScreen({ navigation }: Props) {
   };
 
   return (
-    <LinearGradient colors={[sky.themeColor, "#082038"]} style={styles.fill}>
+    <View style={styles.fill}>
+      <OceanWash phase={sky.phase} />
       <ScrollView
         contentContainerStyle={[
           styles.content,
@@ -261,12 +263,12 @@ export function HomeScreen({ navigation }: Props) {
           }}
         />
       )}
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  fill: { flex: 1 },
+  fill: { flex: 1, backgroundColor: "#0b2a48" },
   content: { paddingHorizontal: 14, gap: 12 },
   island: {
     borderRadius: 26,

@@ -149,6 +149,8 @@ function landmarkColor(item: OrlaLandmark) {
 export function MapPins({ filter, query, selectedId, onSelect, showDense = true }: Props) {
   const { vendors } = useAmbulanteLive();
   const [step, setStep] = useState(0);
+  // iOS/Android: Marker custom com Image some se tracksViewChanges=false no 1º frame.
+  const [tracks, setTracks] = useState(true);
   const categoryOk =
     filter === "neutro" ||
     filter === "quiosques" ||
@@ -161,6 +163,12 @@ export function MapPins({ filter, query, selectedId, onSelect, showDense = true 
     return () => clearInterval(id);
   }, []);
 
+  useEffect(() => {
+    setTracks(true);
+    const id = setTimeout(() => setTracks(false), 900);
+    return () => clearTimeout(id);
+  }, [filter, query, showDense, vendors.length]);
+
   return (
     <>
       {/* Escuna — barco + onda */}
@@ -171,7 +179,7 @@ export function MapPins({ filter, query, selectedId, onSelect, showDense = true 
             coordinate={{ latitude: ESCUNA_POINT.lat, longitude: ESCUNA_POINT.lng }}
             onPress={() => onSelect(ESCUNA_POINT.id)}
             anchor={{ x: 0.5, y: 0.85 }}
-            tracksViewChanges={false}
+            tracksViewChanges={tracks}
             zIndex={40}
           >
             <EscunaPin active={selectedId === ESCUNA_POINT.id || selectedId === "escunas"} />
@@ -186,7 +194,7 @@ export function MapPins({ filter, query, selectedId, onSelect, showDense = true 
             coordinate={{ latitude: MARLIN.lat, longitude: MARLIN.lng }}
             onPress={() => onSelect(MARLIN.id)}
             anchor={{ x: 0.5, y: 0.9 }}
-            tracksViewChanges={false}
+            tracksViewChanges={tracks}
             zIndex={35}
           >
             <MarlinPin active={selectedId === MARLIN.id} />
@@ -203,7 +211,7 @@ export function MapPins({ filter, query, selectedId, onSelect, showDense = true 
             coordinate={{ latitude: shower.lat, longitude: shower.lng }}
             onPress={() => onSelect(shower.id)}
             anchor={{ x: 0.5, y: 0.5 }}
-            tracksViewChanges={false}
+            tracksViewChanges={tracks}
             zIndex={20}
           >
             <GlyphPin
@@ -227,7 +235,7 @@ export function MapPins({ filter, query, selectedId, onSelect, showDense = true 
               coordinate={{ latitude: place.lat, longitude: place.lng }}
               onPress={() => onSelect(place.id)}
               anchor={{ x: 0.5, y: 1 }}
-              tracksViewChanges={false}
+              tracksViewChanges={tracks}
               zIndex={place.isSponsor ? 28 : 22}
             >
               <KioskPin place={place} active={selectedId === place.id} />
@@ -247,7 +255,7 @@ export function MapPins({ filter, query, selectedId, onSelect, showDense = true 
             coordinate={{ latitude: place.lat, longitude: place.lng }}
             onPress={() => onSelect(place.id)}
             anchor={{ x: 0.5, y: 0.5 }}
-            tracksViewChanges={false}
+            tracksViewChanges={tracks}
             zIndex={24}
           >
             <GlyphPin
@@ -274,7 +282,7 @@ export function MapPins({ filter, query, selectedId, onSelect, showDense = true 
                 coordinate={{ latitude: point.lat, longitude: point.lng }}
                 onPress={() => onSelect(vendor.id)}
                 anchor={{ x: 0.5, y: 0.9 }}
-                tracksViewChanges={vendor.walks}
+                tracksViewChanges={tracks || Boolean(vendor.walks)}
                 zIndex={30}
               >
                 <CartPin active={selectedId === vendor.id} flip={vendor.walks ? step % 8 > 4 : false} />
@@ -292,7 +300,7 @@ export function MapPins({ filter, query, selectedId, onSelect, showDense = true 
             coordinate={{ latitude: landmark.lat, longitude: landmark.lng }}
             onPress={() => onSelect(landmark.id)}
             anchor={{ x: 0.5, y: 0.5 }}
-            tracksViewChanges={false}
+            tracksViewChanges={tracks}
             zIndex={18}
           >
             <GlyphPin
