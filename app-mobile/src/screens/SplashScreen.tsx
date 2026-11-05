@@ -6,23 +6,22 @@ type Props = { onDone: () => void };
 
 const DONE_MS = 3200;
 const EASE = Easing.bezier(0.22, 1, 0.36, 1);
-/** Paridade web `.sx-stage { transform: translate3d(0, 12vh, 0) }` */
-const STAGE_DROP = Dimensions.get("window").height * 0.12;
+const { width: WIN_W, height: WIN_H } = Dimensions.get("window");
+/** Web: min(48vw, 210px) — no RN o webp alto (621×975) com 210px vira ~330px e engole a tela. */
+const BIRD_W = Math.min(WIN_W * 0.38, 148);
+const BIRD_H = BIRD_W * (975 / 621);
 
 /**
- * Splash = web `app/splash.tsx` + `.sx-*`.
- *
- * Importante: o casco externo NÃO anima opacity. Se o root inteiro fade,
- * o fundo do navigator (#0b2a48) vaza pelos pixels transparentes do webp
- * (olho/asas) — parece “sol no olho” / animação lascada.
+ * Splash = web `app/splash.tsx`.
+ * Guará compacto, ancorado perto do horizonte (não centralizado gigante).
+ * Casco opaco fixo — fade só no conteúdo (sem vazar fundo pelo webp).
  */
 export function SplashScreen({ onDone }: Props) {
   const fadeOut = useRef(new Animated.Value(1)).current;
   const birdOpacity = useRef(new Animated.Value(0)).current;
-  const birdY = useRef(new Animated.Value(36)).current;
-  const birdScale = useRef(new Animated.Value(0.92)).current;
+  const birdY = useRef(new Animated.Value(28)).current;
   const brandOpacity = useRef(new Animated.Value(0)).current;
-  const brandY = useRef(new Animated.Value(14)).current;
+  const brandY = useRef(new Animated.Value(12)).current;
   const sunPulse = useRef(new Animated.Value(0)).current;
   const floatY = useRef(new Animated.Value(0)).current;
 
@@ -30,7 +29,6 @@ export function SplashScreen({ onDone }: Props) {
     Animated.parallel([
       Animated.timing(birdOpacity, { toValue: 1, duration: 1050, delay: 120, easing: EASE, useNativeDriver: true }),
       Animated.timing(birdY, { toValue: 0, duration: 1050, delay: 120, easing: EASE, useNativeDriver: true }),
-      Animated.timing(birdScale, { toValue: 1, duration: 1050, delay: 120, easing: EASE, useNativeDriver: true }),
       Animated.timing(brandOpacity, { toValue: 1, duration: 900, delay: 550, easing: EASE, useNativeDriver: true }),
       Animated.timing(brandY, { toValue: 0, duration: 900, delay: 550, easing: EASE, useNativeDriver: true }),
     ]).start();
@@ -56,7 +54,7 @@ export function SplashScreen({ onDone }: Props) {
     const float = Animated.loop(
       Animated.sequence([
         Animated.timing(floatY, {
-          toValue: -8,
+          toValue: -6,
           duration: 1400,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
@@ -87,13 +85,12 @@ export function SplashScreen({ onDone }: Props) {
       clearTimeout(fadeTimer);
       clearTimeout(doneTimer);
     };
-  }, [birdOpacity, birdScale, birdY, brandOpacity, brandY, fadeOut, floatY, onDone, sunPulse]);
+  }, [birdOpacity, birdY, brandOpacity, brandY, fadeOut, floatY, onDone, sunPulse]);
 
   const sunScale = sunPulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.04] });
   const sunOpacity = sunPulse.interpolate({ inputRange: [0, 1], outputRange: [0.92, 1] });
 
   return (
-    // Casco opaco fixo — nunca recebe fadeOut
     <View style={styles.shell} pointerEvents="none">
       <LinearGradient
         colors={["#67c8f5", "#93d8f8", "#c4e8fb", "#f5e6b8", "#7dd3fc", "#0ea5e9"]}
@@ -104,7 +101,6 @@ export function SplashScreen({ onDone }: Props) {
       <Animated.View style={[StyleSheet.absoluteFill, { opacity: fadeOut }]}>
         <View style={styles.wash} />
 
-        {/* Sol — web .sx-sun-wrap top 23% */}
         <Animated.View
           style={[styles.sunWrap, { opacity: sunOpacity, transform: [{ scale: sunScale }] }]}
         >
@@ -122,11 +118,12 @@ export function SplashScreen({ onDone }: Props) {
           style={styles.sea}
         />
 
-        <View style={[styles.stage, { transform: [{ translateY: STAGE_DROP }] }]}>
+        {/* Perto do horizonte — não justify center (isso inchava o Guará no meio) */}
+        <View style={styles.stage}>
           <Animated.View
             style={{
               opacity: birdOpacity,
-              transform: [{ translateY: Animated.add(birdY, floatY) }, { scale: birdScale }],
+              transform: [{ translateY: Animated.add(birdY, floatY) }],
               alignItems: "center",
             }}
           >
@@ -154,8 +151,6 @@ const styles = StyleSheet.create({
   shell: {
     ...StyleSheet.absoluteFill,
     zIndex: 200,
-    alignItems: "center",
-    justifyContent: "center",
     backgroundColor: "#7eb8e0",
   },
   wash: {
@@ -164,33 +159,33 @@ const styles = StyleSheet.create({
   },
   sunWrap: {
     position: "absolute",
-    top: "23%",
+    top: "22%",
     left: "50%",
-    width: 160,
-    height: 160,
-    marginLeft: -80,
-    marginTop: -80,
+    width: 140,
+    height: 140,
+    marginLeft: -70,
+    marginTop: -70,
     alignItems: "center",
     justifyContent: "center",
     zIndex: 0,
   },
   sunHalo: {
     position: "absolute",
-    width: 250,
-    height: 250,
+    width: 220,
+    height: 220,
     borderRadius: 999,
     backgroundColor: "rgba(253,224,71,0.22)",
   },
   sunCorona: {
     position: "absolute",
-    width: 190,
-    height: 190,
+    width: 168,
+    height: 168,
     borderRadius: 999,
     backgroundColor: "rgba(254,240,138,0.45)",
   },
   sun: {
-    width: 88,
-    height: 88,
+    width: 76,
+    height: 76,
     borderRadius: 999,
   },
   sea: {
@@ -202,24 +197,27 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   stage: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: WIN_H * 0.42,
     zIndex: 3,
-    elevation: 3,
     alignItems: "center",
     paddingHorizontal: 24,
-    gap: 6,
+    gap: 4,
   },
   bird: {
-    width: 210,
-    aspectRatio: 621 / 975,
+    width: BIRD_W,
+    height: BIRD_H,
   },
   brand: {
     alignItems: "center",
-    marginTop: 6,
+    marginTop: 2,
     gap: 2,
   },
   name: {
     color: "#0c4a6e",
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: "600",
     letterSpacing: -0.4,
     textShadowColor: "rgba(255,255,255,0.35)",
@@ -229,7 +227,7 @@ const styles = StyleSheet.create({
   tag: {
     marginTop: 4,
     color: "rgba(12,74,110,0.72)",
-    fontSize: 12.5,
+    fontSize: 12,
     fontWeight: "500",
     letterSpacing: 2.8,
     textTransform: "uppercase",
