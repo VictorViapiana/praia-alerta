@@ -24,7 +24,7 @@ export async function composeFramedPhoto(
   photoUri: string,
   opts?: { maxSide?: number },
 ): Promise<string> {
-  const maxSide = opts?.maxSide ?? 1200;
+  const maxSide = opts?.maxSide ?? 1600;
 
   const frameAsset = Asset.fromModule(FRAME_MODULE);
   await frameAsset.downloadAsync();

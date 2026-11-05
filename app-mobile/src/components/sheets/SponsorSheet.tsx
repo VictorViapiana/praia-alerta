@@ -30,6 +30,7 @@ import { storageGet, storageSet } from "../../utils/storage";
 import { pulseSoft } from "../../utils/haptics";
 import { speakGuara } from "../../utils/speech";
 import { mediaImage } from "../../assets/media";
+import { ShineSweep } from "../ui/ShineSweep";
 
 const STAMP_KEY = "pa-sponsor-stamps-v1";
 const HOLD_MS = 15 * 60 * 1000;
@@ -283,7 +284,14 @@ function PlacePortal({
           </View>
           {place.guaraTip ? <Tip text={place.guaraTip} /> : null}
           {offer ? (
-            <View style={styles.offerDark}>
+            <View style={[styles.offerDark, styles.offerShineHost]}>
+              <ShineSweep
+                bandWidth={110}
+                travel={320}
+                durationMs={2800}
+                delayMs={1200}
+                colors={["transparent", "rgba(253,230,138,0.28)", "transparent"]}
+              />
               <View style={styles.pulseHead}>
                 <Text style={styles.kicker}>Oferta da maré</Text>
                 <Text style={styles.code}>{formatRemain(offerRemain)}</Text>
@@ -291,23 +299,23 @@ function PlacePortal({
               <Text style={styles.offerTitle}>{offer.title}</Text>
               <Text style={styles.pLight}>{offer.detail}</Text>
               {offer.code ? (
-                <>
-                  <Text style={styles.code}>Código {offer.code}</Text>
-                  <Pressable
-                    style={styles.stampBtn}
-                    onPress={() => {
-                      const digits = (place.phone ?? "").replace(/\D/g, "");
-                      const text = encodeURIComponent(
-                        `Oi! Cheguei pelo Praia Alerta Guará em ${place.name}. Quero usar o código ${offer.code}.`,
-                      );
-                      void Linking.openURL(
-                        digits ? `https://wa.me/${digits}?text=${text}` : `https://wa.me/?text=${text}`,
-                      );
-                    }}
-                  >
-                    <Text style={styles.stampBtnText}>Usar código {offer.code}</Text>
-                  </Pressable>
-                </>
+                <Pressable
+                  style={styles.offerCta}
+                  onPress={() => {
+                    const digits = (place.phone ?? "").replace(/\D/g, "");
+                    const text = encodeURIComponent(
+                      `Oi! Cheguei pelo Praia Alerta Guará em ${place.name}. Quero usar o código ${offer.code}.`,
+                    );
+                    void Linking.openURL(
+                      digits ? `https://wa.me/${digits}?text=${text}` : `https://wa.me/?text=${text}`,
+                    );
+                  }}
+                >
+                  <LinearGradient colors={["#fde68a", "#fdba74"]} style={styles.offerCtaGrad}>
+                    <ShineSweep />
+                    <Text style={styles.offerCtaText}>Usar código {offer.code}</Text>
+                  </LinearGradient>
+                </Pressable>
               ) : null}
             </View>
           ) : null}
@@ -722,6 +730,21 @@ const styles = StyleSheet.create({
     gap: 6,
     alignItems: "flex-start",
   },
+  offerShineHost: {
+    position: "relative",
+    overflow: "hidden",
+    backgroundColor: "#1c1208",
+    borderColor: "rgba(253,230,138,0.35)",
+  },
+  offerCta: { marginTop: 8, alignSelf: "stretch", borderRadius: 12, overflow: "hidden" },
+  offerCtaGrad: {
+    position: "relative",
+    overflow: "hidden",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 11,
+  },
+  offerCtaText: { color: "#3a2208", fontSize: 13, fontWeight: "700", zIndex: 1 },
   offerTitle: { color: "#fff", fontSize: 16, fontWeight: "800" },
   code: {
     marginTop: 4,

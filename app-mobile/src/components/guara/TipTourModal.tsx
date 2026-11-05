@@ -1,4 +1,5 @@
-import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { useEffect, useRef } from "react";
+import { Animated, Easing, Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { Volume2 } from "lucide-react-native";
 import { GuaraPose } from "./GuaraPose";
 import { speakGuara, stopSpeaking } from "../../utils/speech";
@@ -20,7 +21,7 @@ type Props = {
   onClose: () => void;
 };
 
-/** Paridade web `GuaraTipTour`: card + Guará + Ouvir/Próximo (botões fora do Pressable de fundo). */
+/** Paridade web `GuaraTipTour`: card + Guará flutuante + Ouvir/Próximo. */
 export function TipTourModal({
   visible,
   title,
@@ -33,6 +34,30 @@ export function TipTourModal({
 }: Props) {
   const step = steps[stepIndex] ?? steps[0];
   const last = stepIndex >= steps.length - 1;
+  const floatY = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (!visible) return;
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(floatY, {
+          toValue: -8,
+          duration: 1400,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(floatY, {
+          toValue: 0,
+          duration: 1400,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [floatY, visible]);
+
   if (!step) return null;
 
   const btn =
@@ -63,6 +88,13 @@ export function TipTourModal({
         ? styles.toneGood
         : styles.toneInfo;
 
+  const titleTone =
+    step.kind === "alerta"
+      ? styles.titleAlert
+      : step.kind === "convivencia"
+        ? styles.titleGood
+        : styles.titleInfo;
+
   const advance = () => {
     stopSpeaking();
     if (last) onClose();
@@ -72,7 +104,6 @@ export function TipTourModal({
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.backdrop}>
-        {/* Fundo separado — não engole toques dos botões */}
         <Pressable style={StyleSheet.absoluteFill} onPress={advance} accessibilityLabel="Avançar aviso" />
 
         <View style={styles.stage} pointerEvents="box-none">
@@ -90,7 +121,7 @@ export function TipTourModal({
             <View style={[styles.bubble, tone]}>
               {step.kind === "alerta" ? <Text style={styles.kindAlert}>Alerta</Text> : null}
               {step.kind === "convivencia" ? <Text style={styles.kindGood}>Boa convivência</Text> : null}
-              <Text style={styles.bubbleTitle}>{step.title}</Text>
+              <Text style={[styles.bubbleTitle, titleTone]}>{step.title}</Text>
               <Text style={styles.bubbleText}>{step.text}</Text>
             </View>
 
@@ -128,9 +159,12 @@ export function TipTourModal({
             </View>
           </View>
 
-          <View style={styles.guaraSlot} pointerEvents="none">
+          <Animated.View
+            style={[styles.guaraSlot, { transform: [{ translateY: floatY }] }]}
+            pointerEvents="none"
+          >
             <GuaraPose pose={last ? "festa" : "full"} size={168} style={styles.guaraImg} />
-          </View>
+          </Animated.View>
           <Text style={styles.hint} pointerEvents="none">
             Toque na tela ou em Próximo
           </Text>
@@ -181,9 +215,9 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   bubble: { marginTop: 10, borderRadius: 16, borderWidth: 1, paddingHorizontal: 12, paddingVertical: 10 },
-  toneAlert: { backgroundColor: "rgba(254,242,242,0.95)", borderColor: "#fecdd3" },
-  toneGood: { backgroundColor: "rgba(236,253,245,0.95)", borderColor: "#a7f3d0" },
-  toneInfo: { backgroundColor: "rgba(240,249,255,0.95)", borderColor: "#bae6fd" },
+  toneAlert: { backgroundColor: "rgba(254,242,242,0.9)", borderColor: "#fecdd3" },
+  toneGood: { backgroundColor: "rgba(236,253,245,0.9)", borderColor: "#a7f3d0" },
+  toneInfo: { backgroundColor: "rgba(240,249,255,0.9)", borderColor: "#bae6fd" },
   kindAlert: {
     fontSize: 10,
     fontWeight: "700",
@@ -200,8 +234,11 @@ const styles = StyleSheet.create({
     color: "rgba(4,120,87,0.9)",
     marginBottom: 4,
   },
-  bubbleTitle: { fontWeight: "700", fontSize: 13, color: "#1c120c", lineHeight: 18 },
+  bubbleTitle: { fontWeight: "700", fontSize: 13, lineHeight: 18 },
   bubbleText: { marginTop: 4, fontSize: 13, lineHeight: 18, color: "#404040" },
+  titleAlert: { color: "#b91c1c" },
+  titleGood: { color: "#065f46" },
+  titleInfo: { color: "#0b3a66" },
   bars: { marginTop: 12, flexDirection: "row", gap: 6 },
   bar: { flex: 1, height: 4, borderRadius: 999 },
   row: { marginTop: 12, flexDirection: "row", flexWrap: "wrap", gap: 8 },

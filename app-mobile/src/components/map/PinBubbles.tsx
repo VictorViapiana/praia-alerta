@@ -1,8 +1,8 @@
-import { useEffect, useRef } from "react";
-import { Animated, Easing, Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { BadgeCheck, ChevronRight, Navigation } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { mediaImage } from "../../assets/media";
+import { ShineSweep } from "../ui/ShineSweep";
 
 /** Card branco pequeno ancorado no pin — paridade web MarkerPopup não-sponsor. */
 export function PlacePinBubble({
@@ -52,25 +52,6 @@ export function SponsorPinBubble({
   onOpen: () => void;
   onRoute: () => void;
 }) {
-  const shimmer = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(shimmer, {
-          toValue: 1,
-          duration: 1800,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.delay(600),
-        Animated.timing(shimmer, { toValue: 0, duration: 0, useNativeDriver: true }),
-      ]),
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [shimmer]);
-  const shineX = shimmer.interpolate({ inputRange: [0, 1], outputRange: [-120, 220] });
-
   return (
     <View style={styles.wrap} pointerEvents="box-none" collapsable={false}>
       <LinearGradient colors={["#fde68a", "#fb923c", "#f59e0b"]} style={styles.goldRing}>
@@ -98,10 +79,7 @@ export function SponsorPinBubble({
             ) : null}
             <Pressable style={styles.cta} onPress={onOpen} collapsable={false}>
               <LinearGradient colors={["#fde68a", "#fdba74"]} style={styles.ctaGrad}>
-                <Animated.View
-                  pointerEvents="none"
-                  style={[styles.ctaShine, { transform: [{ translateX: shineX }] }]}
-                />
+                <ShineSweep bandWidth={90} travel={220} />
                 <Text style={styles.ctaText}>Ver cardápio e fotos</Text>
                 <ChevronRight color="#3a2208" size={13} />
               </LinearGradient>
@@ -241,13 +219,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 2,
     paddingVertical: 10,
-  },
-  ctaShine: {
-    position: "absolute",
-    top: 0,
-    bottom: 0,
-    width: "50%",
-    backgroundColor: "rgba(255,255,255,0.55)",
   },
   ctaText: { color: "#3a2208", fontSize: 13, fontWeight: "600", zIndex: 1 },
   goldRoute: {

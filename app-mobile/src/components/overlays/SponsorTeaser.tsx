@@ -1,9 +1,10 @@
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
-import { BadgeCheck, ChevronRight } from "lucide-react-native";
+import { BadgeCheck, ChevronRight, Navigation } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { mediaImage } from "../../assets/media";
 import type { Place, Ambulante } from "../../data/places";
 import { ESCUNA_POINT } from "../../data/places";
+import { ShineSweep } from "../ui/ShineSweep";
 
 type Props = {
   place?: Place | null;
@@ -15,13 +16,12 @@ type Props = {
   onClose: () => void;
 };
 
-/** Paridade web `MarkerPopup` — card ouro/escuro do patrocinador. */
+/** Paridade web `MarkerPopup` — card ouro/escuro do patrocinador (sem Fechar no popup pequeno). */
 export function SponsorTeaser({ place, vendor, escuna, bottom, onOpen, onRoute, onClose }: Props) {
   const name = place?.name ?? vendor?.name ?? ESCUNA_POINT.name;
   const hours = place?.hours ?? vendor?.hours ?? "Canal de Guarapari · passeios";
   const tag = place?.tag ?? (vendor ? "Patrocinador na areia" : escuna ? "Passeios turísticos" : undefined);
   const cover = place?.cover ?? vendor?.cover ?? "/guarapari/praia-enseada.jpg";
-  const tip = place?.guaraTip ?? vendor?.about ?? "Embarque com segurança no canal.";
 
   return (
     <View style={[styles.wrap, { bottom }]} pointerEvents="box-none">
@@ -47,12 +47,10 @@ export function SponsorTeaser({ place, vendor, escuna, bottom, onOpen, onRoute, 
                 <Text style={styles.tagText}>{tag}</Text>
               </View>
             ) : null}
-            <Text style={styles.tip} numberOfLines={2}>
-              {tip}
-            </Text>
 
             <Pressable style={styles.cta} onPress={onOpen}>
               <LinearGradient colors={["#fde68a", "#fdba74"]} style={styles.ctaGrad}>
+                <ShineSweep />
                 <Text style={styles.ctaText}>Ver cardápio e fotos</Text>
                 <ChevronRight color="#3a2208" size={14} />
               </LinearGradient>
@@ -60,13 +58,14 @@ export function SponsorTeaser({ place, vendor, escuna, bottom, onOpen, onRoute, 
 
             <Pressable style={styles.routeRow} onPress={onRoute}>
               <View style={styles.routeIcon}>
-                <Text style={styles.routeIconText}>➤</Text>
+                <Navigation color="#fff" size={12} fill="#fff" />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.routeTitle}>Ir até aqui</Text>
                 <Text style={styles.routeSub}>A pé, bicicleta ou carro</Text>
               </View>
             </Pressable>
+            {/* Fechar só no teaser full-width (fora do pin) — web MarkerPopup não tem */}
             <Pressable onPress={onClose} style={{ alignSelf: "center", marginTop: 4 }}>
               <Text style={styles.linkMuted}>Fechar</Text>
             </Pressable>
@@ -102,7 +101,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     backgroundColor: "#1c1208",
   },
-  coverBox: { height: 56, justifyContent: "flex-start" },
+  coverBox: { height: 52, justifyContent: "flex-start" },
   badge: {
     marginTop: 8,
     marginLeft: 8,
@@ -128,9 +127,10 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   tagText: { color: "#fffbeb", fontSize: 12, fontWeight: "600" },
-  tip: { color: "rgba(255,255,255,0.62)", fontSize: 12, lineHeight: 16, marginTop: 2 },
   cta: { marginTop: 8, borderRadius: 999, overflow: "hidden" },
   ctaGrad: {
+    position: "relative",
+    overflow: "hidden",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
     paddingVertical: 11,
     paddingHorizontal: 12,
   },
-  ctaText: { color: "#3a2208", fontSize: 13, fontWeight: "700" },
+  ctaText: { color: "#3a2208", fontSize: 13, fontWeight: "700", zIndex: 1 },
   routeRow: {
     marginTop: 8,
     flexDirection: "row",
@@ -157,7 +157,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  routeIconText: { color: "#fff", fontWeight: "900", fontSize: 12 },
   routeTitle: { color: "#fff", fontWeight: "700", fontSize: 13 },
   routeSub: { color: "rgba(255,255,255,0.55)", fontSize: 11, marginTop: 1 },
   linkMuted: { color: "rgba(255,255,255,0.55)", fontSize: 12, fontWeight: "700" },

@@ -3,17 +3,20 @@ import { Animated, Easing, StyleSheet, type StyleProp, type ViewStyle } from "re
 import { LinearGradient } from "expo-linear-gradient";
 
 type Props = {
-  /** Sweep width as fraction of parent (0–1). */
-  widthFrac?: number;
+  /** Sweep band width in px. */
+  bandWidth?: number;
+  /** Travel distance in px (start → end). */
+  travel?: number;
   durationMs?: number;
   delayMs?: number;
   colors?: readonly [string, string, string];
   style?: StyleProp<ViewStyle>;
 };
 
-/** Brilho atravessando CTAs / cards ouro — paridade web `motion` shimmer / `.sheen`. */
+/** Brilho atravessando CTAs / cards ouro — paridade web shimmer / `.sheen`. */
 export function ShineSweep({
-  widthFrac = 0.45,
+  bandWidth = 96,
+  travel = 280,
   durationMs = 1800,
   delayMs = 600,
   colors = ["transparent", "rgba(255,255,255,0.7)", "transparent"] as const,
@@ -38,12 +41,15 @@ export function ShineSweep({
     return () => loop.stop();
   }, [delayMs, durationMs, x]);
 
-  const translateX = x.interpolate({ inputRange: [0, 1], outputRange: ["-140%", "240%"] });
+  const translateX = x.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-bandWidth, travel],
+  });
 
   return (
     <Animated.View
       pointerEvents="none"
-      style={[styles.wrap, { width: `${Math.round(widthFrac * 100)}%` as `${number}%`, transform: [{ translateX }] }, style]}
+      style={[styles.wrap, { width: bandWidth, transform: [{ translateX }] }, style]}
     >
       <LinearGradient colors={[...colors]} start={{ x: 0, y: 0.5 }} end={{ x: 1, y: 0.5 }} style={StyleSheet.absoluteFill} />
     </Animated.View>
