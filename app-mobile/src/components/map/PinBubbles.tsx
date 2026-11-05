@@ -154,7 +154,7 @@ export function VendorPinBubble({
 
 const styles = StyleSheet.create({
   /** Folga web `bottom-[calc(100%+8px)]` — balão acima do ícone, sem sobrepor. */
-  wrap: { alignItems: "center", marginBottom: 10, width: 232, backgroundColor: "transparent" },
+  wrap: { alignItems: "center", marginBottom: 12, width: 232, backgroundColor: "transparent" },
   whiteCard: {
     width: 228,
     backgroundColor: "#ffffff",
@@ -163,6 +163,11 @@ const styles = StyleSheet.create({
     borderColor: "#e5e5e5",
     paddingHorizontal: 12,
     paddingVertical: 10,
+    shadowColor: "#1c1917",
+    shadowOpacity: 0.28,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 12,
   },
   whiteTitle: { color: "#171717", fontSize: 14, fontWeight: "600" },
   whiteHours: { color: "#525252", fontSize: 12, marginTop: 2 },

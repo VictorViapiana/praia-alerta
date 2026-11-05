@@ -96,14 +96,14 @@ const styles = StyleSheet.create({
   bar: {
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.3)",
-    backgroundColor: "rgba(0,0,0,0.55)",
+    borderColor: "rgba(255,255,255,0.45)",
+    backgroundColor: "rgba(6,18,28,0.92)",
   },
   barSoft: {
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.25)",
-    backgroundColor: "rgba(8,47,73,0.5)",
+    borderColor: "rgba(255,255,255,0.4)",
+    backgroundColor: "rgba(6,28,48,0.92)",
   },
   row: { gap: 4, paddingHorizontal: 6, paddingVertical: 6 },
   rowSoft: { gap: 4, paddingHorizontal: 4, paddingVertical: 4 },
