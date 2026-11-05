@@ -1,4 +1,5 @@
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Star } from "lucide-react-native";
 import { mediaImage } from "../../assets/media";
 import { fold } from "../../data/coast";
 import {
@@ -30,6 +31,8 @@ type Props = {
   onPick: (hit: SearchHit) => void;
 };
 
+const FALLBACK_COVER = "/guarapari/praia-orla.jpg";
+
 function score(name: string, query: string) {
   const n = fold(name);
   const q = fold(query);
@@ -57,14 +60,22 @@ export function MapSearchHits({ query, onPick }: Props) {
         kind: p.isSponsor ? "Patrocinador" : "Ponto",
         lat: p.lat,
         lng: p.lng,
-        cover: p.cover,
+        cover: p.cover ?? FALLBACK_COVER,
         gold: p.isSponsor,
       });
     }
   }
   for (const s of SHOWERS) {
     if (score(s.name, q) || fold(q).includes("ducha")) {
-      hits.push({ id: s.id, title: s.name, subtitle: s.detail, kind: "Ducha", lat: s.lat, lng: s.lng });
+      hits.push({
+        id: s.id,
+        title: s.name,
+        subtitle: s.detail,
+        kind: "Ducha",
+        lat: s.lat,
+        lng: s.lng,
+        cover: FALLBACK_COVER,
+      });
     }
   }
   for (const v of vendors.length ? vendors : AMBULANTES) {
@@ -74,17 +85,25 @@ export function MapSearchHits({ query, onPick }: Props) {
         id: v.id,
         title: v.name,
         subtitle: v.tag,
-        kind: "Ambulante",
+        kind: "Patrocinador",
         lat: v.lat,
         lng: v.lng,
-        cover: v.cover,
+        cover: v.cover ?? FALLBACK_COVER,
         gold: true,
       });
     }
   }
   for (const r of RAMPS) {
     if (score(r.name, q) || fold(q).includes("rampa")) {
-      hits.push({ id: r.id, title: r.name, subtitle: r.detail, kind: "Rampa", lat: r.lat, lng: r.lng });
+      hits.push({
+        id: r.id,
+        title: r.name,
+        subtitle: r.detail,
+        kind: "Rampa",
+        lat: r.lat,
+        lng: r.lng,
+        cover: FALLBACK_COVER,
+      });
     }
   }
   for (const l of [MARLIN, GOLFINHO, ACADEMIA_ORLA, ESCUNA_POINT, ...ORLA_LANDMARKS]) {
@@ -96,7 +115,7 @@ export function MapSearchHits({ query, onPick }: Props) {
         kind: "Orla",
         lat: l.lat,
         lng: l.lng,
-        cover: "cover" in l ? String(l.cover) : undefined,
+        cover: "cover" in l ? String(l.cover) : FALLBACK_COVER,
       });
     }
   }
@@ -114,27 +133,36 @@ export function MapSearchHits({ query, onPick }: Props) {
 
   return (
     <View style={styles.box}>
-      <ScrollView style={{ maxHeight: 280 }} keyboardShouldPersistTaps="handled">
-        {unique.map((hit) => (
-          <Pressable
-            key={hit.id}
-            style={[styles.row, hit.gold && styles.rowGold]}
-            onPress={() => onPick(hit)}
-          >
-            {hit.cover ? (
+      <Text style={styles.count}>{unique.length} na orla</Text>
+      <ScrollView style={{ maxHeight: 300 }} keyboardShouldPersistTaps="handled">
+        {unique.map((hit) =>
+          hit.gold ? (
+            <Pressable key={hit.id} style={styles.goldRow} onPress={() => onPick(hit)}>
+              <Image source={mediaImage(hit.cover)} style={styles.goldThumb} />
+              <View style={{ flex: 1 }}>
+                <View style={styles.goldEyebrow}>
+                  <Star color="#fbbf24" size={10} fill="#fbbf24" />
+                  <Text style={styles.goldEyebrowText}>Patrocinador</Text>
+                </View>
+                <Text style={styles.goldTitle}>{hit.title}</Text>
+                <Text style={styles.goldSub} numberOfLines={1}>
+                  {hit.subtitle}
+                </Text>
+              </View>
+            </Pressable>
+          ) : (
+            <Pressable key={hit.id} style={styles.row} onPress={() => onPick(hit)}>
               <Image source={mediaImage(hit.cover)} style={styles.thumb} />
-            ) : (
-              <View style={[styles.thumb, styles.thumbEmpty]} />
-            )}
-            <View style={{ flex: 1 }}>
-              <Text style={styles.title}>{hit.title}</Text>
-              <Text style={styles.sub} numberOfLines={1}>
-                {hit.subtitle}
-              </Text>
-            </View>
-            <Text style={[styles.kind, hit.gold && styles.kindGold]}>{hit.kind}</Text>
-          </Pressable>
-        ))}
+              <View style={{ flex: 1 }}>
+                <Text style={styles.title}>{hit.title}</Text>
+                <Text style={styles.sub} numberOfLines={1}>
+                  {hit.subtitle}
+                </Text>
+              </View>
+              <Text style={styles.kind}>{hit.kind}</Text>
+            </Pressable>
+          ),
+        )}
       </ScrollView>
     </View>
   );
@@ -142,12 +170,27 @@ export function MapSearchHits({ query, onPick }: Props) {
 
 const styles = StyleSheet.create({
   box: {
-    backgroundColor: "#fff",
-    borderRadius: 18,
+    backgroundColor: "rgba(255,255,255,0.97)",
+    borderRadius: 22,
     borderWidth: 1,
     borderColor: "rgba(253,230,138,0.55)",
     overflow: "hidden",
-    marginBottom: 4,
+    marginBottom: 6,
+    shadowColor: "#000",
+    shadowOpacity: 0.22,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 8,
+  },
+  count: {
+    paddingHorizontal: 14,
+    paddingTop: 10,
+    paddingBottom: 4,
+    color: "rgba(20,32,24,0.45)",
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 0.6,
+    textTransform: "uppercase",
   },
   row: {
     flexDirection: "row",
@@ -158,22 +201,42 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: "rgba(15,23,42,0.08)",
   },
-  rowGold: {
-    backgroundColor: "rgba(253,230,138,0.22)",
+  goldRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginHorizontal: 10,
+    marginVertical: 6,
+    padding: 10,
+    borderRadius: 16,
+    backgroundColor: "#241608",
+    borderWidth: 1,
+    borderColor: "rgba(251,191,36,0.45)",
   },
   thumb: {
-    width: 44,
-    height: 44,
+    width: 48,
+    height: 48,
     borderRadius: 12,
     backgroundColor: "#e2e8f0",
   },
-  thumbEmpty: {
-    borderWidth: 1,
-    borderColor: "rgba(15,23,42,0.08)",
+  goldThumb: {
+    width: 64,
+    height: 64,
+    borderRadius: 14,
+    backgroundColor: "#3a2208",
   },
   title: { color: "#142018", fontWeight: "800", fontSize: 14 },
   sub: { color: "rgba(20,32,24,0.55)", fontSize: 12, marginTop: 2 },
   kind: { color: "#64748b", fontSize: 11, fontWeight: "800" },
-  kindGold: { color: "#b45309" },
+  goldEyebrow: { flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 2 },
+  goldEyebrowText: {
+    color: "#fbbf24",
+    fontSize: 10,
+    fontWeight: "800",
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+  },
+  goldTitle: { color: "#fff", fontWeight: "800", fontSize: 15 },
+  goldSub: { color: "rgba(255,255,255,0.65)", fontSize: 12, marginTop: 2 },
   empty: { color: "rgba(20,32,24,0.65)", padding: 14, fontSize: 13 },
 });

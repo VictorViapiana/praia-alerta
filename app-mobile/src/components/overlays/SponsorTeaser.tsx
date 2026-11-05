@@ -58,14 +58,18 @@ export function SponsorTeaser({ place, vendor, escuna, bottom, onOpen, onRoute, 
               </LinearGradient>
             </Pressable>
 
-            <View style={styles.links}>
-              <Pressable onPress={onRoute}>
-                <Text style={styles.link}>Como chegar</Text>
-              </Pressable>
-              <Pressable onPress={onClose}>
-                <Text style={styles.linkMuted}>Fechar</Text>
-              </Pressable>
-            </View>
+            <Pressable style={styles.routeRow} onPress={onRoute}>
+              <View style={styles.routeIcon}>
+                <Text style={styles.routeIconText}>➤</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.routeTitle}>Ir até aqui</Text>
+                <Text style={styles.routeSub}>A pé, bicicleta ou carro</Text>
+              </View>
+            </Pressable>
+            <Pressable onPress={onClose} style={{ alignSelf: "center", marginTop: 4 }}>
+              <Text style={styles.linkMuted}>Fechar</Text>
+            </Pressable>
           </View>
         </View>
       </LinearGradient>
@@ -135,8 +139,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   ctaText: { color: "#3a2208", fontSize: 13, fontWeight: "700" },
-  links: { flexDirection: "row", gap: 16, marginTop: 8, paddingHorizontal: 4 },
-  link: { color: "#fde68a", fontSize: 12, fontWeight: "700" },
+  routeRow: {
+    marginTop: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: "rgba(0,0,0,0.35)",
+    borderRadius: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+  },
+  routeIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: "#e11d48",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  routeIconText: { color: "#fff", fontWeight: "900", fontSize: 12 },
+  routeTitle: { color: "#fff", fontWeight: "700", fontSize: 13 },
+  routeSub: { color: "rgba(255,255,255,0.55)", fontSize: 11, marginTop: 1 },
   linkMuted: { color: "rgba(255,255,255,0.55)", fontSize: 12, fontWeight: "700" },
   tail: {
     marginTop: -6,

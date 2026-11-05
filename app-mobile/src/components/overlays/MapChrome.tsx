@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 import { Camera, Heart, LocateFixed, Search, X } from "lucide-react-native";
 import { useApp } from "../../context/AppContext";
 import { isSunActive } from "../../data/day-layers";
@@ -96,16 +97,17 @@ export function MapChrome({
       {/* Emergência — mesmo topo do web MapSos (~safe-area + 3.55rem) */}
       <SosHoldButton onTrigger={onOpenSos} top={insets.top + 58} />
 
-      {/* Câmera Eu amo Guarapari */}
+      {/* Câmera Eu amo Guarapari — halo rosa→fúcsia→céu como no web */}
       <Pressable
         onPress={onOpenCamera}
         style={[styles.cameraFab, { bottom: insets.bottom + 148 }]}
         accessibilityLabel="Eu amo Guarapari. Abrir a câmera."
       >
+        <View style={styles.cameraHalo} />
         <View style={styles.cameraOrb}>
-          <View style={styles.cameraInner}>
+          <LinearGradient colors={["#fb7185", "#e11d48", "#6d28d9"]} style={styles.cameraInner}>
             <Camera color="#fff" size={22} strokeWidth={2.2} />
-          </View>
+          </LinearGradient>
         </View>
         <View style={styles.cameraLabel}>
           <Heart color="#fda4af" size={10} fill="#fb7185" />
@@ -289,26 +291,33 @@ const styles = StyleSheet.create({
     gap: 6,
     zIndex: 50,
   },
+  cameraHalo: {
+    position: "absolute",
+    top: 2,
+    width: 72,
+    height: 72,
+    borderRadius: 28,
+    backgroundColor: "rgba(244,114,182,0.45)",
+    shadowColor: "#c026d3",
+    shadowOpacity: 0.7,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 0 },
+  },
   cameraOrb: {
     width: 68,
     height: 68,
     borderRadius: 24,
-    backgroundColor: "rgba(255,255,255,0.15)",
+    backgroundColor: "rgba(255,255,255,0.18)",
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.45)",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#e11d48",
-    shadowOpacity: 0.55,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 10,
+    zIndex: 1,
   },
   cameraInner: {
     width: 48,
     height: 48,
     borderRadius: 16,
-    backgroundColor: "#e11d48",
     alignItems: "center",
     justifyContent: "center",
   },

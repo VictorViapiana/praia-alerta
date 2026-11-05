@@ -14,6 +14,7 @@ import { TourOverlay } from "../components/guara/TourOverlay";
 import { SponsorSheet } from "../components/sheets/SponsorSheet";
 import { LandmarkTalkSheet } from "../components/sheets/LandmarkTalkSheet";
 import { SponsorTeaser } from "../components/overlays/SponsorTeaser";
+import { PlaceTeaser } from "../components/overlays/PlaceTeaser";
 import { RoutePreviewSheet } from "../components/nav/RoutePreviewSheet";
 import { NavHud } from "../components/nav/NavHud";
 import { useApp } from "../context/AppContext";
@@ -466,7 +467,7 @@ export function MapScreen({ navigation }: Props) {
         </View>
       )}
 
-      {/* Ficha rápida — landmarks com tips usam LandmarkTalkSheet. */}
+      {/* Ficha branca do pin comum — paridade MarkerPopup. */}
       {!app.nav?.active &&
         !app.routeTarget &&
         !app.tipTour &&
@@ -474,35 +475,23 @@ export function MapScreen({ navigation }: Props) {
         !landmarkTalk &&
         (ramp || (place && !place.isSponsor) || (landmark && !landmark.tips?.length)) &&
         !showSponsor && (
-        <View style={[styles.sheet, { paddingBottom: insets.bottom + 16 }]}>
-          <Text style={styles.sheetTitle}>
-            {place?.name ?? landmark?.name ?? ramp?.name}
-          </Text>
-          <Text style={styles.sheetSub}>
-            {place?.guaraTip ?? landmark?.detail ?? ramp?.detail}
-          </Text>
-          <View style={styles.sheetRow}>
-            <Pressable
-              style={styles.routeBtn}
-              onPress={() => {
-                const t = place || landmark || ramp;
-                if (!t) return;
-                app.setRouteTarget({
-                  id: t.id,
-                  lat: t.lat,
-                  lng: t.lng,
-                  name: "name" in t ? t.name : "Destino",
-                });
-              }}
-            >
-              <Text style={styles.routeBtnText}>Como chegar</Text>
-            </Pressable>
-            <Pressable onPress={() => app.setSelectedId(null)}>
-              <Text style={styles.closeSheetText}>Fechar</Text>
-            </Pressable>
-          </View>
-        </View>
-      )}
+          <PlaceTeaser
+            name={place?.name ?? landmark?.name ?? ramp?.name ?? "Ponto"}
+            subtitle={place?.hours ?? landmark?.detail ?? ramp?.detail ?? ""}
+            bottom={insets.bottom + 168}
+            onRoute={() => {
+              const t = place || landmark || ramp;
+              if (!t) return;
+              app.setRouteTarget({
+                id: t.id,
+                lat: t.lat,
+                lng: t.lng,
+                name: "name" in t ? t.name : "Destino",
+              });
+            }}
+            onClose={() => app.setSelectedId(null)}
+          />
+        )}
 
       {/* Teaser estilo MarkerPopup ouro/escuro — antes do portal completo */}
       {!app.nav?.active &&

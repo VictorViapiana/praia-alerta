@@ -142,6 +142,8 @@ function kiosk(n: number, extra: Partial<Place> = {}): Place {
     mapKind: "quiosques",
     hours: FREE_HOURS,
     isSponsor: false,
+    /** Capa padrão da orla — busca e fichas nunca ficam cinza. */
+    cover: COVERS[(n - 1) % COVERS.length],
     lat: Number(lat.toFixed(6)),
     lng: Number(lng.toFixed(6)),
     x: 210 + (n - 1) * 46,

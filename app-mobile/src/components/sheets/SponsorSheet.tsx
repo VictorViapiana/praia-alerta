@@ -24,12 +24,30 @@ import type { Place, Ambulante } from "../../data/places";
 import { ESCUNA_POINT, escunasPatrocinadoras } from "../../data/places";
 import { GuaraPose } from "../guara/GuaraPose";
 import type { SkyPhase } from "../../data/sky-phase";
+import { hourInSaoPaulo } from "../../data/sky-phase";
 import { giftCodeFor } from "../../data/ambulante-hub";
 import { storageGet, storageSet } from "../../utils/storage";
 import { pulseSoft } from "../../utils/haptics";
 import { mediaImage } from "../../assets/media";
 
 const STAMP_KEY = "pa-sponsor-stamps-v1";
+const HOLD_MS = 15 * 60 * 1000;
+
+const PERK_LABEL: Record<string, string> = {
+  shower: "Chuveiro",
+  wifi: "Wi-Fi",
+  access: "Acesso fácil",
+  music: "Música",
+};
+
+function housePulse(hour: number): { level: number; label: string; hint: string } {
+  if (hour < 9) return { level: 0.18, label: "Ainda acordando", hint: "Mesa fácil, café e brisa." };
+  if (hour < 12) return { level: 0.42, label: "Movimento leve", hint: "Bom pra chegar sem fila." };
+  if (hour < 15) return { level: 0.72, label: "Casa quente", hint: "Almoço no auge — reserve." };
+  if (hour < 18) return { level: 0.88, label: "Pico da orla", hint: "Muita gente na areia agora." };
+  if (hour < 21) return { level: 0.78, label: "Fim de tarde cheio", hint: "Som, mesa e pôr do sol." };
+  return { level: 0.48, label: "Noite calma", hint: "Clima mais intimista." };
+}
 
 type Props =
   | { kind: "place"; place: Place; skyPhase: SkyPhase; onClose: () => void; onRoute?: () => void }
@@ -66,18 +84,29 @@ function PlacePortal({
 }) {
   const [tab, setTab] = useState<"cardapio" | "agora" | "presente" | "ir">("agora");
   const [stamped, setStamped] = useState(false);
+  const [stampCount, setStampCount] = useState(0);
+  const [holdUntil, setHoldUntil] = useState<number | null>(null);
+  const [now, setNow] = useState(Date.now());
   const offer = place.offers?.[skyPhase];
+  const pulse = housePulse(hourInSaoPaulo(new Date(now)));
+  const holdLeft = holdUntil ? Math.max(0, holdUntil - now) : 0;
 
   useEffect(() => {
     void storageGet(STAMP_KEY).then((raw) => {
       try {
         const ids = raw ? (JSON.parse(raw) as string[]) : [];
         setStamped(ids.includes(place.id));
+        setStampCount(ids.length);
       } catch {
         setStamped(false);
       }
     });
   }, [place.id]);
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
 
   const stamp = async () => {
     const raw = await storageGet(STAMP_KEY);
@@ -90,6 +119,18 @@ function PlacePortal({
     if (!ids.includes(place.id)) ids.push(place.id);
     await storageSet(STAMP_KEY, JSON.stringify(ids));
     setStamped(true);
+    setStampCount(ids.length);
+    void pulseSoft();
+  };
+
+  const holdTable = () => {
+    setHoldUntil(Date.now() + HOLD_MS);
+    setTab("ir");
+    const digits = (place.phone ?? "").replace(/\D/g, "");
+    const text = encodeURIComponent(
+      `Olá! Vim pelo Praia Alerta Guará e quero segurar uma mesa em ${place.name} pelos próximos 15 minutos. Nome na reserva: (seu nome).`,
+    );
+    void Linking.openURL(digits ? `https://wa.me/${digits}?text=${text}` : `https://wa.me/?text=${text}`);
     void pulseSoft();
   };
 
@@ -138,6 +179,15 @@ function PlacePortal({
       {tab === "cardapio" && (
         <>
           {place.about ? <Text style={styles.pLight}>{place.about}</Text> : null}
+          {place.perks?.length ? (
+            <View style={styles.perkRow}>
+              {place.perks.map((perk) => (
+                <View key={perk} style={styles.perkChip}>
+                  <Text style={styles.perkText}>{PERK_LABEL[perk] ?? perk}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
           {place.moments?.length ? (
             <>
               <Text style={styles.section}>Momentos da casa</Text>
@@ -154,16 +204,18 @@ function PlacePortal({
           ) : null}
           {place.menu?.length ? (
             <>
-              <Text style={styles.section}>Top do cardápio</Text>
-              {place.menu.map((item) => (
-                <View key={item.name} style={styles.menuRow}>
-                  <Image source={mediaImage(item.photo)} style={styles.menuThumb} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.menuNameLight}>{item.name}</Text>
+              <Text style={styles.section}>Top 3 do cardápio</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10 }}>
+                {place.menu.map((item) => (
+                  <View key={item.name} style={styles.menuCard}>
+                    <Image source={mediaImage(item.photo)} style={styles.menuCardImg} />
+                    <Text style={styles.menuCardName} numberOfLines={1}>
+                      {item.name}
+                    </Text>
+                    <Text style={styles.menuPriceLight}>{item.price}</Text>
                   </View>
-                  <Text style={styles.menuPriceLight}>{item.price}</Text>
-                </View>
-              ))}
+                ))}
+              </ScrollView>
             </>
           ) : null}
           {place.guaraTip ? <Tip text={place.guaraTip} /> : null}
@@ -171,11 +223,35 @@ function PlacePortal({
       )}
 
       {tab === "agora" && (
-        <View style={styles.offerDark}>
-          <Text style={styles.kicker}>Pulso da casa</Text>
-          <Text style={styles.offerTitle}>{offer?.title ?? "Momento da orla"}</Text>
-          <Text style={styles.pLight}>{offer?.detail ?? place.about}</Text>
-          {offer?.code ? <Text style={styles.code}>Código {offer.code}</Text> : null}
+        <View style={{ gap: 12 }}>
+          <View style={styles.offerDark}>
+            <View style={styles.pulseHead}>
+              <Text style={styles.kicker}>Pulso da casa</Text>
+              <View style={styles.phasePill}>
+                <Text style={styles.phasePillText}>Dia na orla</Text>
+              </View>
+            </View>
+            <Text style={styles.offerTitle}>{pulse.label}</Text>
+            <Text style={styles.pLight}>{pulse.hint}</Text>
+            <View style={styles.pulseTrack}>
+              <LinearGradient
+                colors={["#fde68a", "#fb7185"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={[styles.pulseFill, { width: `${Math.round(pulse.level * 100)}%` }]}
+              />
+            </View>
+            <Text style={styles.liveNote}>Ao vivo · horário de Guarapari</Text>
+          </View>
+          {place.guaraTip ? <Tip text={place.guaraTip} /> : null}
+          {offer ? (
+            <View style={styles.offerDark}>
+              <Text style={styles.kicker}>Oferta da maré</Text>
+              <Text style={styles.offerTitle}>{offer.title}</Text>
+              <Text style={styles.pLight}>{offer.detail}</Text>
+              {offer.code ? <Text style={styles.code}>Código {offer.code}</Text> : null}
+            </View>
+          ) : null}
         </View>
       )}
 
@@ -187,6 +263,12 @@ function PlacePortal({
           <Text style={styles.pLight}>
             {place.gift?.detail ?? "Toque para carimbar esta casa. Três selos e você vira Amigo da Orla."}
           </Text>
+          <View style={styles.pulseTrack}>
+            <View style={[styles.pulseFillSolid, { width: `${Math.min(100, Math.round((stampCount / 3) * 100))}%` }]} />
+          </View>
+          <Text style={styles.liveNote}>
+            {stampCount}/3 selos · colecione nas casas
+          </Text>
           {place.gift?.code ? <Text style={styles.code}>{place.gift.code}</Text> : null}
           <Pressable style={styles.stampBtn} onPress={() => void stamp()}>
             <Text style={styles.stampText}>{stamped ? "Selo guardado ✓" : "Carimbar selo agora"}</Text>
@@ -196,13 +278,22 @@ function PlacePortal({
 
       {tab === "ir" && (
         <View style={{ gap: 10 }}>
-          <View style={styles.offerDark}>
+          <Pressable style={styles.offerDark} onPress={holdTable}>
             <Text style={styles.kicker}>Mesa mágica</Text>
-            <Text style={styles.offerTitle}>Segurar mesa 15 min</Text>
+            <Text style={styles.offerTitle}>
+              {holdLeft > 0
+                ? `Mesa segura · ${Math.ceil(holdLeft / 60000)} min`
+                : "Segurar mesa 15 min"}
+            </Text>
             <Text style={styles.pLight}>
               Reservamos mentalmente sua mesa e abrimos o WhatsApp com a mensagem pronta.
             </Text>
-          </View>
+            <View style={styles.stampBtn}>
+              <Text style={styles.stampText}>
+                {holdLeft > 0 ? "Abrir WhatsApp de novo" : "Segurar mesa agora"}
+              </Text>
+            </View>
+          </Pressable>
           <Pressable style={styles.routeBtn} onPress={onRoute}>
             <MapPinned color="#fff" size={16} />
             <View>
@@ -596,6 +687,46 @@ const styles = StyleSheet.create({
   menuThumb: { width: 44, height: 44, borderRadius: 10 },
   menuNameLight: { color: "#fff", fontWeight: "700", fontSize: 13 },
   menuPriceLight: { color: "#fde68a", fontWeight: "700", fontSize: 13 },
+  menuCard: {
+    width: 132,
+    borderRadius: 14,
+    overflow: "hidden",
+    backgroundColor: "rgba(255,255,255,0.06)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+    paddingBottom: 8,
+  },
+  menuCardImg: { width: "100%", height: 88 },
+  menuCardName: { color: "#fff", fontWeight: "700", fontSize: 12, marginTop: 6, paddingHorizontal: 8 },
+  perkRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 4 },
+  perkChip: {
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "rgba(253,230,138,0.3)",
+    backgroundColor: "rgba(252,211,77,0.1)",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  perkText: { color: "#fffbeb", fontSize: 11, fontWeight: "700" },
+  pulseHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", width: "100%" },
+  phasePill: {
+    borderRadius: 999,
+    backgroundColor: "rgba(0,0,0,0.35)",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  phasePillText: { color: "rgba(255,255,255,0.7)", fontSize: 10, fontWeight: "700" },
+  pulseTrack: {
+    marginTop: 6,
+    alignSelf: "stretch",
+    height: 8,
+    borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.1)",
+    overflow: "hidden",
+  },
+  pulseFill: { height: "100%", borderRadius: 999 },
+  pulseFillSolid: { height: "100%", borderRadius: 999, backgroundColor: "#fde68a" },
+  liveNote: { color: "rgba(255,255,255,0.4)", fontSize: 11, marginTop: 2 },
   tip: {
     flexDirection: "row",
     gap: 10,
