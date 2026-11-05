@@ -152,6 +152,7 @@ export function MapChrome({
         {searchExpanded && (
           <MapSearchHits
             query={searchQuery}
+            filter={filter}
             onPick={(hit) => {
               setSelectedId(hit.id);
               setSearchQuery("");
@@ -201,21 +202,20 @@ export function MapChrome({
           ) : null}
         </View>
 
-        {!searchExpanded ? (
-          <FilterChips
-            filter={filter}
-            onFilter={(next) => setFilter(next === filter && next !== "neutro" ? "neutro" : next)}
-            dayLayer={dayLayer}
-            onDayLayer={(next) => {
-              if (next === "sol" && !isSunActive()) {
-                setDayLayer("off");
-                return;
-              }
-              setDayLayer(next);
-            }}
-            sunAvailable={isSunActive()}
-          />
-        ) : null}
+        <FilterChips
+          filter={filter}
+          onFilter={(next) => setFilter(next === filter && next !== "neutro" ? "neutro" : next)}
+          dayLayer={dayLayer}
+          onDayLayer={(next) => {
+            if (next === "sol" && !isSunActive()) {
+              setDayLayer("off");
+              return;
+            }
+            setDayLayer(next);
+          }}
+          sunAvailable={isSunActive()}
+          hideDayLayers={searchExpanded}
+        />
       </View>
     </View>
   );
