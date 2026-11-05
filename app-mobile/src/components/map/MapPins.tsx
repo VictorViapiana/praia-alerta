@@ -268,19 +268,18 @@ export function MapPins({ filter, query, selectedId, onSelect, showDense = true 
 
   return (
     <>
-      {(showDense || selectedId === ESCUNA_POINT.id || selectedId === "escunas") &&
-        (filter === "neutro" || filter === "parceiros") &&
-        matchesQuery(ESCUNA_POINT.name, query) && (
-          <Marker
-            coordinate={{ latitude: ESCUNA_POINT.lat, longitude: ESCUNA_POINT.lng }}
-            onPress={() => onSelect(ESCUNA_POINT.id)}
-            anchor={{ x: 0.5, y: 0.85 }}
-            tracksViewChanges={tracks}
-            zIndex={40}
-          >
-            <EscunaPin active={selectedId === ESCUNA_POINT.id || selectedId === "escunas"} />
-          </Marker>
-        )}
+      {/* Escuna sempre no canal (não depende de zoom denso — fácil de perder no sul). */}
+      {(filter === "neutro" || filter === "parceiros") && matchesQuery(ESCUNA_POINT.name, query) && (
+        <Marker
+          coordinate={{ latitude: ESCUNA_POINT.lat, longitude: ESCUNA_POINT.lng }}
+          onPress={() => onSelect(ESCUNA_POINT.id)}
+          anchor={{ x: 0.5, y: 0.85 }}
+          tracksViewChanges={tracks}
+          zIndex={40}
+        >
+          <EscunaPin active={selectedId === ESCUNA_POINT.id || selectedId === "escunas"} />
+        </Marker>
+      )}
 
       {(showDense || selectedId === MARLIN.id) && filter === "neutro" && matchesQuery(MARLIN.name, query) && (
         <Marker
@@ -449,24 +448,24 @@ const styles = StyleSheet.create({
   },
   kioskNumPremium: { color: "#f8e6c4", fontSize: 11, fontWeight: "800" },
   cartImg: { width: 36, height: 36, resizeMode: "contain" },
-  escunaWrap: { width: 78, height: 64, alignItems: "center", justifyContent: "flex-end" },
+  escunaWrap: { width: 96, height: 78, alignItems: "center", justifyContent: "flex-end" },
   escunaWake: {
     position: "absolute",
-    bottom: 4,
-    width: 72,
-    height: 28,
+    bottom: 6,
+    width: 88,
+    height: 34,
     resizeMode: "contain",
-    opacity: 0.85,
+    opacity: 0.9,
   },
-  escunaBoat: { width: 56, height: 42, resizeMode: "contain", zIndex: 2 },
+  escunaBoat: { width: 72, height: 54, resizeMode: "contain", zIndex: 2 },
   escunaLabel: {
     marginTop: -2,
-    backgroundColor: "rgba(15,23,42,0.88)",
+    backgroundColor: "rgba(15,23,42,0.9)",
     borderRadius: 8,
-    paddingHorizontal: 6,
+    paddingHorizontal: 7,
     paddingVertical: 2,
   },
-  escunaText: { color: "#fde68a", fontSize: 9, fontWeight: "900" },
+  escunaText: { color: "#fde68a", fontSize: 10, fontWeight: "900" },
   marlinWrap: { alignItems: "center" },
   marlinCircle: {
     width: 40,

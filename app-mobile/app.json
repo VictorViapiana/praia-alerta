@@ -19,7 +19,12 @@
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Usamos sua localização para mostrar você na orla da Praia do Morro e acionar emergência com precisão.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Usamos sua localização para avisos da orla e emergência.",
-        "UIBackgroundModes": ["location"]
+        "NSCameraUsageDescription": "Usamos a câmera para a moldura Eu amo Guarapari na Praia do Morro.",
+        "NSPhotoLibraryUsageDescription": "Salvar sua foto Eu amo Guarapari na galeria.",
+        "NSPhotoLibraryAddUsageDescription": "Salvar sua foto Eu amo Guarapari na galeria.",
+        "UIBackgroundModes": [
+          "location"
+        ]
       }
     },
     "android": {
@@ -33,6 +38,7 @@
       "permissions": [
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",
+        "CAMERA",
         "VIBRATE",
         "CALL_PHONE"
       ],
@@ -55,7 +61,22 @@
         {
           "color": "#0284c7"
         }
-      ]
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Permitir a câmera para a moldura Eu amo Guarapari."
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Salvar sua foto Eu amo Guarapari na galeria.",
+          "savePhotosPermission": "Salvar sua foto Eu amo Guarapari na galeria."
+        }
+      ],
+      "expo-sharing",
+      "expo-asset"
     ]
   }
 }

@@ -11,6 +11,7 @@ import { ShowerRitualModal } from "../components/guara/ShowerRitualModal";
 import { GuaraChat } from "../components/guara/GuaraChat";
 import { TourOverlay } from "../components/guara/TourOverlay";
 import { SponsorSheet } from "../components/sheets/SponsorSheet";
+import { SponsorTeaser } from "../components/overlays/SponsorTeaser";
 import { RoutePreviewSheet } from "../components/nav/RoutePreviewSheet";
 import { NavHud } from "../components/nav/NavHud";
 import { useApp } from "../context/AppContext";
@@ -460,37 +461,25 @@ export function MapScreen({ navigation }: Props) {
         </View>
       )}
 
-      {/* Teaser estilo MarkerPopup — antes do portal completo */}
+      {/* Teaser estilo MarkerPopup ouro/escuro — antes do portal completo */}
       {!app.nav?.active &&
         !app.routeTarget &&
         !app.tipTour &&
         !app.showerRitual &&
         showSponsor &&
         !sponsorOpen && (
-          <View style={[styles.teaser, { bottom: insets.bottom + 150 }]}>
-            <Text style={styles.teaserTitle}>
-              {place?.name ?? vendor?.name ?? ESCUNA_POINT.name}
-            </Text>
-            <Text style={styles.teaserSub}>
-              {place?.guaraTip ?? vendor?.tag ?? "Passeios de escuna no canal"}
-            </Text>
-            <View style={styles.teaserRow}>
-              <Pressable style={styles.teaserPrimary} onPress={() => setSponsorOpen(true)}>
-                <Text style={styles.teaserPrimaryText}>Ver cardápio e fotos</Text>
-              </Pressable>
-              <Pressable
-                onPress={() => {
-                  const t = place || vendor || ESCUNA_POINT;
-                  app.setRouteTarget({ id: t.id, lat: t.lat, lng: t.lng, name: t.name });
-                }}
-              >
-                <Text style={styles.teaserLink}>Como chegar</Text>
-              </Pressable>
-              <Pressable onPress={() => app.setSelectedId(null)}>
-                <Text style={styles.teaserLink}>Fechar</Text>
-              </Pressable>
-            </View>
-          </View>
+          <SponsorTeaser
+            place={place}
+            vendor={vendor}
+            escuna={app.selectedId === ESCUNA_POINT.id || app.selectedId === "escunas"}
+            bottom={insets.bottom + 150}
+            onOpen={() => setSponsorOpen(true)}
+            onRoute={() => {
+              const t = place || vendor || ESCUNA_POINT;
+              app.setRouteTarget({ id: t.id, lat: t.lat, lng: t.lng, name: t.name });
+            }}
+            onClose={() => app.setSelectedId(null)}
+          />
         )}
 
       {!app.nav?.active && !app.routeTarget && place && place.isSponsor && sponsorOpen && (

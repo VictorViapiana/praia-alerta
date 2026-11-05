@@ -286,9 +286,14 @@ const styles = StyleSheet.create({
   island: {
     borderRadius: 26,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.22)",
-    backgroundColor: "rgba(255,255,255,0.1)",
+    borderColor: "rgba(255,255,255,0.35)",
+    backgroundColor: "rgba(8,47,73,0.28)",
     overflow: "hidden",
+    shadowColor: "#022c4a",
+    shadowOpacity: 0.35,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 6,
   },
   islandHead: { flexDirection: "row", alignItems: "center", gap: 10, padding: 10 },
   avatar: {

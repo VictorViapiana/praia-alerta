@@ -2,40 +2,56 @@ import { StyleSheet, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import type { SkyPhase } from "../../data/sky-phase";
 
-/** Céu contínuo da orla — faixas + sol + nuvens + costa (paridade `SkyAtmosphere` web). */
+/**
+ * Céu da home — paridade visual forte com `SkyAtmosphere` + `--pa-sky-fill` do web.
+ * Gradiente saturado + sol grande + nuvens + faixa de costa.
+ */
 const SKY: Record<
   SkyPhase,
-  { colors: [string, string, string, string, string]; locations: [number, number, number, number, number] }
+  {
+    colors: [string, string, string, string, string, string];
+    locations: [number, number, number, number, number, number];
+    bottom: string;
+  }
 > = {
   dawn: {
-    colors: ["#f7c9a8", "#f0a882", "#e08968", "#d06a52", "#c9785a"],
-    locations: [0, 0.22, 0.48, 0.72, 1],
+    colors: ["#f7c9a8", "#f0a882", "#e08968", "#d06a52", "#c9785a", "#b45a3c"],
+    locations: [0, 0.18, 0.38, 0.58, 0.78, 1],
+    bottom: "#c9785a",
   },
   day: {
-    colors: ["#b7daf2", "#7eb8e0", "#4f97cb", "#2f78b4", "#1d649c"],
-    locations: [0, 0.24, 0.52, 0.74, 1],
+    colors: ["#c5e4f7", "#8fc4e8", "#5aa3d4", "#3b86c0", "#246ea8", "#1d649c"],
+    locations: [0, 0.18, 0.4, 0.6, 0.8, 1],
+    bottom: "#1d649c",
   },
   dusk: {
-    colors: ["#f2b48a", "#e8906e", "#c96a62", "#9a4a58", "#8a3d4a"],
-    locations: [0, 0.2, 0.48, 0.74, 1],
+    colors: ["#f2b48a", "#e8906e", "#d66a5a", "#c96a62", "#9a4a58", "#8a3d4a"],
+    locations: [0, 0.16, 0.36, 0.55, 0.78, 1],
+    bottom: "#8a3d4a",
   },
   night: {
-    colors: ["#1a3a5c", "#123050", "#0c243e", "#091c32", "#071828"],
-    locations: [0, 0.28, 0.55, 0.78, 1],
+    colors: ["#1a3a5c", "#123050", "#0e2a48", "#0c243e", "#091c32", "#071828"],
+    locations: [0, 0.22, 0.45, 0.65, 0.85, 1],
+    bottom: "#071828",
   },
 };
 
-type Props = {
-  phase: SkyPhase;
-  urgent?: boolean;
-};
+type Props = { phase: SkyPhase; urgent?: boolean };
 
-function Cloud({ style, soft }: { style: object; soft?: boolean }) {
+function Cloud({ top, left, scale = 1, soft }: { top: `${number}%`; left: `${number}%`; scale?: number; soft?: boolean }) {
   return (
-    <View style={[styles.cloud, soft && styles.cloudSoft, style]} pointerEvents="none">
-      <View style={[styles.cloudPuff, styles.cloudPuffA]} />
-      <View style={[styles.cloudPuff, styles.cloudPuffB]} />
-      <View style={[styles.cloudPuff, styles.cloudPuffC]} />
+    <View
+      pointerEvents="none"
+      style={[
+        styles.cloud,
+        soft && styles.cloudSoft,
+        { top, left, transform: [{ scale }] },
+      ]}
+    >
+      <View style={[styles.puff, { left: 0, top: 12, width: 58, height: 24 }]} />
+      <View style={[styles.puff, { left: 28, top: 0, width: 64, height: 34 }]} />
+      <View style={[styles.puff, { left: 68, top: 10, width: 50, height: 26 }]} />
+      <View style={[styles.puff, { left: 48, top: 18, width: 44, height: 20 }]} />
     </View>
   );
 }
@@ -46,28 +62,29 @@ export function OceanWash({ phase, urgent = false }: Props) {
   const warm = phase === "dawn" || phase === "dusk";
 
   return (
-    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+    <View style={[StyleSheet.absoluteFill, { backgroundColor: sky.bottom }]} pointerEvents="none">
       <LinearGradient colors={sky.colors} locations={sky.locations} style={StyleSheet.absoluteFill} />
 
-      {/* haze + horizonte quente */}
+      {/* brilho de horizonte */}
       <LinearGradient
         colors={
           night
-            ? ["transparent", "rgba(120,160,210,0.12)", "transparent"]
+            ? ["transparent", "rgba(140,180,220,0.14)", "transparent"]
             : warm
-              ? ["transparent", "rgba(255,180,120,0.28)", "transparent"]
-              : ["transparent", "rgba(255,250,230,0.16)", "transparent"]
+              ? ["transparent", "rgba(255,200,140,0.42)", "transparent"]
+              : ["transparent", "rgba(255,252,235,0.28)", "transparent"]
         }
         style={styles.horizon}
       />
 
-      {/* Sol / luar */}
       {!night ? (
         <View style={[styles.sunWrap, warm && styles.sunWarm]}>
           <View style={styles.sunRays} />
+          <View style={styles.sunBeamA} />
+          <View style={styles.sunBeamB} />
           <View style={styles.sunGlow} />
           <LinearGradient
-            colors={warm ? ["#fff7ed", "#fdba74", "#f97316"] : ["#ffffff", "#fef08a", "#fbbf24"]}
+            colors={warm ? ["#fff7ed", "#fdba74", "#ea580c"] : ["#ffffff", "#fef08a", "#fbbf24", "#f59e0b"]}
             style={styles.sunCore}
           />
         </View>
@@ -78,30 +95,30 @@ export function OceanWash({ phase, urgent = false }: Props) {
         </View>
       )}
 
-      {/* Nuvens suaves */}
       {!night ? (
         <>
-          <Cloud soft style={styles.cloudFarA} />
-          <Cloud soft style={styles.cloudFarB} />
-          <Cloud soft style={styles.cloud1} />
-          <Cloud style={styles.cloud2} />
-          <Cloud soft style={styles.cloud3} />
-          <Cloud soft style={styles.cloud4} />
+          <Cloud soft top="8%" left="4%" scale={0.75} />
+          <Cloud soft top="14%" left="62%" scale={0.7} />
+          <Cloud top="20%" left="16%" scale={1} />
+          <Cloud top="26%" left="48%" scale={1.2} />
+          <Cloud soft top="18%" left="74%" scale={0.9} />
+          <Cloud soft top="32%" left="6%" scale={0.95} />
         </>
       ) : null}
 
-      {/* Costa / faixa do mar embaixo */}
+      {/* costa / mar */}
       <LinearGradient
         colors={
           night
-            ? ["transparent", "rgba(7,24,40,0.35)", "rgba(7,24,40,0.72)"]
+            ? ["transparent", "rgba(7,24,40,0.45)", "rgba(7,24,40,0.85)"]
             : warm
-              ? ["transparent", "rgba(180,90,60,0.22)", "rgba(138,61,74,0.55)"]
-              : ["transparent", "rgba(29,100,156,0.28)", "rgba(29,100,156,0.62)"]
+              ? ["transparent", "rgba(180,90,60,0.28)", "rgba(138,61,74,0.7)"]
+              : ["transparent", "rgba(29,100,156,0.35)", "rgba(18,80,130,0.78)"]
         }
         style={styles.coast}
       />
-      <View style={[styles.coastFoam, night && { opacity: 0.25 }]} />
+      <View style={[styles.foam, night && { opacity: 0.2 }]} />
+      <View style={[styles.sand, warm && { backgroundColor: "rgba(251,191,36,0.18)" }]} />
 
       {urgent ? <View style={styles.urgent} /> : null}
     </View>
@@ -113,97 +130,111 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 0,
     right: 0,
-    top: "42%",
-    height: "28%",
+    top: "38%",
+    height: "32%",
   },
   sunWrap: {
     position: "absolute",
-    top: "14%",
-    alignSelf: "center",
-    left: "42%",
-    width: 92,
-    height: 92,
+    top: "10%",
+    left: "38%",
+    width: 120,
+    height: 120,
     alignItems: "center",
     justifyContent: "center",
   },
-  sunWarm: { top: "18%", left: "38%" },
+  sunWarm: { top: "16%", left: "32%" },
   sunRays: {
     position: "absolute",
-    width: 160,
+    width: 220,
+    height: 220,
+    borderRadius: 999,
+    backgroundColor: "rgba(254,240,138,0.22)",
+  },
+  sunBeamA: {
+    position: "absolute",
+    width: 14,
     height: 160,
     borderRadius: 999,
-    backgroundColor: "rgba(254,240,138,0.18)",
+    backgroundColor: "rgba(255,250,220,0.18)",
+    transform: [{ rotate: "18deg" }],
+  },
+  sunBeamB: {
+    position: "absolute",
+    width: 10,
+    height: 140,
+    borderRadius: 999,
+    backgroundColor: "rgba(255,250,220,0.14)",
+    transform: [{ rotate: "-28deg" }],
   },
   sunGlow: {
     position: "absolute",
-    width: 110,
-    height: 110,
+    width: 140,
+    height: 140,
     borderRadius: 999,
-    backgroundColor: "rgba(253,224,71,0.35)",
+    backgroundColor: "rgba(253,224,71,0.4)",
   },
   sunCore: {
-    width: 48,
-    height: 48,
+    width: 64,
+    height: 64,
     borderRadius: 999,
   },
   moonWrap: {
     position: "absolute",
-    top: "12%",
-    left: "58%",
-    width: 56,
-    height: 56,
+    top: "10%",
+    left: "60%",
+    width: 64,
+    height: 64,
     alignItems: "center",
     justifyContent: "center",
   },
   moonGlow: {
     position: "absolute",
-    width: 90,
-    height: 90,
+    width: 100,
+    height: 100,
     borderRadius: 999,
-    backgroundColor: "rgba(186,230,253,0.18)",
+    backgroundColor: "rgba(186,230,253,0.2)",
   },
   moonCore: {
-    width: 28,
-    height: 28,
+    width: 32,
+    height: 32,
     borderRadius: 999,
     backgroundColor: "#e2e8f0",
   },
   cloud: {
     position: "absolute",
-    width: 120,
-    height: 36,
-    opacity: 0.55,
+    width: 130,
+    height: 42,
+    opacity: 0.7,
   },
-  cloudSoft: { opacity: 0.32 },
-  cloudPuff: {
+  cloudSoft: { opacity: 0.4 },
+  puff: {
     position: "absolute",
-    backgroundColor: "rgba(255,255,255,0.92)",
+    backgroundColor: "rgba(255,255,255,0.95)",
     borderRadius: 999,
   },
-  cloudPuffA: { left: 8, top: 10, width: 54, height: 22 },
-  cloudPuffB: { left: 40, top: 2, width: 48, height: 28 },
-  cloudPuffC: { left: 70, top: 12, width: 42, height: 20 },
-  cloudFarA: { top: "10%", left: "6%", transform: [{ scale: 0.7 }] },
-  cloudFarB: { top: "16%", left: "68%", transform: [{ scale: 0.65 }] },
-  cloud1: { top: "22%", left: "18%" },
-  cloud2: { top: "28%", left: "52%", transform: [{ scale: 1.15 }] },
-  cloud3: { top: "20%", left: "72%", transform: [{ scale: 0.85 }] },
-  cloud4: { top: "34%", left: "8%", transform: [{ scale: 0.9 }] },
   coast: {
     position: "absolute",
     left: 0,
     right: 0,
     bottom: 0,
-    height: "38%",
+    height: "42%",
   },
-  coastFoam: {
+  foam: {
     position: "absolute",
-    left: "8%",
-    right: "8%",
-    bottom: "34%",
-    height: 2,
+    left: "6%",
+    right: "6%",
+    bottom: "38%",
+    height: 3,
     borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.55)",
+    backgroundColor: "rgba(255,255,255,0.65)",
+  },
+  sand: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: "8%",
+    backgroundColor: "rgba(245,230,200,0.12)",
   },
   urgent: {
     ...StyleSheet.absoluteFill,

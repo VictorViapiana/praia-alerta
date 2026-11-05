@@ -21,5 +21,5 @@ export const map = {
   /** ~zoom 16 — orla com pins já legíveis (web ORLA_ZOOM=16). */
   initialDelta: { latitudeDelta: 0.011, longitudeDelta: 0.0075 },
   closeDelta: { latitudeDelta: 0.005, longitudeDelta: 0.0035 },
-  muroMinZoomApprox: 17.5,
+  muroMinZoomApprox: 16,
 } as const;
