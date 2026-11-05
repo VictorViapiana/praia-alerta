@@ -62,7 +62,7 @@ export function SosSlider({ onTrigger }: Props) {
           </Text>
         ) : null}
         <View style={[styles.knob, { transform: [{ translateX: offset }] }]} {...pan.panHandlers}>
-          <Text style={styles.knobIcon}>SOS</Text>
+          <GuaraPose pose="emergencia" size={36} />
         </View>
       </View>
     </View>
@@ -123,5 +123,4 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 6,
   },
-  knobIcon: { color: "#fff", fontWeight: "900", fontSize: 12, letterSpacing: 1 },
 });
