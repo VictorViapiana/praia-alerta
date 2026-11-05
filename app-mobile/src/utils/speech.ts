@@ -1,10 +1,8 @@
-import { Audio } from "expo-av";
 import * as Speech from "expo-speech";
 
 let speakToken = 0;
 let preferredVoice: string | undefined;
 let voicesReady: Promise<void> | null = null;
-let audioArmed = false;
 
 function cleanSpeech(text: string) {
   return text
@@ -35,24 +33,7 @@ function loadVoices() {
   return voicesReady;
 }
 
-/** iOS: sem isso o AVSpeech fica mudo com o botão silencioso ligado. */
-async function armAudioSession() {
-  if (audioArmed) return;
-  try {
-    await Audio.setAudioModeAsync({
-      playsInSilentModeIOS: true,
-      staysActiveInBackground: false,
-      shouldDuckAndroid: true,
-      playThroughEarpieceAndroid: false,
-    });
-    audioArmed = true;
-  } catch {
-    /* ignore — tenta falar mesmo assim */
-  }
-}
-
 void loadVoices();
-void armAudioSession();
 
 export function stopSpeaking() {
   speakToken += 1;
@@ -64,8 +45,8 @@ export function stopSpeaking() {
 }
 
 /**
- * Voz do Guará — expo-speech + sessão de áudio iOS.
- * Evita: stop()+speak no mesmo tick; silêncio com Ring/Silent.
+ * Voz do Guará via expo-speech (sem expo-av — Expo Go não tem ExponentAV nativo).
+ * Se o iPhone estiver no silencioso, desative o switch ou suba o volume.
  */
 export function speakGuara(text: string, onDone?: () => void) {
   const clean = cleanSpeech(text);
@@ -77,8 +58,8 @@ export function speakGuara(text: string, onDone?: () => void) {
   const token = speakToken;
 
   void (async () => {
-    await armAudioSession();
     await loadVoices();
+    // iOS: cancel + speak no mesmo tick = silêncio.
     await new Promise((r) => setTimeout(r, 120));
     if (token !== speakToken) {
       onDone?.();
