@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Image, StyleSheet, Text, View } from "react-native";
 import { Marker } from "react-native-maps";
 import {
@@ -276,9 +276,6 @@ function CommerceGlyph({
   );
 }
 
-/** Altura reservada sob o card para o pin ficar no mesmo latlng (Marker separado). */
-const BUBBLE_PAD = 54;
-
 export function MapPins({
   filter,
   query,
@@ -304,12 +301,12 @@ export function MapPins({
     return () => clearInterval(id);
   }, []);
 
-  // Só re-rasteriza no walk/filtro — NUNCA no select (select muda o Marker do bubble, pin fica parado).
+  // Pulso curto p/ bitmap do Marker (inclui select — balão acima do pin no MESMO Marker).
   useEffect(() => {
     setTracks(true);
-    const id = setTimeout(() => setTracks(false), 400);
+    const id = setTimeout(() => setTracks(false), 700);
     return () => clearTimeout(id);
-  }, [filter, query, showDense, vendors.length, step]);
+  }, [filter, query, showDense, vendors.length, step, selectedId]);
 
   return (
     <>
@@ -326,36 +323,26 @@ export function MapPins({
       )}
 
       {(showDense || selectedId === MARLIN.id) && filter === "neutro" && matchesQuery(MARLIN.name, query) && (
-        <Fragment>
-          {selectedId === MARLIN.id ? (
-            <Marker
-              coordinate={{ latitude: MARLIN.lat, longitude: MARLIN.lng }}
-              anchor={{ x: 0.5, y: 1 }}
-              tracksViewChanges
-              zIndex={90}
-              tappable
-            >
-              <View style={styles.bubblePad} collapsable={false}>
-                <PlacePinBubble
-                  name={MARLIN.name}
-                  hours={MARLIN.detail}
-                  onRoute={() =>
-                    onRoute?.({ id: MARLIN.id, lat: MARLIN.lat, lng: MARLIN.lng, name: MARLIN.name })
-                  }
-                />
-              </View>
-            </Marker>
-          ) : null}
-          <Marker
-            coordinate={{ latitude: MARLIN.lat, longitude: MARLIN.lng }}
-            onPress={() => onSelect(MARLIN.id)}
-            anchor={{ x: 0.5, y: 1 }}
-            tracksViewChanges={false}
-            zIndex={35}
-          >
+        <Marker
+          coordinate={{ latitude: MARLIN.lat, longitude: MARLIN.lng }}
+          onPress={() => onSelect(MARLIN.id)}
+          anchor={{ x: 0.5, y: 1 }}
+          tracksViewChanges={selectedId === MARLIN.id || tracks}
+          zIndex={selectedId === MARLIN.id ? 80 : 35}
+        >
+          <View style={styles.pinStack} collapsable={false}>
+            {selectedId === MARLIN.id ? (
+              <PlacePinBubble
+                name={MARLIN.name}
+                hours={MARLIN.detail}
+                onRoute={() =>
+                  onRoute?.({ id: MARLIN.id, lat: MARLIN.lat, lng: MARLIN.lng, name: MARLIN.name })
+                }
+              />
+            ) : null}
             <MarlinPin />
-          </Marker>
-        </Fragment>
+          </View>
+        </Marker>
       )}
 
       {SHOWERS.map((shower) => {
@@ -381,84 +368,81 @@ export function MapPins({
         if (!inCategory || !matchesQuery(place.name, query)) return null;
 
         const selected = selectedId === place.id;
-        const bubble =
-          selected && place.isSponsor ? (
-            <SponsorPinBubble
-              name={place.name}
-              hours={place.hours}
-              tag={place.tag}
-              cover={place.cover}
-              onOpen={() => onOpenSponsor?.(place.id)}
-              onRoute={() =>
-                onRoute?.({ id: place.id, lat: place.lat, lng: place.lng, name: place.name })
-              }
-            />
-          ) : selected ? (
-            <PlacePinBubble
-              name={place.name}
-              hours={place.hours}
-              onRoute={() =>
-                onRoute?.({ id: place.id, lat: place.lat, lng: place.lng, name: place.name })
-              }
-            />
-          ) : null;
-
+        // Web MarkerPopup: balão ACIMA do ícone no mesmo marker (anchor no pé do pin).
         if (place.mapKind === "quiosques") {
           return (
-            <Fragment key={place.id}>
-              {bubble ? (
-                <Marker
-                  coordinate={{ latitude: place.lat, longitude: place.lng }}
-                  anchor={{ x: 0.5, y: 1 }}
-                  tracksViewChanges
-                  zIndex={90}
-                  tappable
-                >
-                  <View style={styles.bubblePad} collapsable={false}>
-                    {bubble}
-                  </View>
-                </Marker>
-              ) : null}
-              <Marker
-                coordinate={{ latitude: place.lat, longitude: place.lng }}
-                onPress={() => onSelect(place.id)}
-                anchor={{ x: 0.5, y: 1 }}
-                tracksViewChanges={false}
-                zIndex={place.isSponsor ? 28 : 22}
-              >
+            <Marker
+              key={place.id}
+              coordinate={{ latitude: place.lat, longitude: place.lng }}
+              onPress={() => onSelect(place.id)}
+              anchor={{ x: 0.5, y: 1 }}
+              tracksViewChanges={selected || tracks}
+              zIndex={selected ? 85 : place.isSponsor ? 28 : 22}
+            >
+              <View style={styles.pinStack} collapsable={false}>
+                {selected && place.isSponsor ? (
+                  <SponsorPinBubble
+                    name={place.name}
+                    hours={place.hours}
+                    tag={place.tag}
+                    cover={place.cover}
+                    onOpen={() => onOpenSponsor?.(place.id)}
+                    onRoute={() =>
+                      onRoute?.({ id: place.id, lat: place.lat, lng: place.lng, name: place.name })
+                    }
+                  />
+                ) : null}
+                {selected && !place.isSponsor ? (
+                  <PlacePinBubble
+                    name={place.name}
+                    hours={place.hours}
+                    onRoute={() =>
+                      onRoute?.({ id: place.id, lat: place.lat, lng: place.lng, name: place.name })
+                    }
+                  />
+                ) : null}
                 <KioskPin place={place} />
-              </Marker>
-            </Fragment>
+              </View>
+            </Marker>
           );
         }
 
         const color =
           place.mapKind === "hoteis" ? "#6d5ef5" : place.mapKind === "sorveterias" ? "#db2777" : "#059669";
         return (
-          <Fragment key={place.id}>
-            {bubble ? (
-              <Marker
-                coordinate={{ latitude: place.lat, longitude: place.lng }}
-                anchor={{ x: 0.5, y: 1 }}
-                tracksViewChanges
-                zIndex={90}
-                tappable
-              >
-                <View style={styles.bubblePad} collapsable={false}>
-                  {bubble}
-                </View>
-              </Marker>
-            ) : null}
-            <Marker
-              coordinate={{ latitude: place.lat, longitude: place.lng }}
-              onPress={() => onSelect(place.id)}
-              anchor={{ x: 0.5, y: 0.5 }}
-              tracksViewChanges={false}
-              zIndex={24}
-            >
+          <Marker
+            key={place.id}
+            coordinate={{ latitude: place.lat, longitude: place.lng }}
+            onPress={() => onSelect(place.id)}
+            anchor={{ x: 0.5, y: 1 }}
+            tracksViewChanges={selected || tracks}
+            zIndex={selected ? 85 : 24}
+          >
+            <View style={styles.pinStack} collapsable={false}>
+              {selected && place.isSponsor ? (
+                <SponsorPinBubble
+                  name={place.name}
+                  hours={place.hours}
+                  tag={place.tag}
+                  cover={place.cover}
+                  onOpen={() => onOpenSponsor?.(place.id)}
+                  onRoute={() =>
+                    onRoute?.({ id: place.id, lat: place.lat, lng: place.lng, name: place.name })
+                  }
+                />
+              ) : null}
+              {selected && !place.isSponsor ? (
+                <PlacePinBubble
+                  name={place.name}
+                  hours={place.hours}
+                  onRoute={() =>
+                    onRoute?.({ id: place.id, lat: place.lat, lng: place.lng, name: place.name })
+                  }
+                />
+              ) : null}
               <CommerceGlyph kind={place.mapKind} color={color} />
-            </Marker>
-          </Fragment>
+            </View>
+          </Marker>
         );
       })}
 
@@ -468,36 +452,27 @@ export function MapPins({
         if (filter !== "neutro" && !focused) return null;
         if (!matchesQuery(ramp.name, query) && !focused) return null;
         return (
-          <Fragment key={ramp.id}>
-            {focused ? (
-              <Marker
-                coordinate={{ latitude: ramp.lat, longitude: ramp.lng }}
-                anchor={{ x: 0.5, y: 1 }}
-                tracksViewChanges
-                zIndex={90}
-                tappable
-              >
-                <View style={styles.bubblePad} collapsable={false}>
-                  <PlacePinBubble
-                    name={ramp.name}
-                    hours={ramp.detail}
-                    onRoute={() =>
-                      onRoute?.({ id: ramp.id, lat: ramp.lat, lng: ramp.lng, name: ramp.name })
-                    }
-                  />
-                </View>
-              </Marker>
-            ) : null}
-            <Marker
-              coordinate={{ latitude: ramp.lat, longitude: ramp.lng }}
-              onPress={() => onSelect(ramp.id)}
-              anchor={{ x: 0.5, y: 0.5 }}
-              tracksViewChanges={false}
-              zIndex={26}
-            >
+          <Marker
+            key={ramp.id}
+            coordinate={{ latitude: ramp.lat, longitude: ramp.lng }}
+            onPress={() => onSelect(ramp.id)}
+            anchor={{ x: 0.5, y: 1 }}
+            tracksViewChanges={focused || tracks}
+            zIndex={focused ? 75 : 26}
+          >
+            <View style={styles.pinStack} collapsable={false}>
+              {focused ? (
+                <PlacePinBubble
+                  name={ramp.name}
+                  hours={ramp.detail}
+                  onRoute={() =>
+                    onRoute?.({ id: ramp.id, lat: ramp.lat, lng: ramp.lng, name: ramp.name })
+                  }
+                />
+              ) : null}
               <RampaPinMark />
-            </Marker>
-          </Fragment>
+            </View>
+          </Marker>
         );
       })}
 
@@ -512,41 +487,32 @@ export function MapPins({
             const point = walkOffset(vendor, baseStep);
             const selected = selectedId === vendor.id;
             return (
-              <Fragment key={vendor.id}>
-                {selected ? (
-                  <Marker
-                    coordinate={{ latitude: point.lat, longitude: point.lng }}
-                    anchor={{ x: 0.5, y: 1 }}
-                    tracksViewChanges
-                    zIndex={95}
-                    tappable
-                  >
-                    <View style={styles.bubblePad} collapsable={false}>
-                      <VendorPinBubble
-                        name={vendor.name}
-                        tag={vendor.tag}
-                        onRoute={() =>
-                          onRoute?.({
-                            id: vendor.id,
-                            lat: point.lat,
-                            lng: point.lng,
-                            name: vendor.name,
-                          })
-                        }
-                      />
-                    </View>
-                  </Marker>
-                ) : null}
-                <Marker
-                  coordinate={{ latitude: point.lat, longitude: point.lng }}
-                  onPress={() => onSelect(vendor.id)}
-                  anchor={{ x: 0.5, y: 0.9 }}
-                  tracksViewChanges={vendor.walks ? tracks : false}
-                  zIndex={30}
-                >
+              <Marker
+                key={vendor.id}
+                coordinate={{ latitude: point.lat, longitude: point.lng }}
+                onPress={() => onSelect(vendor.id)}
+                anchor={{ x: 0.5, y: 1 }}
+                tracksViewChanges={selected || (vendor.walks ? tracks : false)}
+                zIndex={selected ? 85 : 30}
+              >
+                <View style={styles.pinStack} collapsable={false}>
+                  {selected ? (
+                    <VendorPinBubble
+                      name={vendor.name}
+                      tag={vendor.tag}
+                      onRoute={() =>
+                        onRoute?.({
+                          id: vendor.id,
+                          lat: point.lat,
+                          lng: point.lng,
+                          name: vendor.name,
+                        })
+                      }
+                    />
+                  ) : null}
                   <CartPin heading={point.heading} showBeam name={vendor.name} />
-                </Marker>
-              </Fragment>
+                </View>
+              </Marker>
             );
           })}
 
@@ -556,41 +522,32 @@ export function MapPins({
         if (!matchesQuery(landmark.name, query) && selectedId !== landmark.id) return null;
         const selected = selectedId === landmark.id;
         return (
-          <Fragment key={landmark.id}>
-            {selected ? (
-              <Marker
-                coordinate={{ latitude: landmark.lat, longitude: landmark.lng }}
-                anchor={{ x: 0.5, y: 1 }}
-                tracksViewChanges
-                zIndex={90}
-                tappable
-              >
-                <View style={styles.bubblePad} collapsable={false}>
-                  <PlacePinBubble
-                    name={landmark.name}
-                    hours={landmark.detail}
-                    onRoute={() =>
-                      onRoute?.({
-                        id: landmark.id,
-                        lat: landmark.lat,
-                        lng: landmark.lng,
-                        name: landmark.name,
-                      })
-                    }
-                  />
-                </View>
-              </Marker>
-            ) : null}
-            <Marker
-              coordinate={{ latitude: landmark.lat, longitude: landmark.lng }}
-              onPress={() => onSelect(landmark.id)}
-              anchor={{ x: 0.5, y: 0.5 }}
-              tracksViewChanges={false}
-              zIndex={18}
-            >
+          <Marker
+            key={landmark.id}
+            coordinate={{ latitude: landmark.lat, longitude: landmark.lng }}
+            onPress={() => onSelect(landmark.id)}
+            anchor={{ x: 0.5, y: 1 }}
+            tracksViewChanges={selected || tracks}
+            zIndex={selected ? 70 : 18}
+          >
+            <View style={styles.pinStack} collapsable={false}>
+              {selected ? (
+                <PlacePinBubble
+                  name={landmark.name}
+                  hours={landmark.detail}
+                  onRoute={() =>
+                    onRoute?.({
+                      id: landmark.id,
+                      lat: landmark.lat,
+                      lng: landmark.lng,
+                      name: landmark.name,
+                    })
+                  }
+                />
+              ) : null}
               <LandmarkPinMark item={landmark} />
-            </Marker>
-          </Fragment>
+            </View>
+          </Marker>
         );
       })}
     </>
@@ -636,10 +593,8 @@ const styles = StyleSheet.create({
   },
   kioskNumPremium: { color: "#f8e6c4", fontSize: 11, fontWeight: "800" },
   cartImg: { width: 34, height: 34, resizeMode: "contain" },
-  bubblePad: {
-    alignItems: "center",
-    paddingBottom: BUBBLE_PAD,
-  },
+  /** Coluna web: balão em cima, ícone embaixo — âncora no pé do pin. */
+  pinStack: { alignItems: "center" },
   cartWrap: {
     width: 78,
     height: 78,

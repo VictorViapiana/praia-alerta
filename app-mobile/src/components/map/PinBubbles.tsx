@@ -153,7 +153,8 @@ export function VendorPinBubble({
 }
 
 const styles = StyleSheet.create({
-  wrap: { alignItems: "center", marginBottom: 2, width: 232, backgroundColor: "transparent" },
+  /** Folga web `bottom-[calc(100%+8px)]` — balão acima do ícone, sem sobrepor. */
+  wrap: { alignItems: "center", marginBottom: 10, width: 232, backgroundColor: "transparent" },
   whiteCard: {
     width: 228,
     backgroundColor: "#ffffff",
