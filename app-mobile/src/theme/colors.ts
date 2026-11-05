@@ -18,7 +18,8 @@ export const colors = {
 export const map = {
   /** Centro da Praia do Morro — Guarapari/ES */
   center: { latitude: -20.6558, longitude: -40.4888 },
-  initialDelta: { latitudeDelta: 0.018, longitudeDelta: 0.012 },
-  closeDelta: { latitudeDelta: 0.006, longitudeDelta: 0.004 },
-  muroMinZoomApprox: 17.5,
+  /** ~zoom 16 — orla com pins já legíveis (web ORLA_ZOOM=16). delta=360/2^16. */
+  initialDelta: { latitudeDelta: 0.0055, longitudeDelta: 0.0038 },
+  closeDelta: { latitudeDelta: 0.0032, longitudeDelta: 0.0022 },
+  muroMinZoomApprox: 16,
 } as const;

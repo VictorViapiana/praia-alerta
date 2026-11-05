@@ -1,17 +1,18 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 import MapView, { type Region, PROVIDER_DEFAULT } from "react-native-maps";
 import { useApp } from "../../context/AppContext";
 import { useUserLocation } from "../../hooks/useUserLocation";
 import { map as mapTheme } from "../../theme/colors";
 import { MapPins } from "./MapPins";
+import { SelectedPinBubbleMarker } from "./SelectedPinBubbleMarker";
 import { MuroPolylines } from "./MuroPolylines";
 import { RampCorridors } from "./RampCorridors";
 import { DayLayerOverlay } from "./DayLayerOverlay";
 import { RouteLayer } from "./RouteLayer";
 import { UserArrow } from "./UserArrow";
 import type { WalkRoute } from "../../data/walk-route";
-import { toLatLngList } from "../../utils/geo";
+import { approxZoomFromDelta, toLatLngList } from "../../utils/geo";
 
 export type BeachMapHandle = {
   fitRoute: (route: WalkRoute) => void;
@@ -28,6 +29,8 @@ type Props = {
   moving?: boolean;
   traveled?: Array<[number, number]>;
   remaining?: Array<[number, number]>;
+  onOpenSponsor?: (id: string) => void;
+  onRouteToPin?: (point: { id: string; lat: number; lng: number; name: string }) => void;
 };
 
 export const BeachMapView = forwardRef<BeachMapHandle, Props>(function BeachMapView(
@@ -40,11 +43,13 @@ export const BeachMapView = forwardRef<BeachMapHandle, Props>(function BeachMapV
     moving = false,
     traveled,
     remaining,
+    onOpenSponsor,
+    onRouteToPin,
   },
   ref,
 ) {
   const mapRef = useRef<MapView>(null);
-  const { filter, searchQuery, selectedId, setSelectedId, dayLayer, tide, nav } = useApp();
+  const { filter, searchQuery, selectedId, setSelectedId, dayLayer, tide, weather, nav, basemap } = useApp();
   const { fix } = useUserLocation(!nav?.active);
   const [region, setRegion] = useState<Region>({
     ...mapTheme.center,
@@ -127,6 +132,15 @@ export const BeachMapView = forwardRef<BeachMapHandle, Props>(function BeachMapV
   }, [navigating, lat, lng, heading]);
 
   const drawn = navigating ? nav?.route ?? null : previewRoute;
+  // Satélite = foto da orla (como o web). Limpo = mapa sem POIs de terceiros.
+  const mapType =
+    basemap === "clean"
+      ? Platform.OS === "ios"
+        ? "mutedStandard"
+        : "standard"
+      : "satellite";
+  // Web ORLA_ZOOM=16. Pins densos a partir de ~15 (abre já preenchido; some ao afastar).
+  const showDensePins = approxZoomFromDelta(region.latitudeDelta) >= 15;
 
   return (
     <View style={styles.fill}>
@@ -136,17 +150,21 @@ export const BeachMapView = forwardRef<BeachMapHandle, Props>(function BeachMapV
         provider={PROVIDER_DEFAULT}
         initialRegion={region}
         onRegionChangeComplete={setRegion}
+        onPress={() => {
+          if (selectedId) setSelectedId(null);
+        }}
         showsUserLocation={false}
         showsMyLocationButton={false}
         showsCompass={false}
+        showsPointsOfInterests={false}
         rotateEnabled
         pitchEnabled
-        mapType="hybrid"
+        mapType={mapType}
         userInterfaceStyle="light"
         followsUserLocation={false}
         toolbarEnabled={false}
       >
-        <DayLayerOverlay dayLayer={dayLayer} tide={tide.data} />
+        <DayLayerOverlay dayLayer={dayLayer} tide={tide.data} weather={weather.data} />
         <RampCorridors />
         <MuroPolylines latitudeDelta={region.latitudeDelta} onPress={onMuroPress} />
         <RouteLayer
@@ -161,8 +179,16 @@ export const BeachMapView = forwardRef<BeachMapHandle, Props>(function BeachMapV
             query={searchQuery}
             selectedId={selectedId}
             onSelect={setSelectedId}
+            showDense={showDensePins}
           />
         )}
+        {!navigating && selectedId ? (
+          <SelectedPinBubbleMarker
+            selectedId={selectedId}
+            onOpenSponsor={onOpenSponsor}
+            onRoute={onRouteToPin}
+          />
+        ) : null}
         {lat != null && lng != null ? (
           <UserArrow
             latitude={lat}

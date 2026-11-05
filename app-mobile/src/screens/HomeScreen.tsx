@@ -2,19 +2,19 @@ import { useEffect, useState } from "react";
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Camera, Map as MapIcon, ShoppingBag, Waves, Sun, Baby, ShieldAlert } from "lucide-react-native";
+import { Baby, MapPin, ShieldAlert, ShoppingBag, Sun, Waves } from "lucide-react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { GuaraChat } from "../components/guara/GuaraChat";
 import { MissionModal } from "../components/guara/MissionModal";
 import { TourOverlay } from "../components/guara/TourOverlay";
-import { FEATURES, type FeatureId } from "../data/catalog";
+import { OceanWash } from "../components/ui/OceanWash";
+import { FEATURES, GUARA_SPEECH, type FeatureId } from "../data/catalog";
+import { answerGuara, HOME_PROMPTS } from "../data/guara-guide";
 import { useApp } from "../context/AppContext";
 import type { RootStackParamList } from "../navigation/types";
 import { SosSlider } from "../components/overlays/SosSlider";
 import { HOME_STEPS, HOME_TOUR_KEY } from "../data/onboarding";
 import { storageGet, storageSet } from "../utils/storage";
-import type { GuaraGuide } from "../data/guara-guide";
-import { FLAGS } from "../data/orla-stories";
+import { speakGuara, stopSpeaking } from "../utils/speech";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Home">;
 
@@ -23,15 +23,37 @@ const ICONS: Record<FeatureId, typeof Waves> = {
   clima: Sun,
   crianca: Baby,
   alertas: ShieldAlert,
-  rampa: MapIcon,
+  rampa: MapPin,
+};
+
+const WASH: Record<FeatureId, string> = {
+  mare: "rgba(34,211,238,0.4)",
+  clima: "rgba(250,204,21,0.42)",
+  crianca: "rgba(251,146,60,0.42)",
+  alertas: "rgba(168,85,247,0.42)",
+  rampa: "rgba(96,165,250,0.4)",
 };
 
 export function HomeScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
-  const { sky, weather, tide, setFeatureId, openSos, missionOpen, setMissionOpen, setFilter, setSearchQuery } =
-    useApp();
+  const {
+    sky,
+    weather,
+    tide,
+    setFeatureId,
+    openSos,
+    missionOpen,
+    setMissionOpen,
+    setFilter,
+    setSearchQuery,
+    queueGuide,
+  } = useApp();
   const [tour, setTour] = useState({ on: false, i: 0 });
-  const [islandOpen, setIslandOpen] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [narrating, setNarrating] = useState(false);
+  const [line, setLine] = useState(GUARA_SPEECH);
+  const [typed, setTyped] = useState("");
+  const [picked, setPicked] = useState<string | null>(null);
 
   useEffect(() => {
     void storageGet(HOME_TOUR_KEY).then((v) => {
@@ -39,101 +61,184 @@ export function HomeScreen({ navigation }: Props) {
     });
   }, []);
 
-  const onGuide = (guide: GuaraGuide) => {
-    if (guide.filter) setFilter(guide.filter);
-    if (guide.query) setSearchQuery(guide.query);
-    if (guide.sheet === "clima" || guide.filter === undefined) {
-      /* home Q&A may open map */
-    }
-    const askMap =
-      /quiosque|ducha|mapa|areia|escuna|marlin|ambulante|hotel|sorvete|banheiro|praia/i.test(
-        guide.answer + (guide.query || "") + (guide.openId || ""),
-      ) || Boolean(guide.fly || guide.openId || guide.route || guide.filter);
-    if (askMap && (guide.fly || guide.openId || guide.route || guide.filter || guide.locate)) {
-      navigation.navigate("Map");
-    }
+  useEffect(() => {
+    setTyped("");
+    let index = 0;
+    const id = setInterval(() => {
+      index += 1;
+      setTyped(line.slice(0, index));
+      if (index >= line.length) clearInterval(id);
+    }, line === GUARA_SPEECH ? 28 : 18);
+    return () => clearInterval(id);
+  }, [line]);
+
+  const replay = () => {
+    void storageSet(HOME_TOUR_KEY, "0");
+    setOpen(false);
+    setTour({ on: true, i: 0 });
   };
 
+  const skyBottom =
+    sky.phase === "dawn"
+      ? "#c9785a"
+      : sky.phase === "dusk"
+        ? "#8a3d4a"
+        : sky.phase === "night"
+          ? "#071828"
+          : "#1d649c";
+
   return (
-    <LinearGradient colors={[sky.themeColor, "#082038"]} style={styles.fill}>
+    <View style={[styles.fill, { backgroundColor: skyBottom }]}>
+      <OceanWash phase={sky.phase} />
       <ScrollView
         contentContainerStyle={[
           styles.content,
-          { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 120 },
+          { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 120 },
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <Pressable style={styles.island} onPress={() => setIslandOpen(true)}>
-          {!islandOpen ? (
-            <>
-              <Text style={styles.brand}>Praia Alerta Guará</Text>
-              <Text style={styles.tap}>Toque p/ abrir</Text>
-              <Text style={styles.meta}>
-                {weather.data ? `${Math.round(weather.data.temp)}° · ${weather.data.summary}` : "Carregando clima…"}
-                {" · "}
-                {sky.label}
+        <View style={styles.island}>
+          <Pressable style={styles.islandHead} onPress={() => setOpen((v) => !v)} accessibilityLabel="Falar com o Guará">
+            <View style={styles.avatar}>
+              <Image source={require("../assets/guara/guara.png")} style={styles.avatarImg} resizeMode="contain" />
+              <View style={styles.liveDot} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <View style={styles.brandRow}>
+                <Text style={styles.brand}>Praia Alerta Guará</Text>
+                <Text style={styles.tap}>{open ? "Toque p/ fechar" : "Toque p/ abrir"}</Text>
+              </View>
+              <Text style={styles.speech}>
+                {typed}
+                {typed.length < line.length ? "▍" : ""}
               </Text>
-            </>
-          ) : (
-            <>
-              <GuaraChat surface="home" weather={weather.data} tide={tide.data} onGuide={onGuide} />
-              <View style={styles.islandActions}>
-                <Pressable style={styles.mission} onPress={() => setMissionOpen(true)}>
-                  <Text style={styles.missionText}>Nossa Missão</Text>
-                </Pressable>
+            </View>
+          </Pressable>
+
+          {open && (
+            <View style={styles.panel}>
+              <View style={styles.panelHead}>
+                <Text style={styles.panelLabel}>Pergunte ao Guará</Text>
                 <Pressable
-                  style={styles.replay}
+                  style={[styles.listen, narrating && styles.listenOn]}
                   onPress={() => {
-                    void storageSet(HOME_TOUR_KEY, "0");
-                    setTour({ on: true, i: 0 });
+                    if (narrating) {
+                      stopSpeaking();
+                      setNarrating(false);
+                      return;
+                    }
+                    setNarrating(true);
+                    speakGuara(line, () => setNarrating(false));
                   }}
                 >
-                  <Text style={styles.replayText}>Passeio (Refazer)</Text>
+                  <Text style={styles.listenText}>{narrating ? "Pausar" : "Ouvir"}</Text>
                 </Pressable>
               </View>
-            </>
-          )}
-        </Pressable>
 
-        <Pressable style={styles.mapCta} onPress={() => navigation.navigate("Map")}>
-          <MapIcon color="#0f172a" size={20} />
-          <View style={{ flex: 1 }}>
+              {picked ? (
+                <View style={styles.picked}>
+                  <Text style={styles.pickedLabel}>{picked}</Text>
+                  <Text style={styles.pickedLine}>{line}</Text>
+                </View>
+              ) : null}
+
+              <View style={styles.promptGrid}>
+                {HOME_PROMPTS.map((prompt) => {
+                  const on = picked === prompt.label;
+                  return (
+                    <Pressable
+                      key={prompt.label}
+                      style={[styles.prompt, on && styles.promptOn]}
+                      onPress={() => {
+                        const guide = answerGuara(prompt.ask, { tide: tide.data, weather: weather.data });
+                        setPicked(prompt.label);
+                        setLine(guide.answer);
+                        stopSpeaking();
+                        setNarrating(false);
+                        if (guide.filter) setFilter(guide.filter);
+                        if (guide.query) setSearchQuery(guide.query);
+                        if (guide.fly || guide.openId || guide.route || guide.filter || guide.locate) {
+                          queueGuide(guide);
+                          navigation.navigate("Map");
+                        }
+                      }}
+                    >
+                      <Text style={styles.promptEmoji}>{prompt.emoji}</Text>
+                      <Text style={styles.promptLabel}>{prompt.label}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              <View style={styles.rail}>
+                <Pressable style={styles.railBtn} onPress={() => setMissionOpen(true)}>
+                  <Text style={styles.railTitle}>Nossa Missão</Text>
+                </Pressable>
+                <Pressable style={styles.railBtn} onPress={replay} accessibilityLabel="Refazer tutorial">
+                  <Text style={styles.railTitle}>Passeio</Text>
+                  <Text style={styles.railSub}>Refazer tutorial</Text>
+                </Pressable>
+              </View>
+            </View>
+          )}
+        </View>
+
+        <Pressable style={styles.mapCard} onPress={() => navigation.navigate("Map")}>
+          {/* CoastMap do web — tile satélite ArcGIS da orla */}
+          <Image
+            source={{
+              uri: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/16/36612/25397",
+            }}
+            style={StyleSheet.absoluteFill}
+            resizeMode="cover"
+          />
+          <LinearGradient
+            colors={["rgba(8,47,73,0.15)", "rgba(12,74,110,0.4)", "rgba(8,47,73,0.88)"]}
+            style={StyleSheet.absoluteFill}
+          />
+          <View style={styles.mapTop}>
+            <View style={styles.liveChip}>
+              <View style={styles.liveChipDot} />
+              <Text style={styles.liveChipText}>ao vivo</Text>
+            </View>
+            <MapPin color="#dbeafe" size={20} />
+          </View>
+          <View>
+            <Text style={styles.mapKicker}>Praia do Morro</Text>
             <Text style={styles.mapTitle}>Mapa & Localização</Text>
-            <Text style={styles.mapSub}>Orla ao vivo · pins · muro · rotas</Text>
+            <Text style={styles.mapSub}>Você no calçadão · areia na frente, comércio atrás</Text>
           </View>
         </Pressable>
 
-        <Pressable
-          style={styles.flagChip}
-          onPress={() => navigation.navigate("Story", { id: "bandeiras" })}
-        >
-          <View style={[styles.flagDot, { backgroundColor: FLAGS.find((f) => f.now)?.cloth ?? "#facc15" }]} />
-          <Text style={styles.flagChipText}>Bandeira amarela agora · ver sinalização</Text>
-        </Pressable>
+        <View style={styles.chips}>
+          <Text style={styles.chip}>
+            {weather.data ? `${Math.round(weather.data.temp)}° · ${weather.data.summary.toLowerCase()}` : "Lendo o clima"}
+          </Text>
+          <Text style={styles.chip}>{sky.label}</Text>
+          <Pressable style={styles.flagChip} onPress={() => navigation.navigate("Story", { id: "bandeiras" })}>
+            <Text style={styles.flagChipText}>Bandeira amarela</Text>
+          </Pressable>
+        </View>
 
         <View style={styles.storyRow}>
           <Pressable style={styles.storyCard} onPress={() => navigation.navigate("Story", { id: "marlin" })}>
             <Image source={require("../assets/guarapari/marlin-rochas.png")} style={styles.storyImg} />
+            <LinearGradient colors={["transparent", "rgba(4,16,24,0.95)"]} style={styles.storyShade} />
+            <Text style={styles.storyKicker}>Símbolo da orla</Text>
             <Text style={styles.storyTitle}>Marlin Azul</Text>
           </Pressable>
           <Pressable style={styles.storyCard} onPress={() => navigation.navigate("Story", { id: "fotos" })}>
             <Image source={require("../assets/guarapari/praia-verao.jpg")} style={styles.storyImg} />
-            <Text style={styles.storyTitle}>Fotos da orla</Text>
+            <LinearGradient colors={["transparent", "rgba(11,39,64,0.95)"]} style={styles.storyShade} />
+            <Text style={styles.storyTitle}>Praia do Morro</Text>
+            <Text style={styles.storySide}>Galeria</Text>
           </Pressable>
         </View>
 
-        <View style={styles.extraRow}>
-          <Pressable style={styles.extra} onPress={() => navigation.navigate("Camera")}>
-            <Camera color="#fde68a" size={18} />
-            <Text style={styles.extraText}>Eu amo Guarapari</Text>
-          </Pressable>
-          <Pressable style={styles.extra} onPress={() => navigation.navigate("AmbulantePortal")}>
-            <ShoppingBag color="#fdba74" size={18} />
-            <Text style={styles.extraText}>Sou ambulante</Text>
-          </Pressable>
+        <View style={styles.sectionRow}>
+          <Text style={styles.section}>Serviços da praia</Text>
+          <Text style={styles.sectionMeta}>ao vivo</Text>
         </View>
-
-        <Text style={styles.section}>Serviços da praia</Text>
         <View style={styles.grid}>
           {FEATURES.map((feature) => {
             const Icon = ICONS[feature.id];
@@ -150,8 +255,10 @@ export function HomeScreen({ navigation }: Props) {
                   navigation.navigate("Feature", { id: feature.id });
                 }}
               >
-                <View style={[styles.iconWash, { backgroundColor: `${feature.accent}33` }]}>
-                  <Icon color={feature.accent} size={22} />
+                <View style={[styles.wash, { backgroundColor: WASH[feature.id] }]} />
+                {feature.id === "alertas" ? <View style={styles.ping} /> : null}
+                <View style={[styles.glyphWrap, { shadowColor: feature.accent }]}>
+                  <Icon color={feature.accent} size={36} strokeWidth={1.7} />
                 </View>
                 <Text style={styles.cardTitle}>{feature.title}</Text>
                 <Text style={styles.cardSub}>{feature.subtitle}</Text>
@@ -159,6 +266,11 @@ export function HomeScreen({ navigation }: Props) {
             );
           })}
         </View>
+
+        <Pressable style={styles.vendor} onPress={() => navigation.navigate("AmbulantePortal")}>
+          <ShoppingBag color="#fdba74" size={16} />
+          <Text style={styles.vendorText}>Sou ambulante</Text>
+        </Pressable>
       </ScrollView>
 
       <View style={[styles.sosDock, { paddingBottom: insets.bottom + 10 }]}>
@@ -180,132 +292,227 @@ export function HomeScreen({ navigation }: Props) {
           onDone={() => {
             void storageSet(HOME_TOUR_KEY, "1");
             setTour({ on: false, i: 0 });
-            setIslandOpen(true);
+            setOpen(true);
           }}
         />
       )}
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  fill: { flex: 1 },
-  content: { paddingHorizontal: 16, gap: 14 },
+  fill: { flex: 1, backgroundColor: "#1d649c" },
+  content: { paddingHorizontal: 14, gap: 12 },
   island: {
-    backgroundColor: "rgba(255,255,255,0.12)",
-    borderRadius: 28,
-    padding: 18,
-    alignItems: "center",
+    borderRadius: 26,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.16)",
+    borderColor: "rgba(255,255,255,0.35)",
+    backgroundColor: "rgba(8,47,73,0.28)",
+    overflow: "hidden",
+    shadowColor: "#022c4a",
+    shadowOpacity: 0.35,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 6,
+  },
+  islandHead: { flexDirection: "row", alignItems: "center", gap: 10, padding: 10 },
+  avatar: {
+    width: 54,
+    height: 54,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.35)",
+    backgroundColor: "rgba(8,47,73,0.45)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatarImg: { width: 40, height: 40 },
+  liveDot: {
+    position: "absolute",
+    right: -2,
+    bottom: -2,
+    width: 12,
+    height: 12,
+    borderRadius: 999,
+    backgroundColor: "#6ee7b7",
+    borderWidth: 2,
+    borderColor: "#071820",
+  },
+  brandRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  brand: { color: "#ecfeff", fontSize: 13, fontWeight: "800" },
+  tap: {
+    color: "rgba(255,255,255,0.9)",
+    fontSize: 9,
+    fontWeight: "600",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.3)",
+    backgroundColor: "rgba(8,47,73,0.35)",
+    borderRadius: 999,
+    overflow: "hidden",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  speech: { marginTop: 4, color: "#fff", fontSize: 13, fontWeight: "700", lineHeight: 18 },
+  panel: {
+    borderTopWidth: 1,
+    borderTopColor: "rgba(255,255,255,0.2)",
+    padding: 10,
     gap: 8,
   },
-  brand: { color: "#fff", fontSize: 22, fontWeight: "800" },
-  tap: { color: "rgba(255,255,255,0.7)", fontSize: 13, fontWeight: "600" },
-  meta: { color: "rgba(255,255,255,0.65)", fontSize: 12 },
-  islandActions: { flexDirection: "row", gap: 8, marginTop: 4, width: "100%" },
-  mission: {
-    flex: 1,
-    backgroundColor: "rgba(34,211,238,0.25)",
-    borderRadius: 14,
-    paddingVertical: 10,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "rgba(165,243,252,0.35)",
-  },
-  missionText: { color: "#fff", fontWeight: "800", fontSize: 12 },
-  replay: {
-    flex: 1,
-    backgroundColor: "rgba(255,255,255,0.1)",
-    borderRadius: 14,
-    paddingVertical: 10,
-    alignItems: "center",
-  },
-  replayText: { color: "rgba(255,255,255,0.85)", fontWeight: "700", fontSize: 12 },
-  mapCta: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    backgroundColor: "#fff",
-    borderRadius: 20,
-    padding: 14,
-  },
-  mapTitle: { color: "#0f172a", fontWeight: "800", fontSize: 16 },
-  mapSub: { color: "#475569", fontSize: 12, marginTop: 2 },
-  flagChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    backgroundColor: "rgba(253,224,71,0.18)",
+  panelHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  panelLabel: { color: "rgba(255,255,255,0.8)", fontSize: 11 },
+  listen: {
     borderRadius: 999,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
     borderWidth: 1,
-    borderColor: "rgba(253,224,71,0.35)",
+    borderColor: "rgba(255,255,255,0.3)",
+    backgroundColor: "rgba(8,47,73,0.4)",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
   },
-  flagDot: { width: 14, height: 14, borderRadius: 4 },
-  flagChipText: { color: "#fef9c3", fontWeight: "700", fontSize: 13, flex: 1 },
-  storyRow: { flexDirection: "row", gap: 10 },
-  storyCard: {
+  listenOn: { backgroundColor: "rgba(255,107,87,0.3)", borderColor: "rgba(255,107,87,0.5)" },
+  listenText: { color: "#fff", fontSize: 11, fontWeight: "700" },
+  picked: {
+    borderRadius: 16,
+    backgroundColor: "rgba(8,47,73,0.35)",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  pickedLabel: { color: "rgba(207,250,254,0.8)", fontSize: 10, fontWeight: "800", letterSpacing: 1, textTransform: "uppercase" },
+  pickedLine: { color: "#fff", fontSize: 13, marginTop: 4, lineHeight: 18 },
+  promptGrid: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
+  prompt: {
+    width: "48.5%",
+    flexGrow: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.25)",
+    backgroundColor: "rgba(8,47,73,0.4)",
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+  },
+  promptOn: { borderColor: "rgba(255,107,87,0.55)", backgroundColor: "rgba(255,107,87,0.28)" },
+  promptEmoji: { fontSize: 16 },
+  promptLabel: { color: "#fff", fontSize: 12, fontWeight: "700", flex: 1 },
+  rail: { flexDirection: "row", gap: 6 },
+  railBtn: {
     flex: 1,
-    height: 140,
-    borderRadius: 22,
+    minHeight: 42,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.3)",
+    backgroundColor: "rgba(8,47,73,0.45)",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 8,
+  },
+  railTitle: { color: "#fff", fontSize: 12, fontWeight: "800" },
+  railSub: { color: "rgba(207,250,254,0.8)", fontSize: 9, marginTop: 2 },
+  mapCard: {
+    height: 158,
+    borderRadius: 28,
     overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.5)",
+    backgroundColor: "#0369a1",
+    padding: 16,
+    justifyContent: "space-between",
+  },
+  mapTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  liveChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: "rgba(255,255,255,0.16)",
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  liveChipDot: { width: 6, height: 6, borderRadius: 99, backgroundColor: "#6ee7b7" },
+  liveChipText: { color: "#fff", fontSize: 10, fontWeight: "800", letterSpacing: 1.4, textTransform: "uppercase" },
+  mapKicker: { color: "rgba(207,250,254,0.9)", fontSize: 11, fontWeight: "700", letterSpacing: 1.6, textTransform: "uppercase" },
+  mapTitle: { color: "#fff", fontSize: 26, fontWeight: "800", marginTop: 4 },
+  mapSub: { color: "rgba(255,255,255,0.85)", fontSize: 12, fontWeight: "600", marginTop: 6 },
+  chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  chip: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "600",
+    backgroundColor: "rgba(255,255,255,0.14)",
+    borderRadius: 999,
+    overflow: "hidden",
+    paddingHorizontal: 12,
+    paddingVertical: 7,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.2)",
   },
-  storyImg: { ...StyleSheet.absoluteFill, width: "100%", height: "100%" },
-  storyTitle: {
-    position: "absolute",
-    left: 10,
-    bottom: 10,
-    color: "#fff",
-    fontWeight: "900",
-    fontSize: 15,
-    textShadowColor: "rgba(0,0,0,0.6)",
-    textShadowRadius: 8,
-  },
-  extraRow: { flexDirection: "row", gap: 10 },
-  extra: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    backgroundColor: "rgba(15,23,42,0.4)",
-    borderRadius: 16,
-    padding: 12,
+  flagChip: {
+    backgroundColor: "rgba(245,158,11,0.35)",
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.12)",
+    borderColor: "rgba(253,230,138,0.55)",
   },
-  extraText: { color: "#fff", fontWeight: "800", fontSize: 12, flex: 1 },
-  section: {
-    color: "rgba(255,255,255,0.75)",
-    fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 0.6,
-    textTransform: "uppercase",
+  flagChipText: { color: "#fffbeb", fontSize: 12, fontWeight: "800" },
+  storyRow: { flexDirection: "row", gap: 10 },
+  storyCard: {
+    flex: 1,
+    height: 176,
+    borderRadius: 26,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.45)",
+    justifyContent: "flex-end",
+    padding: 12,
   },
+  storyImg: { ...StyleSheet.absoluteFill, width: "100%", height: "100%" },
+  storyShade: { position: "absolute", left: 0, right: 0, bottom: 0, height: 110 },
+  storyKicker: { color: "rgba(255,255,255,0.85)", fontSize: 10, fontWeight: "800", letterSpacing: 1.2, textTransform: "uppercase" },
+  storyTitle: { color: "#fff", fontSize: 22, fontWeight: "700", marginTop: 2 },
+  storySide: { position: "absolute", right: 12, bottom: 16, color: "#e0f2fe", fontSize: 10, fontWeight: "800", letterSpacing: 1.2, textTransform: "uppercase" },
+  sectionRow: { flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", marginTop: 4 },
+  section: { color: "#fff", fontSize: 17, fontWeight: "800" },
+  sectionMeta: { color: "rgba(207,250,254,0.85)", fontSize: 11, fontWeight: "600" },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   card: {
     width: "48%",
     flexGrow: 1,
-    backgroundColor: "rgba(15,23,42,0.35)",
-    borderRadius: 20,
+    height: 122,
+    borderRadius: 26,
     padding: 14,
+    justifyContent: "space-between",
+    overflow: "hidden",
+    backgroundColor: "rgba(8,47,73,0.88)",
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.1)",
-    minWidth: "46%",
+    borderColor: "rgba(255,255,255,0.42)",
+    shadowColor: "#021018",
+    shadowOpacity: 0.35,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 6,
   },
-  iconWash: {
-    width: 40,
-    height: 40,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 10,
+  wash: { position: "absolute", right: -24, top: -28, width: 96, height: 96, borderRadius: 99 },
+  glyphWrap: {
+    alignSelf: "flex-start",
+    shadowOpacity: 0.85,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 6,
   },
+  ping: { position: "absolute", right: 14, top: 14, width: 10, height: 10, borderRadius: 99, backgroundColor: "#f3e8ff" },
   cardTitle: { color: "#fff", fontWeight: "700", fontSize: 15 },
-  cardSub: { color: "rgba(255,255,255,0.65)", fontSize: 12, marginTop: 3 },
+  cardSub: { color: "rgba(207,250,254,0.85)", fontSize: 11, marginTop: 2 },
+  vendor: {
+    alignSelf: "flex-start",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingVertical: 6,
+  },
+  vendorText: { color: "#fdba74", fontWeight: "800", fontSize: 13 },
   sosDock: {
     position: "absolute",
     left: 0,

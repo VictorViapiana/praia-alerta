@@ -56,19 +56,40 @@ export const BEACH_PHOTOS = [
   },
 ] as const;
 
+/** Paridade web `CARES` em app/orla.tsx — textos completos + índice. */
 export const MARLIN_CARES = [
   {
+    index: "01",
+    icon: "alert" as const,
     title: "O piso escorrega",
-    text: "A pedra é lisa e fica molhada de maresia. Ande devagar. Segure a criança pela mão.",
+    text: "A pedra é lisa e fica molhada de maresia e de respingo. Ande devagar, com o pé inteiro no chão. Não corra. Segure a criança pela mão. Um escorregão aqui machuca.",
   },
   {
+    index: "02",
+    icon: "trash" as const,
     title: "Não deixe lixo",
-    text: "Garrafa, bituca e sacola não ficam na pedra. O que você trouxe, você leva.",
+    text: "Garrafa, bituca, casca e sacola não ficam na pedra nem na fresta. O que você trouxe, você leva. Nada de deixar resto para o mar recolher.",
   },
   {
+    index: "03",
+    icon: "ban" as const,
     title: "Não risque e não danifique",
-    text: "O Marlin é patrimônio. Foto, sim. Dano, não.",
+    text: "O Marlin é patrimônio da cidade. Não escreva nome, não grave data, não arranque pedaço, não suba no peixe e não apoie nada que risque a pintura. Foto, sim. Dano, não.",
   },
+] as const;
+
+export const MARLIN_STATS = [
+  ["1992", "O recorde"],
+  ["636 kg", "O peixe"],
+  ["8 m", "A escultura"],
+] as const;
+
+export const MARLIN_INTRO =
+  "O peixe azul nas pedras é o cartão-postal da orla. Ele olha o Atlântico. Atrás dele, no fim da tarde, o sol desce no morro.";
+
+export const MARLIN_HISTORY = [
+  "Em 1992, Paulo Amorim pescou um marlim-azul de 636 quilos, recorde mundial, na costa do Espírito Santo. A escultura da Praia do Morro foi feita para guardar esse feito: cerca de 8 metros, em fibra de vidro, pelo artista Giuliano Filippi.",
+  "Em 2020, a Lei municipal 4.407 declarou a estátua patrimônio cultural e afetivo de Guarapari. Ela não é enfeite de passagem. É um bem da cidade, no costão, separado dos quiosques e das lojas.",
 ] as const;
 
 export const FLAGS = [

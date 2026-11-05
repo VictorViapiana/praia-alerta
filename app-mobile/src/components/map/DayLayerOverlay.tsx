@@ -2,37 +2,54 @@ import { Polygon, Polyline } from "react-native-maps";
 import type { DayLayer } from "../../data/day-layers";
 import {
   isSunActive,
-  sunSandBand,
-  sunSandCore,
+  sunHeatFactor,
+  sunSandRings,
   tideEdgeLine,
   tideOceanBand,
   tideRatio,
   tideWaterBand,
   tideWetSandBand,
 } from "../../data/day-layers";
-import type { TideNow } from "../../data/coast";
+import type { TideNow, WeatherNow } from "../../data/coast";
 import { toLatLngList } from "../../utils/geo";
 
 type Props = {
   dayLayer: DayLayer;
   tide: TideNow | null | undefined;
+  weather?: WeatherNow | null;
 };
 
-/** Camadas Sol / Maré — mesma geometria do web. */
-export function DayLayerOverlay({ dayLayer, tide }: Props) {
+/** Camadas Sol / Maré — 4 anéis com heat do clima (paridade web). */
+export function DayLayerOverlay({ dayLayer, tide, weather }: Props) {
   if (dayLayer === "sol" && isSunActive()) {
+    const heat = sunHeatFactor(new Date(), weather ? { code: weather.code, uv: weather.uv } : null);
+    const rings = sunSandRings();
     return (
       <>
         <Polygon
-          coordinates={toLatLngList(sunSandBand())}
-          fillColor="rgba(250,204,21,0.18)"
-          strokeColor="rgba(250,204,21,0.35)"
+          coordinates={toLatLngList(rings.glow)}
+          fillColor={`rgba(180,83,9,${(0.1 * heat).toFixed(3)})`}
+          strokeColor="transparent"
+          strokeWidth={0}
+          zIndex={6}
+        />
+        <Polygon
+          coordinates={toLatLngList(rings.wash)}
+          fillColor={`rgba(217,119,6,${(0.16 * heat).toFixed(3)})`}
+          strokeColor={`rgba(253,230,138,${(0.35 * heat).toFixed(3)})`}
           strokeWidth={1}
+          zIndex={7}
+        />
+        <Polygon
+          coordinates={toLatLngList(rings.mid)}
+          fillColor={`rgba(245,158,11,${(0.22 * heat).toFixed(3)})`}
+          strokeColor="transparent"
+          strokeWidth={0}
           zIndex={8}
         />
         <Polygon
-          coordinates={toLatLngList(sunSandCore())}
-          fillColor="rgba(251,191,36,0.28)"
+          coordinates={toLatLngList(rings.core)}
+          fillColor={`rgba(253,230,138,${(0.28 * heat).toFixed(3)})`}
           strokeColor="transparent"
           strokeWidth={0}
           zIndex={9}

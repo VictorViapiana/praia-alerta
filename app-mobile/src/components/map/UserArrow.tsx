@@ -1,6 +1,7 @@
-import { View, StyleSheet } from "react-native";
+import { Text, View, StyleSheet } from "react-native";
 import { Marker } from "react-native-maps";
-import Svg, { Path, Circle } from "react-native-svg";
+import Svg, { Path } from "react-native-svg";
+import { HeadingBeam } from "./HeadingBeam";
 
 type Props = {
   latitude: number;
@@ -10,54 +11,84 @@ type Props = {
   moving?: boolean;
 };
 
-/** Seta direcional premium (nav) / ponto azul (parado). */
+/** Localização do usuário — feixe HeadingBeam + seta / “Você” (paridade web UserDot). */
 export function UserArrow({ latitude, longitude, heading, navigating, moving }: Props) {
   const deg = heading ?? 0;
-  return (
-    <Marker
-      coordinate={{ latitude, longitude }}
-      anchor={{ x: 0.5, y: 0.5 }}
-      flat
-      rotation={navigating || moving ? deg : 0}
-      tracksViewChanges={Boolean(navigating)}
-      zIndex={80}
-    >
-      {navigating || moving ? (
+  const showBeam = heading != null;
+
+  if (navigating) {
+    return (
+      <Marker
+        coordinate={{ latitude, longitude }}
+        anchor={{ x: 0.5, y: 0.5 }}
+        flat
+        rotation={deg}
+        tracksViewChanges
+        zIndex={80}
+      >
         <View style={styles.navWrap}>
-          {moving ? <View style={styles.pulse} /> : null}
-          <Svg width={40} height={40} viewBox="0 0 40 40">
-            <Circle cx={20} cy={20} r={18} fill="rgba(0,163,255,0.18)" />
+          <View style={styles.pulse} />
+          <Svg width={44} height={44} viewBox="0 0 48 48">
             <Path
-              d="M20 4 L32 30 L20 24 L8 30 Z"
-              fill="#00A3FF"
+              d="M24 6 40 40 24 32 8 40Z"
+              fill="#1d4ed8"
               stroke="#ffffff"
-              strokeWidth={2.2}
+              strokeWidth={3}
               strokeLinejoin="round"
             />
           </Svg>
         </View>
-      ) : (
+      </Marker>
+    );
+  }
+
+  return (
+    <Marker
+      coordinate={{ latitude, longitude }}
+      anchor={{ x: 0.5, y: 0.55 }}
+      flat
+      tracksViewChanges={Boolean(moving)}
+      zIndex={80}
+    >
+      <View style={styles.idleWrap} collapsable={false}>
+        {showBeam ? <HeadingBeam heading={deg} size={120} /> : null}
+        {moving ? <View style={styles.ring} /> : null}
         <View style={styles.dot}>
           <View style={styles.dotInner} />
         </View>
-      )}
+        <Text style={styles.voce}>Você</Text>
+      </View>
     </Marker>
   );
 }
 
 const styles = StyleSheet.create({
   navWrap: {
-    width: 48,
-    height: 48,
+    width: 56,
+    height: 56,
     alignItems: "center",
     justifyContent: "center",
   },
   pulse: {
     position: "absolute",
-    width: 42,
-    height: 42,
+    width: 56,
+    height: 56,
     borderRadius: 999,
-    backgroundColor: "rgba(0,163,255,0.22)",
+    backgroundColor: "rgba(29,78,216,0.25)",
+  },
+  idleWrap: {
+    width: 120,
+    height: 132,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  ring: {
+    position: "absolute",
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    borderWidth: 2,
+    borderColor: "rgba(2,132,199,0.45)",
   },
   dot: {
     width: 22,
@@ -68,6 +99,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderWidth: 2,
     borderColor: "#fff",
+    zIndex: 2,
   },
   dotInner: { width: 12, height: 12, borderRadius: 999, backgroundColor: "#0284c7" },
+  voce: {
+    marginTop: 4,
+    zIndex: 3,
+    color: "#0c4a6e",
+    fontSize: 11,
+    fontWeight: "800",
+    textShadowColor: "#fff",
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 4,
+  },
 });

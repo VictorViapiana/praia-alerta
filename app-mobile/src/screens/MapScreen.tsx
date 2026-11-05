@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import * as Location from "expo-location";
@@ -11,9 +12,11 @@ import { ShowerRitualModal } from "../components/guara/ShowerRitualModal";
 import { GuaraChat } from "../components/guara/GuaraChat";
 import { TourOverlay } from "../components/guara/TourOverlay";
 import { SponsorSheet } from "../components/sheets/SponsorSheet";
+import { LandmarkTalkSheet } from "../components/sheets/LandmarkTalkSheet";
 import { RoutePreviewSheet } from "../components/nav/RoutePreviewSheet";
 import { NavHud } from "../components/nav/NavHud";
 import { useApp } from "../context/AppContext";
+import { speakGuara } from "../utils/speech";
 import { MURO_TALK_SUBTITLE, MURO_TALK_TEXT, MURO_TALK_TITLE } from "../data/orla-muro";
 import {
   ACADEMIA_ORLA,
@@ -27,11 +30,12 @@ import {
   SHOWERS,
   landmarkById,
 } from "../data/places";
-import { RAMPS, RAMPA_NOTE, RAMPA_RULE, RAMPA_WARN } from "../data/rampas";
+import { RAMPS, RAMPA_RULE, RAMPA_WARN } from "../data/rampas";
 import { MAP_STEPS, MAP_TOUR_KEY } from "../data/onboarding";
 import { storageGet, storageSet } from "../utils/storage";
 import {
   readLocationSoftChoice,
+  reopenLocationSoftPrompt,
   writeLocationSoftChoice,
 } from "../data/location-soft";
 import {
@@ -43,13 +47,14 @@ import {
 import { useOrlaSentinel } from "../hooks/useOrlaSentinel";
 import { useUserLocation } from "../hooks/useUserLocation";
 import { useNavTracking } from "../hooks/useNavTracking";
-import { useNotifyOpen } from "../hooks/useNotifyOpen";
 import { useAmbulanteLive } from "../context/AmbulanteLiveContext";
+import type { OrlaLandmark } from "../data/places";
 import type { RootStackParamList } from "../navigation/types";
 import type { WalkPoint, WalkRoute } from "../data/walk-route";
 import { SHOWER_RITUAL_STEPS } from "../data/places";
 import type { GuaraGuide } from "../data/guara-guide";
-import { PRAIA_MORRO_VIEW } from "../data/guara-guide";
+import { FAR_FROM_BEACH_M, PRAIA_MORRO_VIEW } from "../data/guara-guide";
+import { metersBetween } from "../utils/geo";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Map">;
 
@@ -65,39 +70,60 @@ export function MapScreen({ navigation }: Props) {
   const [notifyPrompt, setNotifyPrompt] = useState(false);
   const [mapTour, setMapTour] = useState<{ on: boolean; i: number }>({ on: false, i: 0 });
   const [previewRoute, setPreviewRoute] = useState<WalkRoute | null>(null);
-  const [muroTalk, setMuroTalk] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const [locateNote, setLocateNote] = useState<string | null>(null);
+  const [beachInvite, setBeachInvite] = useState(false);
+  const beachInviteAsked = useRef(false);
+  /** Teaser tipo MarkerPopup — sheet completo só após “Ver cardápio”. */
+  const [sponsorOpen, setSponsorOpen] = useState(false);
+  const [landmarkTalk, setLandmarkTalk] = useState<OrlaLandmark | null>(null);
+  const [arrivedBanner, setArrivedBanner] = useState<string | null>(null);
+  const [recalcNote, setRecalcNote] = useState<string | null>(null);
+  const arrivedRef = useRef(false);
+  const offStreakRef = useRef(0);
+  const locChoiceRef = useRef<"unset" | "accepted" | "declined">("unset");
 
   const liveHeading = app.nav?.active ? navTrack.fix?.heading ?? heading : heading;
   const liveLat = app.nav?.active ? navTrack.fix?.lat ?? fix?.lat ?? null : fix?.lat ?? null;
   const liveLng = app.nav?.active ? navTrack.fix?.lng ?? fix?.lng ?? null : fix?.lng ?? null;
 
-  // Chegada: encerra navegação perto do destino.
+  // Chegada: fala + banner + encerra navegação.
   useEffect(() => {
-    if (!app.nav?.active) return;
+    if (!app.nav?.active) {
+      arrivedRef.current = false;
+      offStreakRef.current = 0;
+      return;
+    }
     if (navTrack.remainingMeters > 28) return;
     if ((navTrack.progress?.offMeters ?? 0) > 40) return;
+    if (arrivedRef.current) return;
+    arrivedRef.current = true;
+    const name = app.nav.destination.name;
+    speakGuara(`Você chegou. ${name} está aqui.`);
+    setArrivedBanner(`Você chegou · ${name}`);
+    setTimeout(() => setArrivedBanner(null), 4200);
     app.stopNav();
     setPreviewRoute(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [app.nav?.active, navTrack.remainingMeters, navTrack.progress?.offMeters]);
 
+  // Fora da rota: aviso do Guará (paridade web).
+  useEffect(() => {
+    if (!app.nav?.active) return;
+    const off = (navTrack.progress?.offMeters ?? 0) > 45 && navTrack.remainingMeters > 40;
+    offStreakRef.current = off ? offStreakRef.current + 1 : 0;
+    if (offStreakRef.current === 3) {
+      speakGuara("Você saiu do caminho. Estou refazendo a rota.");
+      setRecalcNote("Estou refazendo a rota…");
+      setTimeout(() => setRecalcNote(null), 3500);
+    }
+  }, [app.nav?.active, navTrack.progress?.offMeters, navTrack.remainingMeters]);
+
   const place = PLACES.find((p) => p.id === app.selectedId) ?? null;
-  const shower = SHOWERS.find((s) => s.id === app.selectedId) ?? null;
   const vendor =
     liveVendors.vendors.find((v) => v.id === app.selectedId) ??
     AMBULANTES.find((v) => v.id === app.selectedId) ??
     null;
-  const landmark = landmarkById(app.selectedId);
-  const ramp = RAMPS.find((r) => r.id === app.selectedId) ?? null;
-
-  useNotifyOpen(
-    useCallback(
-      (spot) => {
-        app.setSelectedId(spot);
-      },
-      [app],
-    ),
-  );
 
   const origin: WalkPoint = useMemo(
     () =>
@@ -112,14 +138,25 @@ export function MapScreen({ navigation }: Props) {
       const seen = await storageGet(MAP_TOUR_KEY);
       if (seen !== "1") setMapTour({ on: true, i: 0 });
       const loc = await readLocationSoftChoice();
-      if (loc === "unset") setLocPrompt(true);
+      locChoiceRef.current = loc;
       const n = await readNotifySoftChoice();
-      if (n === "unset") setNotifyPrompt(true);
-      const pending = await takePendingSpot();
+      // Sequência do web: avisos ~0.9s, localização ~2.8s — e só depois do tour.
+      if (n === "unset") {
+        setTimeout(() => setNotifyPrompt(true), 900);
+      }
+      if (loc === "unset") {
+        setTimeout(() => setLocPrompt(true), 2800);
+      }
+      const pending = (await takePendingSpot()) ?? app.takePendingNotifySpot();
       if (pending) app.setSelectedId(pending);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Ao trocar o pin selecionado, fecha o portal e volta ao teaser.
+  useEffect(() => {
+    setSponsorOpen(false);
+  }, [app.selectedId]);
 
   useEffect(() => {
     let sub: Location.LocationSubscription | null = null;
@@ -140,9 +177,16 @@ export function MapScreen({ navigation }: Props) {
         if (s) app.openShowerRitual(s.name);
       } else if (kind === "marlin") {
         app.openTipTour({
-          title: MARLIN.name,
-          subtitle: MARLIN.detail,
-          steps: MARLIN_TIPS.map((t) => ({ title: t.title, text: t.text, kind: "aviso" as const })),
+          title: "Marlin Azul",
+          subtitle: "Patrimônio da orla · preserve e se cuide",
+          steps: MARLIN_TIPS.map((t) => ({
+            title: t.title,
+            text: t.text,
+            kind:
+              t.title.toLowerCase().includes("lixo") || t.title.toLowerCase().includes("risque")
+                ? ("convivencia" as const)
+                : ("alerta" as const),
+          })),
           accent: "ocean",
         });
       } else if (kind === "golfinho") {
@@ -154,13 +198,17 @@ export function MapScreen({ navigation }: Props) {
         });
       } else if (kind === "rampa") {
         app.openTipTour({
-          title: "Rampa de acesso",
+          title: "Corredor da rampa",
           steps: [
-            { title: "Atenção", text: RAMPA_WARN, kind: "alerta" },
-            { title: "Regra", text: RAMPA_RULE, kind: "aviso" },
-            { title: "Dica", text: RAMPA_NOTE, kind: "convivencia" },
+            { title: "3 minutos no corredor", text: RAMPA_WARN, kind: "aviso" },
+            { title: "Passagem livre", text: RAMPA_RULE, kind: "alerta" },
+            {
+              title: "Vai pra areia",
+              text: "Guarda-sol, cadeira e barraca ficam fora deste caminho. Libere a rampa e o trânsito da orla flui.",
+              kind: "convivencia",
+            },
           ],
-          accent: "amber",
+          accent: "rose",
         });
       } else {
         app.setSelectedId(spot);
@@ -168,50 +216,146 @@ export function MapScreen({ navigation }: Props) {
     },
   });
 
+  const { openShowerRitual, openTipTour, takePendingGuide, takePendingNotifySpot, setSelectedId } = app;
+  const lastExperienceRef = useRef<string | null>(null);
+
   const openSelectedExperience = useCallback(
     (id: string) => {
       const showerHit = SHOWERS.find((s) => s.id === id);
       if (showerHit) {
-        app.openShowerRitual(showerHit.detail || showerHit.name);
+        openShowerRitual(showerHit.detail || showerHit.name);
         return;
       }
       if (id === ACADEMIA_ORLA.id) {
-        app.openTipTour({
+        openTipTour({
           title: ACADEMIA_ORLA.name,
-          subtitle: ACADEMIA_ORLA.detail,
+          subtitle: "Treino no calçadão · preserve o ferro da praia",
           steps: ACADEMIA_TOUR_STEPS,
-          accent: "rose",
+          accent: "amber",
         });
         return;
       }
       if (id === GOLFINHO.id) {
-        app.openTipTour({ title: GOLFINHO.name, subtitle: GOLFINHO.detail, steps: GOLFINHO.tips, accent: "teal" });
+        openTipTour({ title: GOLFINHO.name, subtitle: GOLFINHO.detail, steps: GOLFINHO.tips, accent: "teal" });
         return;
       }
       if (id === MARLIN.id) {
-        app.openTipTour({
-          title: MARLIN.name,
-          subtitle: MARLIN.detail,
-          steps: MARLIN_TIPS.map((t) => ({ title: t.title, text: t.text, kind: "aviso" as const })),
+        openTipTour({
+          title: "Marlin Azul",
+          subtitle: "Patrimônio da orla · preserve e se cuide",
+          steps: MARLIN_TIPS.map((t) => ({
+            title: t.title,
+            text: t.text,
+            kind:
+              t.title.toLowerCase().includes("lixo") || t.title.toLowerCase().includes("risque")
+                ? ("convivencia" as const)
+                : ("alerta" as const),
+          })),
+          accent: "ocean",
         });
+        return;
+      }
+      const rampHit = RAMPS.find((r) => r.id === id);
+      if (rampHit) {
+        openTipTour({
+          title: "Corredor da rampa",
+          subtitle: rampHit.detail,
+          steps: [
+            { title: "3 minutos no corredor", text: RAMPA_WARN, kind: "aviso" },
+            { title: "Passagem livre", text: RAMPA_RULE, kind: "alerta" },
+            {
+              title: "Vai pra areia",
+              text: "Guarda-sol, cadeira e barraca ficam fora deste caminho. Libere a rampa e o trânsito da orla flui.",
+              kind: "convivencia",
+            },
+          ],
+          accent: "rose",
+        });
+        return;
+      }
+      const lm = landmarkById(id);
+      if (lm?.tips?.length) {
+        setLandmarkTalk(lm);
       }
     },
-    [app],
+    [openShowerRitual, openTipTour],
   );
 
+  // Só dispara uma vez por id — evita Maximum update depth (openTipTour mudava o contexto).
   useEffect(() => {
-    if (!app.selectedId) return;
+    if (!app.selectedId) {
+      lastExperienceRef.current = null;
+      return;
+    }
+    if (lastExperienceRef.current === app.selectedId) return;
+    lastExperienceRef.current = app.selectedId;
     openSelectedExperience(app.selectedId);
   }, [app.selectedId, openSelectedExperience]);
+
+  const showPraiaDoMorro = useCallback(() => {
+    setBeachInvite(false);
+    mapRef.current?.animateTo(PRAIA_MORRO_VIEW.lat, PRAIA_MORRO_VIEW.lng, 0.0055);
+  }, []);
+
+  const runLocate = useCallback(() => {
+    void (async () => {
+      const stored = await readLocationSoftChoice();
+      const choice = locChoiceRef.current === "accepted" ? "accepted" : stored;
+      locChoiceRef.current = choice;
+      if (choice !== "accepted") {
+        await reopenLocationSoftPrompt();
+        locChoiceRef.current = "unset";
+        setLocPrompt(true);
+        setLocateNote(null);
+        return;
+      }
+      setLocating(true);
+      setLocateNote(null);
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          setLocateNote("Permita a localização para centralizar o mapa.");
+          setLocating(false);
+          return;
+        }
+        const pos = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
+        const next = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        const far =
+          metersBetween(next, { lat: PRAIA_MORRO_VIEW.lat, lng: PRAIA_MORRO_VIEW.lng }) >=
+          FAR_FROM_BEACH_M;
+        if (far) {
+          // Longe da orla (ex.: Barra do Riacho): mantém a Praia do Morro no mapa
+          // e convida o Guará a mostrar a praia — senão o usuário vê mapa sem pins.
+          if (!beachInviteAsked.current) {
+            beachInviteAsked.current = true;
+            setBeachInvite(true);
+          }
+          mapRef.current?.animateTo(PRAIA_MORRO_VIEW.lat, PRAIA_MORRO_VIEW.lng, 0.0055);
+        } else {
+          mapRef.current?.animateTo(next.lat, next.lng, 0.0045);
+        }
+      } catch {
+        setLocateNote("Este aparelho não informou a localização.");
+      } finally {
+        setLocating(false);
+      }
+    })();
+  }, []);
 
   const onGuide = useCallback(
     (guide: GuaraGuide) => {
       if (guide.filter) app.setFilter(guide.filter);
+      if (guide.basemap) app.setBasemap(guide.basemap);
       if (guide.query != null) {
         app.setSearchQuery(guide.query);
         app.setSearchOpen(true);
       }
-      if (guide.openId) app.setSelectedId(guide.openId);
+      if (guide.openId) {
+        app.setSelectedId(guide.openId);
+        openSelectedExperience(guide.openId);
+      }
       if (guide.fly) mapRef.current?.animateTo(guide.fly.lat, guide.fly.lng, 0.005);
       if (guide.route) {
         app.setRouteTarget({
@@ -221,13 +365,53 @@ export function MapScreen({ navigation }: Props) {
           name: guide.route.name,
         });
       }
-      if (guide.locate && fix) mapRef.current?.animateTo(fix.lat, fix.lng);
+      if (guide.locate) {
+        if (fix) mapRef.current?.animateTo(fix.lat, fix.lng);
+        else runLocate();
+      }
     },
-    [app, fix],
+    [app, fix, runLocate, openSelectedExperience],
   );
 
-  const showSponsor =
-    (place && place.isSponsor) || vendor || app.selectedId === ESCUNA_POINT.id || app.selectedId === "escunas";
+  useFocusEffect(
+    useCallback(() => {
+      const guide = takePendingGuide();
+      if (guide) onGuide(guide);
+      const spot = takePendingNotifySpot();
+      if (spot) {
+        setSelectedId(spot);
+        if (lastExperienceRef.current !== spot) {
+          lastExperienceRef.current = spot;
+          openSelectedExperience(spot);
+        }
+      }
+      // callbacks estáveis via refs/destructure — não depender do objeto app inteiro
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []),
+  );
+
+  const softBlocked =
+    mapTour.on ||
+    Boolean(app.tipTour) ||
+    Boolean(app.showerRitual) ||
+    Boolean(landmarkTalk) ||
+    app.guaraOpen ||
+    Boolean(app.routeTarget);
+
+  // Escuna + ambulante no web abrem portal direto no toque.
+  // Quiosque patrocinador só abre portal via “Ver cardápio” (onOpenSponsor).
+  useEffect(() => {
+    if (app.selectedId === ESCUNA_POINT.id || app.selectedId === "escunas") {
+      setSponsorOpen(true);
+      return;
+    }
+    if (vendor) {
+      setSponsorOpen(true);
+      return;
+    }
+    // Troca de pin / limpa: fecha portal (exceto se ainda for o mesmo place sponsor aberto via CTA).
+    if (!app.selectedId || !place?.isSponsor) setSponsorOpen(false);
+  }, [app.selectedId, vendor, place?.isSponsor]);
 
   return (
     <View style={styles.fill}>
@@ -240,29 +424,58 @@ export function MapScreen({ navigation }: Props) {
         moving={Boolean(navTrack.fix?.moving)}
         traveled={navTrack.traveledLine}
         remaining={navTrack.remainingLine}
+        onOpenSponsor={(id) => {
+          app.setSelectedId(id);
+          setSponsorOpen(true);
+        }}
+        onRouteToPin={(point) => {
+          app.setRouteTarget(point);
+        }}
         onMuroPress={() => {
-          setMuroTalk(true);
           app.openTipTour({
             title: MURO_TALK_TITLE,
             subtitle: MURO_TALK_SUBTITLE,
-            steps: [{ title: MURO_TALK_TITLE, text: MURO_TALK_TEXT, kind: "aviso" }],
+            steps: [{ title: "Para-peito", text: MURO_TALK_TEXT, kind: "aviso" }],
+            accent: "amber",
           });
         }}
       />
 
-      {!app.nav?.active && !app.routeTarget && (
+      {/* Esconde Locate/Satélite com card no pin — senão Satélite cola no Patrocinador (screenshot). */}
+      {!app.nav?.active &&
+        !app.routeTarget &&
+        !sponsorOpen &&
+        !app.selectedId &&
+        !app.tipTour &&
+        !app.showerRitual &&
+        !landmarkTalk && (
         <MapChrome
-          onOpenGuara={() => app.setGuaraOpen(true)}
+          onOpenGuara={() => {
+            setBeachInvite(false);
+            app.setGuaraOpen(true);
+          }}
           onOpenSos={() => {
             app.openSos();
             navigation.navigate("Sos");
           }}
+          onLocate={runLocate}
+          onOpenCamera={() => navigation.navigate("Camera")}
+          onMarkHit={(hit) => mapRef.current?.animateTo(hit.lat, hit.lng, 0.004)}
+          locating={locating}
+          locateNote={locateNote}
+          beachInvite={beachInvite && !app.searchOpen && !mapTour.on}
+          onAcceptBeach={showPraiaDoMorro}
+          onDeclineBeach={() => setBeachInvite(false)}
         />
       )}
 
       {!app.nav?.active && (
-        <Pressable style={[styles.back, { top: insets.top + 8 }]} onPress={() => navigation.goBack()}>
-          <Text style={styles.backText}>‹ Home</Text>
+        <Pressable
+          style={[styles.closeBtn, { top: insets.top + 10 }]}
+          onPress={() => navigation.goBack()}
+          accessibilityLabel="Fechar mapa"
+        >
+          <Text style={styles.closeBtnText}>✕</Text>
         </Pressable>
       )}
 
@@ -282,58 +495,35 @@ export function MapScreen({ navigation }: Props) {
         />
       )}
 
-      {/* Ficha rápida / landmark não-sponsor */}
-      {!app.nav?.active &&
-        !app.routeTarget &&
-        (landmark || ramp || (place && !place.isSponsor) || shower) &&
-        !showSponsor &&
-        !app.showerRitual && (
-        <View style={[styles.sheet, { paddingBottom: insets.bottom + 16 }]}>
-          <Text style={styles.sheetTitle}>
-            {place?.name ?? shower?.name ?? landmark?.name ?? ramp?.name}
-          </Text>
-          <Text style={styles.sheetSub}>
-            {place?.guaraTip ?? shower?.detail ?? landmark?.detail ?? ramp?.detail}
-          </Text>
-          <View style={styles.sheetRow}>
-            <Pressable
-              style={styles.routeBtn}
-              onPress={() => {
-                const t = place || shower || landmark || ramp;
-                if (!t) return;
-                app.setRouteTarget({
-                  id: t.id,
-                  lat: t.lat,
-                  lng: t.lng,
-                  name: "name" in t ? t.name : "Destino",
-                });
-              }}
-            >
-              <Text style={styles.routeBtnText}>Como chegar</Text>
-            </Pressable>
-            <Pressable onPress={() => app.setSelectedId(null)}>
-              <Text style={styles.closeSheetText}>Fechar</Text>
-            </Pressable>
-          </View>
+      {(arrivedBanner || recalcNote) && (
+        <View style={[styles.arriveBanner, { top: insets.top + 56 }]}>
+          <Text style={styles.arriveText}>{arrivedBanner ?? recalcNote}</Text>
         </View>
       )}
 
-      {!app.nav?.active && !app.routeTarget && place && place.isSponsor && (
+      {/* Portal completo — card pequeno = SelectedPinBubbleMarker (Marker separado + spacer). */}
+      {!app.nav?.active && !app.routeTarget && place && place.isSponsor && sponsorOpen && (
         <SponsorSheet
           kind="place"
           place={place}
           skyPhase={app.sky.phase}
-          onClose={() => app.setSelectedId(null)}
+          onClose={() => {
+            setSponsorOpen(false);
+            app.setSelectedId(null);
+          }}
           onRoute={() =>
             app.setRouteTarget({ id: place.id, lat: place.lat, lng: place.lng, name: place.name })
           }
         />
       )}
-      {!app.nav?.active && !app.routeTarget && vendor && (
+      {!app.nav?.active && !app.routeTarget && vendor && sponsorOpen && (
         <SponsorSheet
           kind="vendor"
           vendor={vendor}
-          onClose={() => app.setSelectedId(null)}
+          onClose={() => {
+            setSponsorOpen(false);
+            app.setSelectedId(null);
+          }}
           onRoute={() =>
             app.setRouteTarget({ id: vendor.id, lat: vendor.lat, lng: vendor.lng, name: vendor.name })
           }
@@ -341,10 +531,14 @@ export function MapScreen({ navigation }: Props) {
       )}
       {!app.nav?.active &&
         !app.routeTarget &&
-        (app.selectedId === ESCUNA_POINT.id || app.selectedId === "escunas") && (
+        (app.selectedId === ESCUNA_POINT.id || app.selectedId === "escunas") &&
+        sponsorOpen && (
         <SponsorSheet
           kind="escuna"
-          onClose={() => app.setSelectedId(null)}
+          onClose={() => {
+            setSponsorOpen(false);
+            app.setSelectedId(null);
+          }}
           onRoute={() =>
             app.setRouteTarget({
               id: ESCUNA_POINT.id,
@@ -380,6 +574,16 @@ export function MapScreen({ navigation }: Props) {
         />
       )}
 
+      {landmarkTalk ? (
+        <LandmarkTalkSheet
+          landmark={landmarkTalk}
+          onClose={() => {
+            // Mantém selectedId — bubble “Ir até aqui” no pin (paridade web).
+            setLandmarkTalk(null);
+          }}
+        />
+      ) : null}
+
       <TipTourModal
         visible={Boolean(app.tipTour)}
         title={app.tipTour?.title ?? ""}
@@ -387,8 +591,18 @@ export function MapScreen({ navigation }: Props) {
         steps={app.tipTour?.steps ?? []}
         stepIndex={app.tipTour?.stepIndex ?? 0}
         accent={app.tipTour?.accent}
-        onNext={app.tipNext}
-        onClose={app.tipClose}
+        onNext={() => {
+          const cur = app.tipTour;
+          if (cur && cur.stepIndex >= cur.steps.length - 1) {
+            // Mantém selectedId — bubble de rota fica no pin (paridade web closeTipTour).
+            app.tipClose();
+            return;
+          }
+          app.tipNext();
+        }}
+        onClose={() => {
+          app.tipClose();
+        }}
       />
 
       <ShowerRitualModal
@@ -403,20 +617,7 @@ export function MapScreen({ navigation }: Props) {
       />
 
       <SoftPrompt
-        visible={locPrompt}
-        kind="location"
-        onAccept={() => {
-          void writeLocationSoftChoice("accepted");
-          setLocPrompt(false);
-          void Location.requestForegroundPermissionsAsync();
-        }}
-        onDecline={() => {
-          void writeLocationSoftChoice("declined");
-          setLocPrompt(false);
-        }}
-      />
-      <SoftPrompt
-        visible={notifyPrompt && !locPrompt}
+        visible={notifyPrompt && !locPrompt && !softBlocked}
         kind="notify"
         onAccept={() => {
           void writeNotifySoftChoice("accepted").then(() => requestNativeNotifyPermission());
@@ -425,6 +626,22 @@ export function MapScreen({ navigation }: Props) {
         onDecline={() => {
           void writeNotifySoftChoice("declined");
           setNotifyPrompt(false);
+        }}
+      />
+      <SoftPrompt
+        visible={locPrompt && !softBlocked}
+        kind="location"
+        onAccept={() => {
+          void writeLocationSoftChoice("accepted");
+          locChoiceRef.current = "accepted";
+          setLocPrompt(false);
+          runLocate();
+        }}
+        onDecline={() => {
+          void writeLocationSoftChoice("declined");
+          locChoiceRef.current = "declined";
+          setLocPrompt(false);
+          setLocateNote("Sem localização — toque de novo se mudar de ideia.");
         }}
       />
 
@@ -456,24 +673,68 @@ export function MapScreen({ navigation }: Props) {
           }}
         />
       )}
-
-      {muroTalk ? null : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   fill: { flex: 1, backgroundColor: "#0b2a48" },
-  back: {
+  arriveBanner: {
     position: "absolute",
-    left: 12,
-    zIndex: 50,
-    backgroundColor: "rgba(15,23,42,0.75)",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 12,
+    alignSelf: "center",
+    left: 24,
+    right: 24,
+    zIndex: 70,
+    backgroundColor: "rgba(15,23,42,0.88)",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(125,211,252,0.45)",
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
-  backText: { color: "#fff", fontWeight: "700" },
+  arriveText: { color: "#fff", textAlign: "center", fontWeight: "700", fontSize: 14 },
+  closeBtn: {
+    position: "absolute",
+    right: 14,
+    zIndex: 60,
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    backgroundColor: "rgba(15,23,42,0.72)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.2)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  closeBtnText: { color: "#fff", fontWeight: "800", fontSize: 16, marginTop: -1 },
+  teaser: {
+    position: "absolute",
+    left: 16,
+    right: 16,
+    zIndex: 48,
+    backgroundColor: "rgba(255,255,255,0.96)",
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: "rgba(251,191,36,0.55)",
+    padding: 14,
+    gap: 6,
+    shadowColor: "#000",
+    shadowOpacity: 0.28,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 10,
+  },
+  teaserTitle: { color: "#142018", fontSize: 15, fontWeight: "800" },
+  teaserSub: { color: "rgba(20,32,24,0.65)", fontSize: 12, lineHeight: 16 },
+  teaserRow: { flexDirection: "row", alignItems: "center", gap: 12, marginTop: 6, flexWrap: "wrap" },
+  teaserPrimary: {
+    backgroundColor: "#f59e0b",
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+  },
+  teaserPrimaryText: { color: "#142018", fontWeight: "800", fontSize: 12 },
+  teaserLink: { color: "#0e7490", fontWeight: "700", fontSize: 12 },
   sheet: {
     position: "absolute",
     left: 0,

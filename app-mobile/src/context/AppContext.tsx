@@ -1,7 +1,8 @@
-import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
+import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 import type { DayLayer } from "../data/day-layers";
 import type { FeatureId, MapFilter } from "../data/catalog";
 import { useTide, useWeather } from "../data/coast";
+import type { GuaraGuide } from "../data/guara-guide";
 import { useSkyPhase } from "../data/sky-phase";
 import type { TravelMode, WalkPoint, WalkRoute } from "../data/walk-route";
 import type { GuaraTipStep } from "../components/guara/TipTourModal";
@@ -22,11 +23,15 @@ export type NavState = {
   active: boolean;
 } | null;
 
+export type BasemapStyle = "satellite" | "clean";
+
 type AppState = {
   filter: MapFilter;
   setFilter: (f: MapFilter) => void;
   dayLayer: DayLayer;
   setDayLayer: (l: DayLayer) => void;
+  basemap: BasemapStyle;
+  setBasemap: (b: BasemapStyle) => void;
   selectedId: string | null;
   setSelectedId: (id: string | null) => void;
   searchQuery: string;
@@ -59,6 +64,12 @@ type AppState = {
   weather: ReturnType<typeof useWeather>;
   tide: ReturnType<typeof useTide>;
   sky: ReturnType<typeof useSkyPhase>;
+  /** Guia da home → aplica no Map ao focar. */
+  queueGuide: (guide: GuaraGuide) => void;
+  takePendingGuide: () => GuaraGuide | null;
+  /** Spot de notificação enquanto Map ainda não montou. */
+  queueNotifySpot: (spot: string) => void;
+  takePendingNotifySpot: () => string | null;
 };
 
 const Ctx = createContext<AppState | null>(null);
@@ -66,6 +77,7 @@ const Ctx = createContext<AppState | null>(null);
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [filter, setFilter] = useState<MapFilter>("neutro");
   const [dayLayer, setDayLayer] = useState<DayLayer>("off");
+  const [basemap, setBasemap] = useState<BasemapStyle>("satellite");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -80,6 +92,25 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const weather = useWeather();
   const tide = useTide();
   const sky = useSkyPhase();
+  const pendingGuideRef = useRef<GuaraGuide | null>(null);
+  const pendingNotifyRef = useRef<string | null>(null);
+
+  const queueGuide = useCallback((guide: GuaraGuide) => {
+    pendingGuideRef.current = guide;
+  }, []);
+  const takePendingGuide = useCallback(() => {
+    const g = pendingGuideRef.current;
+    pendingGuideRef.current = null;
+    return g;
+  }, []);
+  const queueNotifySpot = useCallback((spot: string) => {
+    pendingNotifyRef.current = spot;
+  }, []);
+  const takePendingNotifySpot = useCallback(() => {
+    const s = pendingNotifyRef.current;
+    pendingNotifyRef.current = null;
+    return s;
+  }, []);
 
   const openSos = useCallback(() => setSosOpen(true), []);
   const closeSos = useCallback(() => setSosOpen(false), []);
@@ -124,6 +155,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setFilter,
       dayLayer,
       setDayLayer,
+      basemap,
+      setBasemap,
       selectedId,
       setSelectedId,
       searchQuery,
@@ -156,10 +189,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       weather,
       tide,
       sky,
+      queueGuide,
+      takePendingGuide,
+      queueNotifySpot,
+      takePendingNotifySpot,
     }),
     [
       filter,
       dayLayer,
+      basemap,
       selectedId,
       searchQuery,
       searchOpen,
@@ -185,6 +223,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       weather,
       tide,
       sky,
+      queueGuide,
+      takePendingGuide,
+      queueNotifySpot,
+      takePendingNotifySpot,
     ],
   );
 
