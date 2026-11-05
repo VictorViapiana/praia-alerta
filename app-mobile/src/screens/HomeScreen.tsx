@@ -164,7 +164,18 @@ export function HomeScreen({ navigation }: Props) {
         </View>
 
         <Pressable style={styles.mapCard} onPress={() => navigation.navigate("Map")}>
-          <LinearGradient colors={["rgba(8,47,73,0.15)", "rgba(8,47,73,0.55)", "rgba(8,47,73,0.88)"]} style={StyleSheet.absoluteFill} />
+          {/* CoastMap do web — tile satélite ArcGIS da orla */}
+          <Image
+            source={{
+              uri: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/16/36612/25397",
+            }}
+            style={StyleSheet.absoluteFill}
+            resizeMode="cover"
+          />
+          <LinearGradient
+            colors={["rgba(8,47,73,0.15)", "rgba(12,74,110,0.4)", "rgba(8,47,73,0.88)"]}
+            style={StyleSheet.absoluteFill}
+          />
           <View style={styles.mapTop}>
             <View style={styles.liveChip}>
               <View style={styles.liveChipDot} />
@@ -268,7 +279,7 @@ export function HomeScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  fill: { flex: 1, backgroundColor: "#0b2a48" },
+  fill: { flex: 1, backgroundColor: "#1d649c" },
   content: { paddingHorizontal: 14, gap: 12 },
   island: {
     borderRadius: 26,

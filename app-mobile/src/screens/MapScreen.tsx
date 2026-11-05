@@ -27,7 +27,7 @@ import {
   SHOWERS,
   landmarkById,
 } from "../data/places";
-import { RAMPS, RAMPA_NOTE, RAMPA_RULE, RAMPA_WARN } from "../data/rampas";
+import { RAMPS, RAMPA_RULE, RAMPA_WARN } from "../data/rampas";
 import { MAP_STEPS, MAP_TOUR_KEY } from "../data/onboarding";
 import { storageGet, storageSet } from "../utils/storage";
 import {
@@ -160,9 +160,16 @@ export function MapScreen({ navigation }: Props) {
         if (s) app.openShowerRitual(s.name);
       } else if (kind === "marlin") {
         app.openTipTour({
-          title: MARLIN.name,
-          subtitle: MARLIN.detail,
-          steps: MARLIN_TIPS.map((t) => ({ title: t.title, text: t.text, kind: "aviso" as const })),
+          title: "Marlin Azul",
+          subtitle: "Patrimônio da orla · preserve e se cuide",
+          steps: MARLIN_TIPS.map((t) => ({
+            title: t.title,
+            text: t.text,
+            kind:
+              t.title.toLowerCase().includes("lixo") || t.title.toLowerCase().includes("risque")
+                ? ("convivencia" as const)
+                : ("alerta" as const),
+          })),
           accent: "ocean",
         });
       } else if (kind === "golfinho") {
@@ -174,13 +181,17 @@ export function MapScreen({ navigation }: Props) {
         });
       } else if (kind === "rampa") {
         app.openTipTour({
-          title: "Rampa de acesso",
+          title: "Corredor da rampa",
           steps: [
-            { title: "Atenção", text: RAMPA_WARN, kind: "alerta" },
-            { title: "Regra", text: RAMPA_RULE, kind: "aviso" },
-            { title: "Dica", text: RAMPA_NOTE, kind: "convivencia" },
+            { title: "3 minutos no corredor", text: RAMPA_WARN, kind: "aviso" },
+            { title: "Passagem livre", text: RAMPA_RULE, kind: "alerta" },
+            {
+              title: "Vai pra areia",
+              text: "Guarda-sol, cadeira e barraca ficam fora deste caminho. Libere a rampa e o trânsito da orla flui.",
+              kind: "convivencia",
+            },
           ],
-          accent: "amber",
+          accent: "rose",
         });
       } else {
         app.setSelectedId(spot);
@@ -198,9 +209,9 @@ export function MapScreen({ navigation }: Props) {
       if (id === ACADEMIA_ORLA.id) {
         app.openTipTour({
           title: ACADEMIA_ORLA.name,
-          subtitle: ACADEMIA_ORLA.detail,
+          subtitle: "Treino no calçadão · preserve o ferro da praia",
           steps: ACADEMIA_TOUR_STEPS,
-          accent: "rose",
+          accent: "amber",
         });
         return;
       }
@@ -210,10 +221,35 @@ export function MapScreen({ navigation }: Props) {
       }
       if (id === MARLIN.id) {
         app.openTipTour({
-          title: MARLIN.name,
-          subtitle: MARLIN.detail,
-          steps: MARLIN_TIPS.map((t) => ({ title: t.title, text: t.text, kind: "aviso" as const })),
+          title: "Marlin Azul",
+          subtitle: "Patrimônio da orla · preserve e se cuide",
+          steps: MARLIN_TIPS.map((t) => ({
+            title: t.title,
+            text: t.text,
+            kind:
+              t.title.toLowerCase().includes("lixo") || t.title.toLowerCase().includes("risque")
+                ? ("convivencia" as const)
+                : ("alerta" as const),
+          })),
           accent: "ocean",
+        });
+        return;
+      }
+      const rampHit = RAMPS.find((r) => r.id === id);
+      if (rampHit) {
+        app.openTipTour({
+          title: "Corredor da rampa",
+          subtitle: rampHit.detail,
+          steps: [
+            { title: "3 minutos no corredor", text: RAMPA_WARN, kind: "aviso" },
+            { title: "Passagem livre", text: RAMPA_RULE, kind: "alerta" },
+            {
+              title: "Vai pra areia",
+              text: "Guarda-sol, cadeira e barraca ficam fora deste caminho. Libere a rampa e o trânsito da orla flui.",
+              kind: "convivencia",
+            },
+          ],
+          accent: "rose",
         });
         return;
       }
@@ -334,7 +370,8 @@ export function MapScreen({ navigation }: Props) {
           app.openTipTour({
             title: MURO_TALK_TITLE,
             subtitle: MURO_TALK_SUBTITLE,
-            steps: [{ title: MURO_TALK_TITLE, text: MURO_TALK_TEXT, kind: "aviso" }],
+            steps: [{ title: "Para-peito", text: MURO_TALK_TEXT, kind: "aviso" }],
+            accent: "amber",
           });
         }}
       />

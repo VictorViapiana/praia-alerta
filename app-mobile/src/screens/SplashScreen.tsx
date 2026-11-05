@@ -1,15 +1,16 @@
 import { useEffect, useRef } from "react";
-import { Animated, Easing, Image, StyleSheet, Text, View } from "react-native";
+import { Animated, Dimensions, Easing, Image, StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 
 type Props = { onDone: () => void };
 
 const DONE_MS = 3200;
 const EASE = Easing.bezier(0.22, 1, 0.36, 1);
+const STAGE_DROP = Dimensions.get("window").height * 0.12;
 
 /**
- * Splash igual ao web (`app/splash.tsx`): horizonte, sol, Guará de chapéu Alegretto e marca.
- * Sem logo-splash / guara-inteiro — esses eram o visual antigo errado.
+ * Splash igual ao web (`app/splash.tsx` + `.sx-stage` translateY 12vh).
+ * Guará de chapéu Alegretto mais baixo, perto do horizonte.
  */
 export function SplashScreen({ onDone }: Props) {
   const fadeOut = useRef(new Animated.Value(1)).current;
@@ -19,6 +20,7 @@ export function SplashScreen({ onDone }: Props) {
   const brandOpacity = useRef(new Animated.Value(0)).current;
   const brandY = useRef(new Animated.Value(14)).current;
   const sunPulse = useRef(new Animated.Value(0)).current;
+  const floatY = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.parallel([
@@ -37,6 +39,14 @@ export function SplashScreen({ onDone }: Props) {
     );
     pulse.start();
 
+    const float = Animated.loop(
+      Animated.sequence([
+        Animated.timing(floatY, { toValue: -8, duration: 1400, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        Animated.timing(floatY, { toValue: 0, duration: 1400, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+      ]),
+    );
+    float.start();
+
     const fadeTimer = setTimeout(() => {
       Animated.timing(fadeOut, {
         toValue: 0,
@@ -49,10 +59,11 @@ export function SplashScreen({ onDone }: Props) {
     const doneTimer = setTimeout(onDone, DONE_MS);
     return () => {
       pulse.stop();
+      float.stop();
       clearTimeout(fadeTimer);
       clearTimeout(doneTimer);
     };
-  }, [birdOpacity, birdScale, birdY, brandOpacity, brandY, fadeOut, onDone, sunPulse]);
+  }, [birdOpacity, birdScale, birdY, brandOpacity, brandY, fadeOut, floatY, onDone, sunPulse]);
 
   const sunScale = sunPulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.04] });
   const sunOpacity = sunPulse.interpolate({ inputRange: [0, 1], outputRange: [0.92, 1] });
@@ -81,11 +92,11 @@ export function SplashScreen({ onDone }: Props) {
         style={styles.sea}
       />
 
-      <View style={styles.stage}>
+      <View style={[styles.stage, { transform: [{ translateY: STAGE_DROP }] }]}>
         <Animated.View
           style={{
             opacity: birdOpacity,
-            transform: [{ translateY: birdY }, { scale: birdScale }],
+            transform: [{ translateY: Animated.add(birdY, floatY) }, { scale: birdScale }],
             alignItems: "center",
           }}
         >
@@ -124,9 +135,10 @@ const styles = StyleSheet.create({
   },
   sunWrap: {
     position: "absolute",
-    top: "18%",
+    top: "23%",
     width: 160,
     height: 160,
+    marginTop: -80,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -160,8 +172,7 @@ const styles = StyleSheet.create({
     zIndex: 2,
     alignItems: "center",
     paddingHorizontal: 24,
-    marginTop: 48,
-    gap: 8,
+    gap: 6,
   },
   bird: {
     width: 210,

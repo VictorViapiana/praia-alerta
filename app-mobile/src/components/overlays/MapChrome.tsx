@@ -93,12 +93,13 @@ export function MapChrome({
         {locateNote ? <Text style={styles.locateNote}>{locateNote}</Text> : null}
       </View>
 
-      <SosHoldButton onTrigger={onOpenSos} top={insets.top + 210} />
+      {/* Emergência — mesmo topo do web MapSos (~safe-area + 3.55rem) */}
+      <SosHoldButton onTrigger={onOpenSos} top={insets.top + 58} />
 
       {/* Câmera Eu amo Guarapari */}
       <Pressable
         onPress={onOpenCamera}
-        style={[styles.cameraFab, { bottom: insets.bottom + 168 }]}
+        style={[styles.cameraFab, { bottom: insets.bottom + 148 }]}
         accessibilityLabel="Eu amo Guarapari. Abrir a câmera."
       >
         <View style={styles.cameraOrb}>
@@ -113,7 +114,7 @@ export function MapChrome({
       </Pressable>
 
       {beachInvite ? (
-        <View style={[styles.beachInvite, { bottom: insets.bottom + 168 }]}>
+        <View style={[styles.beachInvite, { bottom: insets.bottom + 148 }]}>
           <View style={styles.beachRow}>
             <GuaraPose pose="bust" size={40} />
             <View style={{ flex: 1 }}>
@@ -136,7 +137,7 @@ export function MapChrome({
       ) : (
         <Pressable
           onPress={onOpenGuara}
-          style={[styles.guaraFab, { bottom: insets.bottom + 168 }]}
+          style={[styles.guaraFab, { bottom: insets.bottom + 148 }]}
           accessibilityLabel="Falar com o Guará"
         >
           <GuaraPose pose="bust" size={32} />

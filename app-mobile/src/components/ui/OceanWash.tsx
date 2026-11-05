@@ -13,7 +13,7 @@ const SKY: Record<
   },
   day: {
     colors: ["#b7daf2", "#7eb8e0", "#4f97cb", "#2f78b4", "#1d649c"],
-    locations: [0, 0.24, 0.52, 0.74, 1],
+    locations: [0, 0.24, 0.52, 0.74, 1], // = --pa-sky-fill day
   },
   dusk: {
     colors: ["#f2b48a", "#e8906e", "#c96a62", "#9a4a58", "#8a3d4a"],
